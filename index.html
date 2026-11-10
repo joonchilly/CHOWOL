@@ -182,10 +182,13 @@ body.no-stories .stories { display: none; }
 .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
 .group-av { background: linear-gradient(135deg, var(--water), #1B3442); color: #fff; font-family: var(--font-display); font-weight: 800; }
 
-.msgs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; }
+.msgs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; }
 .day-sep { align-self: center; font-size: 11px; color: var(--muted); margin: 12px 0 6px; }
 .msg { display: flex; gap: 8px; align-items: flex-end; max-width: 80%; }
-.msg.first { margin-top: 8px; }
+.msg.first, .msg.single { margin-top: 11px; } /* 묶음 사이 14px = gap 3 + 11 */
+.msg .line { display: flex; align-items: flex-end; gap: 4px; min-width: 0; }
+.msg.mine .line { flex-direction: row-reverse; }
+.msg .line > :first-child { min-width: 0; }
 .msg .slot { width: 28px; flex: none; }
 .msg .av { width: 28px; height: 28px; }
 .msg .col { display: flex; flex-direction: column; min-width: 0; }
@@ -193,8 +196,16 @@ body.no-stories .stories { display: none; }
 .bubble { background: var(--raise); border-radius: calc(var(--r) * 1.4); padding: 8px 14px; white-space: pre-wrap; word-break: break-word; }
 .msg.mine { align-self: flex-end; }
 .msg.mine .bubble { background: var(--bubble); color: var(--on-bubble); }
-.msg time { font-size: 10px; color: var(--muted); padding: 0 8px; align-self: flex-end; }
-.msg.mine time { text-align: right; }
+.msg time { font-size: 11px; color: var(--muted); align-self: flex-end; flex: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* 말풍선 모서리: 바깥 20px, 벽 쪽(친구=왼쪽, 나=오른쪽)만 6px, 묶음 첫/끝은 벽 쪽 위/아래를 20px로 */
+.msg { --R: calc(var(--r) * 1.4); }
+.msg .bubble, .msg .media-bub { border-radius: var(--R); }
+.msg.first:not(.mine) :is(.bubble, .media-bub) { border-bottom-left-radius: 6px; }
+.msg.middle:not(.mine) :is(.bubble, .media-bub) { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+.msg.last:not(.mine) :is(.bubble, .media-bub) { border-top-left-radius: 6px; }
+.msg.mine.first :is(.bubble, .media-bub) { border-bottom-right-radius: 6px; }
+.msg.mine.middle :is(.bubble, .media-bub) { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+.msg.mine.last :is(.bubble, .media-bub) { border-top-right-radius: 6px; }
 .dm-form { display: flex; align-items: flex-end; gap: 0; min-height: 48px; margin: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border: 1px solid var(--line); border-radius: 24px; padding: 1px 2px; background: var(--surface); }
 .attach { color: var(--accent); }
 .attach-menu { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 12px 0; }
@@ -1248,19 +1259,21 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const ms = threadMsgs(t);
     if (!ms.length) box.replaceChildren(h("p", { class: "empty", text: t === GROUP ? "단체방에 첫 마디를 던져보세요." : nameOf(t) + "님에게 첫 메시지를 보내보세요." }));
     else {
-      const out = []; let lastDay = null, lastA = null, lastTs = 0;
-      for (const d of ms) {
-        if (dayKey(d.ts) !== lastDay) { out.push(h("div", { class: "day-sep", text: dayLabel(d.ts) })); lastDay = dayKey(d.ts); lastA = null; }
-        const mine = d.author === myId, first = d.author !== lastA || d.ts - lastTs > 5 * 60000;
+      // 묶음 = 같은 사람 · 5분 이내 · 같은 날. 시간은 묶음의 마지막 말풍선에만.
+      const sameGroup = (x, y) => x && y && x.author === y.author && dayKey(x.ts) === dayKey(y.ts) && y.ts - x.ts <= 5 * 60000;
+      const out = [];
+      ms.forEach((d, i) => {
+        const prev = ms[i - 1], next = ms[i + 1];
+        if (!prev || dayKey(prev.ts) !== dayKey(d.ts)) out.push(h("div", { class: "day-sep", text: dayLabel(d.ts) }));
+        const mine = d.author === myId, first = !sameGroup(prev, d), last = !sameGroup(d, next);
+        const pos = first && last ? "single" : first ? "first" : last ? "last" : "middle";
         const col = h("div", { class: "col" });
         if (!mine && first && t === GROUP) col.append(h("span", { class: "who", text: nameOf(d.author) }));
-        col.append(msgBody(d));
-        if (first || d.ts - lastTs > 60000) col.append(h("time", { text: hhmm(d.ts) }));
-        const row = h("div", { class: "msg" + (mine ? " mine" : "") + (first ? " first" : "") });
+        col.append(h("div", { class: "line" }, msgBody(d), last ? h("time", { text: hhmm(d.ts) }) : null));
+        const row = h("div", { class: "msg " + pos + (mine ? " mine" : "") });
         if (!mine) row.append(h("span", { class: "slot" }, first ? avatar(d.author) : null));
         row.append(col); out.push(row);
-        lastA = d.author; lastTs = d.ts;
-      }
+      });
       box.replaceChildren(...out);
     }
     renderNoticeBar(t); // 공지 바를 먼저 그려야 메시지 영역 높이가 확정됨
