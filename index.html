@@ -292,8 +292,17 @@ html { touch-action: pan-x pan-y; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip-btn { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
 .chip-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); }
-.sw[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--bg) inset; }
+.sw { width: 36px; height: 36px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); margin: 5px; }
+.sw[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 3px; }
+.th-preview { position: sticky; top: -14px; z-index: 2; margin: -14px -14px 0; padding: 12px 14px; height: 120px; box-sizing: border-box; background: var(--bg); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr; gap: 6px 10px; }
+.pv-bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; color: var(--logo); font-family: var(--font-display); font-size: 18px; letter-spacing: .1em; }
+.pv-dot { width: 14px; height: 18px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: var(--logo); }
+.pv-msgs { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pv-b { padding: 5px 12px; border-radius: calc(var(--r) * 1.4); font-size: 14px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv-you { align-self: flex-start; background: var(--raise); color: var(--ink); }
+.pv-me { align-self: flex-end; background: var(--bubble); color: var(--on-bubble); }
+.pv-btn { align-self: end; padding: 8px 16px; border-radius: calc(var(--r) * .6); background: var(--accent); color: var(--on-accent); font-size: 14px; }
+.th-reset { align-self: center; min-height: 44px; padding: 0 16px; color: var(--danger); margin-top: 6px; }
 .preset-dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line); }
 .range-row { display: flex; align-items: center; gap: 10px; }
 .range-row input { flex: 1; accent-color: var(--accent); }
@@ -550,8 +559,13 @@ html { touch-action: pan-x pan-y; }
 <!-- theme -->
 <div class="modal" id="themeModal" hidden role="dialog" aria-modal="true" aria-labelledby="themeTitle">
   <div class="sheet">
-    <div class="sheet-h"><button type="button" class="cancel" id="themeReset">기본값</button><div class="title" id="themeTitle">앱 꾸미기</div><button type="button" class="act" data-close="themeModal">완료</button></div>
+    <div class="sheet-h"><span class="cancel" aria-hidden="true"></span><div class="title" id="themeTitle">앱 꾸미기</div><button type="button" class="act" data-close="themeModal">완료</button></div>
     <div class="sheet-b" id="themeBody">
+      <div class="th-preview" aria-label="미리보기">
+        <div class="pv-bar"><span class="pv-dot"></span><span id="pvName">초월</span></div>
+        <div class="pv-msgs"><span class="pv-b pv-you">오늘 사우나 갈 사람?</span><span class="pv-b pv-me">나! 7시에 보자</span></div>
+        <span class="pv-btn">버튼</span>
+      </div>
       <p style="margin:0;color:var(--muted);font-size:14px">바꾸는 즉시 친구들 화면에도 똑같이 적용돼요.</p>
       <div class="theme-sec"><span>배경</span><div class="chips" id="thPreset"></div></div>
       <div class="theme-sec"><span>포인트 색 (버튼·숫자·강조)</span><div class="chips" id="thAccent"></div></div>
@@ -568,6 +582,7 @@ html { touch-action: pan-x pan-y; }
         <form class="c-form" id="invForm" style="border:1px solid var(--line);border-radius:calc(var(--r) * .6);padding:4px 6px 4px 12px;background:var(--bg)"><label for="invEmail" hidden>이메일</label><input id="invEmail" type="email" placeholder="friend@gmail.com" autocomplete="off"><button type="submit">추가</button></form>
         <div id="invList" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
+      <button type="button" class="th-reset" id="themeReset">기본값으로 되돌리기</button>
     </div>
   </div>
 </div>
@@ -2209,6 +2224,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     $("#thFs").value = theme.fs; $("#thFsOut").textContent = theme.fs + "px";
     $("#thR").value = theme.radius; $("#thROut").textContent = theme.radius + "px";
     if (document.activeElement !== $("#thName")) $("#thName").value = theme.name;
+    $("#pvName").textContent = theme.name;
   }
   let invUnsub = null, invited = [];
   function renderInv() {
@@ -2231,7 +2247,14 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   $("#thR").addEventListener("input", (e) => { $("#thROut").textContent = e.target.value + "px"; setTheme({ radius: Number(e.target.value) }); });
   $("#thName").addEventListener("input", (e) => setTheme({ name: e.target.value }));
   $("#profTheme").addEventListener("click", () => openTheme());
-  $("#themeReset").addEventListener("click", () => setTheme({ ...THEME_DEFAULT }));
+  // 실수 방지: 3초 안에 한 번 더 눌러야 6명 전체 테마가 기본값으로 돌아감
+  let resetArm = null;
+  $("#themeReset").addEventListener("click", () => {
+    const b = $("#themeReset");
+    if (resetArm) { clearTimeout(resetArm); resetArm = null; b.textContent = "기본값으로 되돌리기"; setTheme({ ...THEME_DEFAULT }); return; }
+    b.textContent = "정말 되돌릴까요? 한 번 더 누르기";
+    resetArm = setTimeout(() => { resetArm = null; b.textContent = "기본값으로 되돌리기"; }, 3000);
+  });
 
   // ---------- intro: film, then waves ----------
   (function intro() {
