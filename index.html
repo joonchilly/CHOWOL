@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0B0A09">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,6 +22,31 @@
     root.style.setProperty("--appH", Math.max(window.innerHeight, full) + "px");
   }
   fit(); window.addEventListener("resize", fit); window.addEventListener("orientationchange", function () { setTimeout(fit, 300); });
+})();
+// 키보드가 올라와도 화면 전체가 위로 밀리지 않게: 앱 높이를 '키보드 위 남은 공간'에 맞추고 페이지 스크롤은 0에 고정
+(function () {
+  var vv = window.visualViewport; if (!vv) return;
+  var root = document.documentElement, full = null;
+  function editing() { var a = document.activeElement; return !!a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && !/^(button|checkbox|radio|range|color|file|submit)$/.test(a.type)) || a.isContentEditable); }
+  function sync() {
+    var open = editing() && vv.height < window.innerHeight * 0.85 || editing() && vv.height < (screen.height * 0.75);
+    if (open) {
+      if (full === null) full = getComputedStyle(root).getPropertyValue("--appH");
+      root.classList.add("kb");
+      root.style.setProperty("--appH", Math.round(vv.height) + "px");
+      if (window.scrollY || vv.offsetTop) window.scrollTo(0, 0);
+      var m = document.getElementById("msgs");
+      if (m && m.scrollHeight - m.scrollTop - m.clientHeight < 160) m.scrollTop = m.scrollHeight;
+    } else if (root.classList.contains("kb")) {
+      root.classList.remove("kb");
+      if (full) root.style.setProperty("--appH", full); else root.style.removeProperty("--appH");
+      full = null; window.scrollTo(0, 0);
+    }
+  }
+  vv.addEventListener("resize", sync);
+  vv.addEventListener("scroll", function () { if (root.classList.contains("kb")) window.scrollTo(0, 0); });
+  document.addEventListener("focusin", function () { setTimeout(sync, 50); setTimeout(sync, 350); });
+  document.addEventListener("focusout", function () { setTimeout(sync, 80); });
 })();
 </script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -66,6 +91,13 @@ img { max-width: 100%; }
 html.standalone, html.standalone body { height: var(--appH, 100%); }
 html.standalone .intro, html.standalone .gate, html.standalone .modal { bottom: auto; height: var(--appH, 100%); }
 html, body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+/* 키보드가 열렸을 때: 페이지는 고정, 앱만 키보드 위 공간으로 줄어듦. 하단 탭은 잠시 숨김 */
+html.kb, html.kb body { height: var(--appH); overflow: hidden; }
+html.kb .app { height: var(--appH); }
+html.kb .bottom { display: none; }
+html.kb .app { grid-template-rows: 1fr; }
+html.kb .dm-form { margin-bottom: 8px; }
+html.kb .modal { bottom: auto; height: var(--appH); }
 button, a, label { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 button:active { transform: scale(.94); transition: transform .08s; }
 .media { touch-action: manipulation; }
