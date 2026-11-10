@@ -242,6 +242,7 @@ html { touch-action: pan-x pan-y; }
 .prof-btns { display: flex; gap: 8px; }
 .btn { flex: 1; background: var(--raise); border-radius: calc(var(--r) * .6); padding: 7px 12px; font-weight: 600; font-size: 14px; text-align: center; }
 .btn-primary { background: var(--accent); color: var(--on-accent); }
+.sw:disabled { opacity: .35; cursor: not-allowed; }
 .grid-tabs { display: flex; justify-content: center; border-top: 1px solid var(--line); color: var(--ink); }
 .grid-tabs span { border-top: 1px solid var(--ink); margin-top: -1px; padding: 10px 24px; }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
@@ -2097,11 +2098,11 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   // ---------- theme (owner edits live, everyone sees it) ----------
   const PRESETS = {
-    amber: { label: "앰버", bg: "#F2A541", surface: "#F6B862", raise: "#F9CB86", ink: "#1F1408", muted: "#6A4515", line: "#D98B2B", scheme: "light" },
-    ink: { label: "먹색", bg: "#0B0A09", surface: "#161411", raise: "#201D19", ink: "#EFE9DD", muted: "#9A9183", line: "#2A2722", scheme: "dark" },
-    sea: { label: "깊은 바다", bg: "#06121A", surface: "#0D1D27", raise: "#152A37", ink: "#E6F0F5", muted: "#8DA5B3", line: "#1F3644", scheme: "dark" },
-    wood: { label: "밤 나무", bg: "#140F0B", surface: "#1F1812", raise: "#2B2119", ink: "#F2E8DA", muted: "#A8977F", line: "#3A2D22", scheme: "dark" },
-    paper: { label: "밝은 종이", bg: "#F4F1EA", surface: "#FFFFFF", raise: "#ECE7DD", ink: "#1C1A16", muted: "#6B6458", line: "#DDD6C8", scheme: "light" }
+    amber: { label: "앰버", bg: "#F2A541", surface: "#F6B862", raise: "#F9CB86", ink: "#1F1408", muted: "#6A4515", line: "#D98B2B", accent: "#13263D", scheme: "light" },
+    ink: { label: "먹색", bg: "#0B0A09", surface: "#161411", raise: "#201D19", ink: "#EFE9DD", muted: "#9A9183", line: "#2A2722", accent: "#F2C94C", scheme: "dark" },
+    sea: { label: "깊은 바다", bg: "#06121A", surface: "#0D1D27", raise: "#152A37", ink: "#E6F0F5", muted: "#8DA5B3", line: "#1F3644", accent: "#5B8FD0", scheme: "dark" },
+    wood: { label: "밤 나무", bg: "#140F0B", surface: "#1F1812", raise: "#2B2119", ink: "#F2E8DA", muted: "#A8977F", line: "#3A2D22", accent: "#F2C94C", scheme: "dark" },
+    paper: { label: "밝은 종이", bg: "#F4F1EA", surface: "#FFFFFF", raise: "#ECE7DD", ink: "#1C1A16", muted: "#6B6458", line: "#DDD6C8", accent: "#13263D", scheme: "light" }
   };
   const ACCENTS = ["#13263D", "#2F64B3", "#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
   const RATIOS = { auto: "원본", "1 / 1": "정사각형", "4 / 5": "세로 4:5" };
@@ -2120,11 +2121,13 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       stories: t.stories !== false
     };
   }
-  function onColor(hex) {
+  function lum(hex) {
     const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
     const L = (c) => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
-    return (0.2126 * L(r) + 0.7152 * L(g) + 0.0722 * L(b)) > 0.35 ? "#15130F" : "#FFFFFF";
+    return 0.2126 * L(r) + 0.7152 * L(g) + 0.0722 * L(b);
   }
+  function onColor(hex) { return lum(hex) > 0.35 ? "#15130F" : "#FFFFFF"; }
+  function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); }
   let theme = (() => { try { return cleanTheme(JSON.parse(store("chowol.theme") || "{}")); } catch { return cleanTheme({}); } })();
   function applyTheme(t) {
     const P = PRESETS[t.preset], s = document.documentElement.style;
@@ -2152,15 +2155,18 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       $("#thStatus").textContent = ok ? "저장했어요. 친구들 화면에도 적용됐어요." : "저장하지 못했어요. 다시 바꿔보세요.";
     }, 600);
   }
-  function chipRow(box, items, current, pick) {
-    $(box).replaceChildren(...items.map(([val, label, dot]) => h("button", { type: "button", class: dot && !label ? "sw" : "chip-btn", "aria-pressed": String(val === current), "aria-label": label || val, style: dot && !label ? "background:" + dot : null, onclick: () => pick(val) },
+  function chipRow(box, items, current, pick, isOff) {
+    $(box).replaceChildren(...items.map(([val, label, dot]) => h("button", { type: "button", class: dot && !label ? "sw" : "chip-btn", "aria-pressed": String(val === current), "aria-label": label || val, style: dot && !label ? "background:" + dot : null, disabled: !!(isOff && isOff(val)), title: isOff && isOff(val) ? "지금 배경에서 잘 안 보이는 색이에요" : null, onclick: () => pick(val) },
       dot && label ? h("span", { class: "preset-dot", style: "background:" + dot }) : null, label || null)));
   }
   function fillTheme() {
     if ($("#themeModal").hidden) return;
-    chipRow("#thPreset", Object.entries(PRESETS).map(([k, p]) => [k, p.label, p.bg]), theme.preset, (v) => setTheme({ preset: v }));
+    // 배경을 바꾸면 그 배경에 어울리는 포인트 색도 같이 바뀜
+    chipRow("#thPreset", Object.entries(PRESETS).map(([k, p]) => [k, p.label, p.bg]), theme.preset, (v) => setTheme({ preset: v, accent: PRESETS[v].accent }));
+    const bgNow = PRESETS[theme.preset].bg;
     const colorRow = (box, key) => {
-      chipRow(box, ACCENTS.map((c) => [c, "", c]), theme[key], (v) => setTheme({ [key]: v }));
+      // 포인트 색은 지금 배경과 대비가 3:1 미만이면 흐리게·선택 불가
+      chipRow(box, ACCENTS.map((c) => [c, "", c]), theme[key], (v) => setTheme({ [key]: v }), key === "accent" ? (c) => contrast(c, bgNow) < 3 : null);
       const inp = h("input", { type: "color", class: "color-in", "aria-label": "직접 고르기", value: theme[key] });
       inp.addEventListener("change", () => setTheme({ [key]: inp.value }));
       $(box).append(inp);
