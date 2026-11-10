@@ -140,7 +140,7 @@ body.no-stories .stories { display: none; }
 .p-head .grow { flex: 1; min-width: 0; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
 .media { position: relative; background: var(--surface); user-select: none; }
 .media img { display: block; width: 100%; max-height: 600px; object-fit: cover; aspect-ratio: var(--ratio); }
-.text-tile { aspect-ratio: 4 / 5; display: grid; place-items: center; padding: 36px 28px; background: radial-gradient(120% 90% at 30% 10%, #1D2B33 0%, #0E1215 60%, #0B0A09 100%); }
+.text-tile { aspect-ratio: 4 / 5; display: grid; place-items: center; padding: 36px 28px; background: var(--accent); color: var(--on-accent); }
 .text-tile p { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(20px, 6vw, 28px); line-height: 1.45; text-align: center; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; max-height: 100%; overflow: hidden; }
 .burst { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
 .burst svg { width: 96px; height: 96px; color: #fff; fill: currentColor; filter: drop-shadow(0 4px 18px rgba(0,0,0,.5)); animation: pop .9s ease forwards; }
@@ -247,7 +247,7 @@ html { touch-action: pan-x pan-y; }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
 .tile { aspect-ratio: 1; background: var(--surface); overflow: hidden; position: relative; display: block; width: 100%; }
 .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tile .tt { position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; font-family: var(--font-display); font-weight: 700; font-size: 13px; line-height: 1.35; text-align: center; background: radial-gradient(120% 90% at 30% 10%, #1D2B33 0%, #0E1215 70%); overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+.tile .tt { position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; font-family: var(--font-display); font-weight: 700; font-size: 13px; line-height: 1.35; text-align: center; background: var(--accent); color: var(--on-accent); overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
 
 /* sheets */
 .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, .7); display: grid; place-items: center; padding: 16px; z-index: 20; }
