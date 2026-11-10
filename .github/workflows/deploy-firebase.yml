@@ -4,6 +4,11 @@ on:
     branches: [main]
     paths: ["functions/**", "firestore.rules", "firebase.json", ".github/workflows/deploy-firebase.yml"]
   workflow_dispatch:
+    inputs:
+      reset:
+        description: "알림 기능을 지우고 새로 설치"
+        type: boolean
+        default: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -28,6 +33,12 @@ jobs:
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+      - name: 알림 기능 지우기 (새로 설치할 때만)
+        if: env.HAS_KEY == 'true' && inputs.reset
+        continue-on-error: true
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: npx --yes firebase-tools@13 functions:delete onPost onPostUpdate onComment onDm onChat onChatUpdate onNotice --region asia-northeast3 --project chowol-13c02 --force --non-interactive
       - name: Firebase에 배포
         if: env.HAS_KEY == 'true'
         env:
