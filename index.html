@@ -262,6 +262,9 @@ html { touch-action: pan-x pan-y; }
 .prof-name { font-weight: 600; }
 .prof-bio { white-space: pre-wrap; word-break: break-word; margin: 0; }
 .prof-btns { display: flex; gap: 8px; }
+.prof-btns .btn { height: 40px; background: var(--raise); border-radius: calc(var(--r) * .6); }
+.prof-btns .btn-primary { background: var(--accent); }
+.tap44 { min-width: 44px; min-height: 44px; display: grid; place-items: center; }
 .btn { flex: 1; background: var(--raise); border-radius: calc(var(--r) * .6); padding: 7px 12px; font-weight: 600; font-size: 14px; text-align: center; }
 .btn-primary { background: var(--accent); color: var(--on-accent); }
 .sw:disabled { opacity: .35; cursor: not-allowed; }
@@ -497,6 +500,7 @@ html { touch-action: pan-x pan-y; }
       <header class="topbar">
         <button class="icon-btn" type="button" id="profBack" aria-label="뒤로" hidden><span data-icon="back"></span></button>
         <div class="title" id="profTitle">프로필</div>
+        <button class="icon-btn tap44" type="button" id="profTheme" aria-label="앱 꾸미기" hidden><svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </header>
       <div class="scroll" id="profBody"></div>
     </section>
@@ -1504,7 +1508,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const likes = posts.reduce((n, p) => n + heartsOf(p.data()).length, 0);
     const m = S.members[id] || {};
     const btns = h("div", { class: "prof-btns" });
-    if (mine) btns.append(h("button", { type: "button", class: "btn", text: "프로필 편집", disabled: readOnly, onclick: openEdit }), h("button", { type: "button", class: "btn", text: "새 게시물", disabled: readOnly, onclick: openCreate }), ...(isOwner ? [h("button", { type: "button", class: "btn btn-primary", text: "앱 꾸미기", onclick: openTheme })] : []));
+    $("#profTheme").hidden = !(mine && isOwner); // 앱 꾸미기는 방장만, 상단바 톱니로
+    if (mine) btns.append(h("button", { type: "button", class: "btn prof-edit", text: "프로필 편집", disabled: readOnly, onclick: openEdit }));
     else if (id !== "guide") btns.append(h("button", { type: "button", class: "btn btn-primary", text: "메시지 보내기", onclick: () => openThread(id) }));
     const grid = h("div", { class: "grid" }, ...posts.map((p) => {
       const d = p.data();
@@ -2225,6 +2230,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   $("#thFs").addEventListener("input", (e) => { $("#thFsOut").textContent = e.target.value + "px"; setTheme({ fs: Number(e.target.value) }); });
   $("#thR").addEventListener("input", (e) => { $("#thROut").textContent = e.target.value + "px"; setTheme({ radius: Number(e.target.value) }); });
   $("#thName").addEventListener("input", (e) => setTheme({ name: e.target.value }));
+  $("#profTheme").addEventListener("click", () => openTheme());
   $("#themeReset").addEventListener("click", () => setTheme({ ...THEME_DEFAULT }));
 
   // ---------- intro: film, then waves ----------
