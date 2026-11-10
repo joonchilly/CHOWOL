@@ -171,15 +171,17 @@ body.no-stories .stories { display: none; }
 .empty { color: var(--muted); text-align: center; padding: 40px 20px; margin: 0; }
 
 /* DM */
-.inbox-h { padding: 14px 16px 6px; font-weight: 600; font-size: 15px; }
 .thread-row { display: flex; align-items: center; gap: 12px; padding: 9px 16px; width: 100%; text-align: left; }
+.thread-row:first-child { margin-top: 6px; }
 .thread-row:hover { background: var(--surface); }
 .thread-row .av { width: 54px; height: 54px; font-size: 19px; }
-.thread-row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.thread-row .t b { font-weight: 500; }
+.thread-row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.thread-row .t b { color: var(--ink); }
 .thread-row .t span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thread-row.unread .t b, .thread-row.unread .t span { font-weight: 600; color: var(--ink); }
-.unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.thread-row.unread .t span { color: var(--ink); }
+.thread-row .side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-height: 40px; }
+.thread-row .side time { font-size: 12px; color: var(--muted); }
+.badge { height: 20px; min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--on-accent); font-size: 12px; line-height: 20px; text-align: center; font-variant-numeric: tabular-nums; }
 .group-av { background: linear-gradient(135deg, var(--water), #1B3442); color: #fff; font-family: var(--font-display); font-weight: 800; }
 
 .msgs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; }
@@ -436,7 +438,7 @@ html { touch-action: pan-x pan-y; }
     <!-- DM -->
     <section class="screen" id="s-dm" style="flex:1" hidden>
       <div id="inboxView" class="screen" style="flex:1">
-        <header class="topbar"><div class="title" id="inboxTitle">메시지</div></header>
+        <header class="topbar"><div class="title" id="inboxTitle" style="font-size:20px">메시지</div></header>
         <div class="scroll" id="inbox"></div>
       </div>
       <div id="threadView" class="screen" style="flex:1" hidden>
@@ -1232,7 +1234,6 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   function renderInbox() {
     $("#inboxView").hidden = false; $("#threadView").hidden = true;
-    $("#inboxTitle").textContent = myId ? nameOf(myId) : "메시지";
     const box = $("#inbox");
     if (loadingOr(box, "chat", "메시지")) return;
     const rows = [GROUP, ...friends()].map((t) => { const ms = threadMsgs(t); const last = ms[ms.length - 1]; return { t, last, unread: unreadIn(t) }; });
@@ -1241,10 +1242,11 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       const name = t === GROUP ? "초월 단체방" : nameOf(t);
       let preview = last ? ((last.author === myId ? "나: " : (t === GROUP ? nameOf(last.author) + ": " : "")) + msgPreview(last)) : (t === GROUP ? "모두에게 말 걸어보세요" : "메시지를 보내보세요");
       return h("button", { type: "button", class: "thread-row" + (unread ? " unread" : ""), onclick: () => openThread(t) },
-        avatar(t), h("div", { class: "t" }, h("b", { text: name }), h("span", { text: preview + (last ? " · " + ago(last.ts) : "") })),
-        unread ? h("span", { class: "unread-dot", "aria-label": "안 읽은 메시지 " + unread + "개" }) : null);
+        avatar(t), h("div", { class: "t" }, h("b", { text: name }), h("span", { text: preview })),
+        h("div", { class: "side" }, last ? h("time", { text: ago(last.ts) }) : null,
+          unread ? h("span", { class: "badge", "aria-label": "안 읽은 메시지 " + unread + "개", text: unread > 99 ? "99+" : String(unread) }) : null));
     });
-    box.replaceChildren(h("div", { class: "inbox-h", text: "메시지" }), ...list,
+    box.replaceChildren(...list,
       ...(friends().length ? [] : [h("p", { class: "empty", text: "친구들이 들어와서 이름을 정하면 여기에 1:1 대화가 생겨요." })]));
   }
   let lastThreadRendered = null;
