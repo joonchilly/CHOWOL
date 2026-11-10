@@ -438,7 +438,7 @@ window.claude = { use: (n) => window.__ready.then((api) => (api && api[n]) || nu
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -452,7 +452,8 @@ const firebaseConfig = {
 const OWNER_EMAIL = "moonredcok@gmail.com";
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// 한 번 로그인하면 이 기기에 계속 기억 (앱을 껐다 켜도 유지)
+const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence], popupRedirectResolver: browserPopupRedirectResolver });
 const fs = getFirestore(app);
 const $g = (s) => document.querySelector(s);
 
