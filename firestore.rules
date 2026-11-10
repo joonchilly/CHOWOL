@@ -34,6 +34,8 @@ service cloud.firestore {
     // 사우나 기록(랭킹용)과 애프터 사우나 맛집
     match /sauna/{id} { allow read, write: if allowed(); }
     match /eats/{id} { allow read, write: if allowed(); }
+    // 러닝 거리(크루 누적용)
+    match /runs/{id} { allow read, write: if allowed(); }
     // 단체방 공지
     match /notices/{id} { allow read, write: if allowed(); }
     // 채팅 사진·동영상 (조각으로 나눠 저장)

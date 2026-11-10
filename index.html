@@ -350,6 +350,31 @@ html { touch-action: pan-x pan-y; }
 .stepper { display: flex; align-items: center; gap: 12px; }
 .stepper button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 22px; }
 .stepper output { min-width: 60px; text-align: center; color: var(--ink); }
+
+/* 러닝 */
+.crew-now { color: var(--ink); font-size: 17px; }
+.crew-bar { height: 12px; border-radius: 999px; background: var(--raise); overflow: hidden; border: 1px solid var(--line); }
+.crew-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--logo), var(--accent)); border-radius: 999px; }
+.crew-next { color: var(--muted); font-size: 14px; }
+.crew-month { color: var(--logo); font-size: 14px; }
+.media { container-type: inline-size; }
+.stk { position: absolute; transform: translate(-50%, -50%) rotate(var(--r, 0deg)); background: #FFFDF7; color: #1F1408; border: 0.7cqw solid var(--c); border-radius: 3cqw; padding: 1.2cqw 2.2cqw; font-size: 3.3cqw; max-width: 44cqw; box-shadow: 0 0.8cqw 1.6cqw rgba(0,0,0,.35); display: flex; gap: 1.2cqw; align-items: center; line-height: 1.15; text-align: left; z-index: 2; cursor: pointer; }
+.stk .e { font-size: 5.4cqw; flex: none; }
+.stk .who { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 1cqw); white-space: nowrap; background: rgba(0,0,0,.8); color: #fff; font-size: 3cqw; padding: 0.8cqw 2cqw; border-radius: 999px; display: flex; gap: 2cqw; }
+.stk .who button { color: #F2C94C; }
+.stk-box { position: absolute; right: 2.6cqw; bottom: 2.6cqw; z-index: 3; width: 11cqw; height: 11cqw; max-width: 46px; max-height: 46px; border-radius: 50%; background: rgba(0,0,0,.55); font-size: min(5.4cqw, 24px); display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.stk-tray { position: fixed; left: 8px; right: 8px; max-width: 464px; margin: 0 auto; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 26; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; box-shadow: 0 -6px 24px rgba(0,0,0,.35); transition: opacity .15s; }
+.stk-tray.dragging { opacity: .25; }
+.stk-tray-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.stk-tray-h b { color: var(--ink); }
+.stk-tray-h span { flex: 1; color: var(--muted); font-size: 12px; }
+.stk-tray-h button { color: var(--logo); }
+.stk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.stk-pick { container-type: inline-size; touch-action: none; user-select: none; -webkit-user-select: none; display: grid; place-items: center; min-height: 64px; border-radius: 12px; background: var(--raise); position: relative; cursor: grab; }
+.stk-pick .stk { position: static; transform: rotate(-3deg); font-size: 9cqw; max-width: 94cqw; border-width: 1.6cqw; padding: 3cqw 5cqw; border-radius: 7cqw; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.stk-pick .stk .e { font-size: 13cqw; }
+.stk.ghost { position: fixed; z-index: 60; pointer-events: none; font-size: 15px; max-width: 200px; border-width: 3px; padding: 6px 10px; border-radius: 14px; transform: translate(-50%, -50%) rotate(-6deg) scale(1.05); }
+.stk.ghost .e { font-size: 22px; }
 /* sign-in gate */
 .gate { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px; text-align: center; }
 .gate svg { width: min(34vw, 150px); aspect-ratio: 420 / 533; }
@@ -433,6 +458,11 @@ html { touch-action: pan-x pan-y; }
           <div class="seg" role="tablist"><button type="button" data-seg="feed" aria-selected="true">인증 기록</button><button type="button" data-seg="map" aria-selected="false">맛집 지도</button></div>
           <div id="saunaFeed"></div>
           <div id="eatWrap" hidden style="display:flex;flex-direction:column;gap:10px"><div id="eatMap"></div><div id="eatList"></div></div>
+        </div>
+        <div class="log-wrap" id="logRun" hidden>
+          <div class="rank" id="runCrew"></div>
+          <button type="button" class="btn btn-primary" id="runNew" style="padding:12px;font-size:16px">🏃 러닝 인증하기</button>
+          <div id="runFeed"></div>
         </div>
         <p class="empty" id="logSoon" hidden></p>
       </div>
@@ -530,6 +560,22 @@ html { touch-action: pan-x pan-y; }
     </div>
   </form>
 </div>
+<!-- run upload -->
+<div class="modal" id="runModal" hidden role="dialog" aria-modal="true" aria-labelledby="runTitle">
+  <form class="sheet" id="runForm">
+    <div class="sheet-h"><button type="button" class="cancel" data-close="runModal">취소</button><div class="title" id="runTitle">러닝 인증</div><button type="submit" class="act" id="rnPost">올리기</button></div>
+    <div class="sheet-b">
+      <canvas id="runCv" class="stamp-cv" width="1080" height="1350" role="img" aria-label="러닝 인증 미리보기" style="touch-action:none"></canvas>
+      <small style="color:var(--muted)">사진을 손가락으로 끌면 보이는 위치를 옮길 수 있어요.</small>
+      <label class="btn" for="rnPhoto" style="flex:none">🖼️ 러닝 앱 캡처 불러오기<input type="file" id="rnPhoto" accept="image/*" hidden></label>
+      <div class="st-row"><div class="chips" id="rnRatio"></div><div class="chips" id="rnFit"></div></div>
+      <div class="field"><label for="rnCond">오늘의 컨디션</label><input id="rnCond" maxlength="40" placeholder="예: 역풍 불어서 1분 손해 봄" autocomplete="off"></div>
+      <div class="chips" id="rnEx"></div>
+      <div class="field"><label for="rnKm">달린 거리 km (크루 누적 거리에 쌓여요)</label><input id="rnKm" type="number" inputmode="decimal" step="0.01" min="0" placeholder="예: 5.2"></div>
+    </div>
+  </form>
+</div>
+
 <!-- after-sauna food -->
 <div class="modal" id="eatModal" hidden role="dialog" aria-modal="true" aria-labelledby="eatTitle">
   <form class="sheet" id="eatForm">
@@ -886,6 +932,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       mine.add(p.id);
       const hm = (d.reactions && d.reactions.heart) || {};
       for (const [u, v] of Object.entries(hm)) if (u !== myId && typeof v === "number" && v > 0) out.push({ k: "l" + p.id + u, ts: v, who: u, text: "님이 내 게시물에 💪를 보냈어요", sub: d.text, go: () => openPost(p.id) });
+      for (const [sid, v] of Object.entries(d.stickers || {})) if (v && v.by && v.by !== myId && STICKERS[v.s]) out.push({ k: "s" + p.id + sid, ts: v.t || 0, who: v.by, text: "님이 내 러닝에 스티커를 붙였어요 " + STICKERS[v.s][0], sub: STICKERS[v.s][1], go: () => openPost(p.id) });
     });
     S.comments.forEach((c) => { const d = c.data(); if (d.author === myId) { const t = myCommentAt.get(d.postId); if (!t || d.ts < t) myCommentAt.set(d.postId, d.ts); } });
     S.comments.forEach((c) => {
@@ -1049,13 +1096,14 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
             ui.menu = null; ui.confirmDel = null;
             const ok = await write(() => db.doc("posts/" + p.id).delete());
             if (ok && d.sauna) write(() => db.doc("sauna/" + p.id).delete());
+            if (ok && d.run) write(() => db.doc("runs/" + p.id).delete());
             if (ok && ui.openPost === p.id) closeModal("postModal");
           } }),
           h("button", { type: "button", class: "linkish", text: "취소", onclick: () => { ui.menu = null; ui.confirmDel = null; renderAll(); } })));
       } else head.append(h("button", { type: "button", class: "icon-btn", "aria-label": "더보기", onclick: () => { ui.menu = key; ui.confirmDel = null; renderAll(); } }, icon("more")));
     }
 
-    const media = h("div", { class: "media" });
+    const media = h("div", { class: "media" }); media.dataset.pid = p.id;
     const src = d.image ? "/_blob/" + d.image : (typeof d.imageData === "string" && d.imageData.startsWith("data:image/") ? d.imageData : null);
     if (src) media.append(keptImg((detail ? "d:" : "f:") + p.id, src, nameOf(d.author) + "님의 사진"));
     else media.append(h("div", { class: "text-tile" }, h("p", { text: d.text || "" })));
@@ -1064,6 +1112,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       const b = h("div", { class: "burst" }, h("span", { class: "emo-big", text: "💪" })); media.append(b); setTimeout(() => b.remove(), 950);
       if (!liked) setLike(p.id, true);
     };
+    if (d.run) stickerLayer(p, d, media);
     media.addEventListener("dblclick", (e) => { if (!media._touch) flex(); });
     if (src) media.addEventListener("click", () => {
       if (media._tapT) { clearTimeout(media._tapT); media._tapT = null; return; }
@@ -1516,8 +1565,9 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
 
   function renderLog() {
     document.querySelectorAll(".log-tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.kind === logUi.kind)));
-    $("#logSauna").hidden = logUi.kind !== "sauna"; $("#logSoon").hidden = logUi.kind === "sauna";
-    if (logUi.kind !== "sauna") { $("#logSoon").textContent = (logUi.kind === "run" ? "🏃 러닝" : "💪 운동") + " 기록은 곧 열려요!"; return; }
+    $("#logSauna").hidden = logUi.kind !== "sauna"; $("#logRun").hidden = logUi.kind !== "run"; $("#logSoon").hidden = logUi.kind !== "gym";
+    if (logUi.kind === "run") { renderRunCrew(); renderRunFeed(); return; }
+    if (logUi.kind === "gym") { $("#logSoon").textContent = "💪 운동 기록은 곧 열려요!"; return; }
     renderRank();
     document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.seg === logUi.seg)));
     $("#saunaFeed").hidden = logUi.seg !== "feed"; $("#eatWrap").hidden = logUi.seg !== "map";
@@ -1767,11 +1817,235 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
     btn.disabled = false;
   });
 
+  // ---------- 기록: 러닝 ----------
+  S.runs = [];
+  const MILESTONES = [[0, "여수 출발"], [30, "순천 도착! 꼬막 정식 먹고 가자"], [100, "광주 돌파!"], [250, "대전 성심당 빵 털러 옴"], [400, "서울 입성 완료!"]];
+  const kmFmt = (n) => (Math.round(n * 10) / 10).toLocaleString("ko-KR");
+  function renderRunCrew() {
+    const total = S.runs.reduce((a, r) => a + (Number(r.data().km) || 0), 0);
+    const ms = monthStart(); let mine = 0, monthAll = 0;
+    S.runs.forEach((r) => { const d = r.data(); if (d.ts >= ms) { monthAll += Number(d.km) || 0; if (d.author === myId) mine += Number(d.km) || 0; } });
+    let cur = MILESTONES[0], next = null;
+    for (const m of MILESTONES) { if (total >= m[0]) cur = m; else { next = m; break; } }
+    const pct = next ? Math.min(100, ((total - cur[0]) / (next[0] - cur[0])) * 100) : 100;
+    $("#runCrew").replaceChildren(
+      h("div", { class: "rank-h" }, h("b", { text: "🚌 초월 크루 누적 " + kmFmt(total) + "km" })),
+      h("div", { class: "crew-now", text: "📍 " + cur[1] }),
+      h("div", { class: "crew-bar" }, h("span", { style: "width:" + pct.toFixed(1) + "%" })),
+      h("div", { class: "crew-next", text: next ? "다음: " + next[1].split("!")[0].split(" ")[0] + "까지 " + kmFmt(next[0] - total) + "km" : "목표 완주! 다음 여정을 정해봐요" }),
+      h("div", { class: "crew-month", text: "이번 달 크루 " + kmFmt(monthAll) + "km · 나 " + kmFmt(mine) + "km" }));
+  }
+  function renderRunFeed() {
+    const list = S.posts.filter((p) => p.data().run);
+    if (!list.length) { $("#runFeed").replaceChildren(h("p", { class: "empty", text: "아직 러닝 인증이 없어요. 러닝 앱 캡처를 올려 첫 인증을 해보세요!" })); return; }
+    $("#runFeed").replaceChildren(h("div", { class: "s-grid" }, ...list.map((p) => {
+      const d = p.data(), src = d.imageData, n = Object.keys(d.stickers || {}).length;
+      return h("button", { type: "button", class: "s-card", onclick: () => openPost(p.id) },
+        src ? keptImg("r:" + p.id, src, "") : h("div", { class: "s-ph", text: "🏃" }),
+        h("div", { class: "s-meta" }, h("b", { text: (d.run.km ? kmFmt(d.run.km) + "km" : "러닝") + (n ? " · 스티커 " + n : "") }),
+          d.run.cond ? h("span", { text: d.run.cond }) : null, h("small", { text: nameOf(d.author) + " · " + ago(d.ts) })));
+    })));
+  }
+
+  // ----- run upload: crop + retro stamp + condition tape -----
+  const rv = { img: null, ratio: "4/5", fit: "cover", ox: 0.5, oy: 0.5, cond: "" };
+  const COND_EX = ["어제 회식 여파로 간 기능 저하", "역풍 불어서 1분 손해 봄", "러닝 뛰고 사우나 할 생각에 더 잘 뛰어짐", "초월적인 마인드로 오버페이스 이겨냄"];
+  function fillRun() {
+    chipRowT("#rnRatio", [["4/5", "4:5"], ["1/1", "1:1"]], rv.ratio, (v) => { rv.ratio = v; fillRun(); drawRun(); });
+    chipRowT("#rnFit", [["cover", "꽉 채우기"], ["contain", "전체 보이기"]], rv.fit, (v) => { rv.fit = v; fillRun(); drawRun(); });
+    $("#rnEx").replaceChildren(...COND_EX.map((t) => h("button", { type: "button", class: "chip-btn", text: t, onclick: () => { $("#rnCond").value = t; rv.cond = t; drawRun(); } })));
+  }
+  function openRun() {
+    if (readOnly || !myId) return;
+    Object.assign(rv, { img: null, ratio: "4/5", fit: "cover", ox: 0.5, oy: 0.5, cond: "" });
+    $("#runForm").reset(); $("#runModal").hidden = false; fillRun(); drawRun();
+  }
+  $("#runNew").addEventListener("click", openRun);
+  $("#rnPhoto").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    try { rv.img = await loadBitmap(f); rv.ox = 0.5; rv.oy = rv.img.height > rv.img.width * 1.4 ? 0.3 : 0.5; drawRun(); } catch { notice("사진을 열지 못했어요."); }
+  });
+  $("#rnCond").addEventListener("input", (e) => { rv.cond = e.target.value; drawRun(); });
+  // drag the picture to choose what part stays in the frame
+  (() => {
+    const cv = $("#runCv"); let st = null;
+    cv.addEventListener("pointerdown", (e) => { if (!rv.img || rv.fit !== "cover") return; cv.setPointerCapture(e.pointerId); st = { x: e.clientX, y: e.clientY, ox: rv.ox, oy: rv.oy }; });
+    cv.addEventListener("pointermove", (e) => {
+      if (!st) return;
+      const r = cv.getBoundingClientRect(), W = cv.width, H = cv.height, s = Math.max(W / rv.img.width, H / rv.img.height);
+      const spanX = rv.img.width * s - W, spanY = rv.img.height * s - H, k = W / r.width;
+      if (spanX > 0) rv.ox = Math.min(1, Math.max(0, st.ox - (e.clientX - st.x) * k / spanX));
+      if (spanY > 0) rv.oy = Math.min(1, Math.max(0, st.oy - (e.clientY - st.y) * k / spanY));
+      drawRun();
+    });
+    const end = () => { st = null; }; cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+  })();
+  function wrapLines(ctx, text, max) {
+    const out = []; let line = "";
+    for (const ch of text) { if (ctx.measureText(line + ch).width > max && line) { out.push(line); line = ch; } else line += ch; }
+    if (line) out.push(line); return out.slice(0, 2);
+  }
+  let runTok = 0;
+  async function drawRun() {
+    const tok = ++runTok;
+    try { await document.fonts.load('60px "Do Hyeon"'); } catch {}
+    if (tok !== runTok) return;
+    const cv = $("#runCv"), W = 1080, H = rv.ratio === "1/1" ? 1080 : 1350;
+    if (cv.height !== H) { cv.width = W; cv.height = H; }
+    cv.style.aspectRatio = rv.ratio === "1/1" ? "1 / 1" : "4 / 5";
+    const ctx = cv.getContext("2d"), FF = '"Do Hyeon", "Apple SD Gothic Neo", sans-serif';
+    ctx.clearRect(0, 0, W, H);
+    if (rv.img) {
+      const iw = rv.img.width, ih = rv.img.height;
+      if (rv.fit === "cover") {
+        const s = Math.max(W / iw, H / ih);
+        ctx.drawImage(rv.img, (W - iw * s) * rv.ox, (H - ih * s) * rv.oy, iw * s, ih * s);
+      } else {
+        const sb = Math.max(W / iw, H / ih);
+        ctx.save(); ctx.filter = "blur(40px) brightness(.55)"; ctx.drawImage(rv.img, (W - iw * sb) / 2, (H - ih * sb) / 2, iw * sb, ih * sb); ctx.restore();
+        const s = Math.min(W / iw, H / ih) * 0.94;
+        ctx.drawImage(rv.img, (W - iw * s) / 2, (H - ih * s) / 2, iw * s, ih * s);
+      }
+    } else {
+      const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#2A1C10"); g.addColorStop(1, "#0B0A09");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.font = "54px " + FF; ctx.textAlign = "center";
+      ctx.fillText("러닝 앱 캡처를 불러와 주세요", W / 2, H / 2); ctx.textAlign = "left";
+    }
+    // condition tape
+    const cond = rv.cond.trim();
+    if (cond) {
+      ctx.font = "50px " + FF;
+      const lines = wrapLines(ctx, "오늘의 컨디션 : " + cond, W - 280);
+      const tw = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 90, th = 30 + lines.length * 62;
+      ctx.save(); ctx.translate(60, H - 250 - (lines.length - 1) * 62); ctx.rotate(-0.035);
+      ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      for (let x = 0; x <= tw; x += 22) ctx.lineTo(x, (x / 22) % 2 ? 5 : 0);
+      ctx.lineTo(tw, 0); for (let y = 0; y <= th; y += 14) ctx.lineTo(tw + ((y / 14) % 2 ? 9 : 0), y);
+      for (let x = tw; x >= 0; x -= 22) ctx.lineTo(x, th - ((x / 22) % 2 ? 5 : 0));
+      for (let y = th; y >= 0; y -= 14) ctx.lineTo(((y / 14) % 2 ? -9 : 0), y);
+      ctx.closePath(); ctx.fillStyle = "rgba(250,238,196,.93)"; ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.globalAlpha = .18; ctx.fillStyle = "#E3B04B"; for (let x = -th; x < tw; x += 34) { ctx.beginPath(); ctx.moveTo(x, th); ctx.lineTo(x + 14, th); ctx.lineTo(x + 14 + th, 0); ctx.lineTo(x + th, 0); ctx.closePath(); ctx.fill(); }
+      ctx.globalAlpha = 1; ctx.fillStyle = "#2A2118"; ctx.font = "50px " + FF;
+      lines.forEach((l, i) => ctx.fillText(l, 44, 64 + i * 62));
+      ctx.restore();
+    }
+    // retro [초월] stamp
+    const d = new Date(), date = d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
+    ctx.save(); ctx.translate(W - 185, H - 135); ctx.rotate(-0.16);
+    const ink = "rgba(214,64,40,.9)";
+    ctx.strokeStyle = ink; ctx.lineWidth = 9; rr(ctx, -150, -88, 300, 176, 22); ctx.stroke();
+    ctx.lineWidth = 3; rr(ctx, -136, -74, 272, 148, 14); ctx.stroke();
+    ctx.fillStyle = ink; ctx.textAlign = "center"; ctx.font = "92px " + FF; ctx.fillText("초월", 0, 16);
+    ctx.font = "26px " + FF; ctx.fillText("CHOWOL RUN CLUB", 0, 52); ctx.font = "22px " + FF; ctx.fillText(date, 0, -46);
+    ctx.globalCompositeOperation = "destination-out";
+    for (let i = 0; i < 260; i++) { ctx.globalAlpha = Math.random() * .6; ctx.beginPath(); ctx.arc(Math.random() * 300 - 150, Math.random() * 176 - 88, Math.random() * 3.2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore();
+    ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; ctx.textAlign = "left";
+  }
+  $("#runForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); if (!myId) return;
+    if (!rv.img) { notice("러닝 앱 캡처를 먼저 불러와 주세요."); return; }
+    const km = parseFloat($("#rnKm").value);
+    const btn = $("#rnPost"); btn.disabled = true; btn.textContent = "올리는 중";
+    try {
+      await drawRun();
+      const cv = $("#runCv"); let q = 0.86, imageData = "";
+      for (let i = 0; i < 5; i++) { imageData = cv.toDataURL("image/jpeg", q); if (imageData.length < 600000) break; q -= 0.1; }
+      const ts = Date.now(), cond = rv.cond.trim();
+      const run = { km: km > 0 && km < 500 ? Math.round(km * 100) / 100 : null, cond };
+      const text = "🏃 " + (run.km ? kmFmt(run.km) + "km" : "러닝 완료") + (cond ? "\n오늘의 컨디션: " + cond : "");
+      const ref = db.collection("posts").doc();
+      let ok = await write(() => ref.set({ author: myId, text, imageData, ts, reactions: {}, run, stickers: {} }));
+      if (ok) ok = await write(() => db.doc("runs/" + ref.id).set({ author: myId, km: run.km || 0, ts }));
+      if (ok) { closeModal("runModal"); renderAll(); notice("러닝 인증 완료! 홈 피드에도 올라갔어요 🏃"); }
+    } catch { notice("올리지 못했어요. 잠시 후 다시 시도해 주세요."); }
+    btn.disabled = false; btn.textContent = "올리기";
+  });
+
+  // ----- stickers on run posts (drag & drop) -----
+  const STICKERS = {
+    door: ["🚪", "현관문 문턱이 에베레스트", "#7BC8A4"],
+    turtle: ["🐢", "소파에 누운 나보다 100배 빠름", "#5B8FD0"],
+    beer: ["🍺", "어제 마신 알콜, 땀으로 승화 중", "#F2A541"],
+    shoe: ["👟", "폼은 이미 킵초게", "#B58CF0"],
+    fire: ["🔥", "내일의 근육통을 환영해!", "#ED4956"],
+    clap: ["👏", "꺾였는데도 하는 마음", "#F2C94C"]
+  };
+  function stickerEl(key) {
+    const s = STICKERS[key] || ["⭐", "", "#F2C94C"];
+    return h("div", { class: "stk", style: "--c:" + s[2] }, h("span", { class: "e", text: s[0] }), s[1] ? h("span", { class: "t", text: s[1] }) : null);
+  }
+  function stickerLayer(p, d, media) {
+    const list = Object.entries(d.stickers || {}).filter(([, v]) => v && STICKERS[v.s]).sort((a, b) => (a[1].t || 0) - (b[1].t || 0));
+    list.forEach(([id, v]) => {
+      const el = stickerEl(v.s); el.style.left = v.x + "%"; el.style.top = v.y + "%"; el.style.setProperty("--r", (v.r || 0) + "deg");
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const mineS = v.by === myId || isOwner;
+        if (el.querySelector(".who")) { el.querySelector(".who").remove(); return; }
+        const who = h("span", { class: "who" }, nameOf(v.by) + "님", mineS ? h("button", { type: "button", text: "떼기", onclick: (ev) => { ev.stopPropagation(); write(() => db.doc("posts/" + p.id).update({ stickers: { [id]: null } })); } }) : null);
+        el.append(who);
+      });
+      media.append(el);
+    });
+    if (readOnly || !myId) return;
+    const box = h("button", { type: "button", class: "stk-box", "aria-label": "스탬프함 열기", text: "🧰" });
+    box.addEventListener("click", (e) => { e.stopPropagation(); openTray(p.id); });
+    media.append(box);
+  }
+  let tray = null;
+  function closeTray() { if (tray) { tray.remove(); tray = null; } }
+  function openTray(postId) {
+    closeTray();
+    tray = h("div", { class: "stk-tray", role: "dialog", "aria-label": "스탬프함" },
+      h("div", { class: "stk-tray-h" }, h("b", { text: "🧰 스탬프함" }), h("span", { text: "사진 위로 끌어다 놓기 · 누르면 가운데에" }), h("button", { type: "button", text: "닫기", onclick: closeTray })));
+    const grid = h("div", { class: "stk-grid" });
+    Object.keys(STICKERS).forEach((key) => {
+      const item = h("div", { class: "stk-pick", tabindex: "0", role: "button", "aria-label": STICKERS[key][1] }, stickerEl(key));
+      item.addEventListener("pointerdown", (e) => startDrag(e, key, postId, item));
+      item.addEventListener("keydown", (e) => { if (e.key === "Enter") placeSticker(postId, key, 50 + (Math.random() * 20 - 10), 45 + (Math.random() * 20 - 10)); });
+      grid.append(item);
+    });
+    tray.append(grid); document.body.append(tray);
+  }
+  function findMedia(x, y, postId) { return document.elementsFromPoint(x, y).find((el) => el.classList && el.classList.contains("media") && el.dataset.pid === postId); }
+  function startDrag(e, key, postId, item) {
+    e.preventDefault(); item.setPointerCapture(e.pointerId);
+    const sx = e.clientX, sy = e.clientY; let ghost = null, moved = false;
+    const move = (ev) => {
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 8) return;
+      if (!moved) { moved = true; ghost = stickerEl(key); ghost.classList.add("ghost"); document.body.append(ghost); tray.classList.add("dragging"); }
+      ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
+    };
+    const up = (ev) => {
+      item.removeEventListener("pointermove", move); item.removeEventListener("pointerup", up); item.removeEventListener("pointercancel", up);
+      if (ghost) ghost.remove(); if (tray) tray.classList.remove("dragging");
+      if (!moved) { placeSticker(postId, key, 50 + (Math.random() * 24 - 12), 45 + (Math.random() * 24 - 12)); return; }
+      const m = findMedia(ev.clientX, ev.clientY, postId);
+      if (!m) return;
+      const r = m.getBoundingClientRect();
+      placeSticker(postId, key, ((ev.clientX - r.left) / r.width) * 100, ((ev.clientY - r.top) / r.height) * 100);
+    };
+    item.addEventListener("pointermove", move); item.addEventListener("pointerup", up); item.addEventListener("pointercancel", up);
+  }
+  function placeSticker(postId, key, x, y) {
+    if (!myId) return;
+    const id = myId.slice(0, 6) + Date.now().toString(36);
+    const v = { s: key, x: Math.round(Math.min(96, Math.max(4, x)) * 10) / 10, y: Math.round(Math.min(96, Math.max(4, y)) * 10) / 10, r: Math.round(Math.random() * 24 - 12), by: myId, t: Date.now() };
+    write(() => db.doc("posts/" + postId).update({ stickers: { [id]: v } }));
+    closeTray();
+    try { navigator.vibrate && navigator.vibrate(15); } catch {}
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTray(); });
+
   // ---------- navigation ----------
   const SCREENS = ["home", "log", "dm", "profile"];
   function show(s) {
     if (!SCREENS.includes(s)) s = "home";
-    ui.screen = s; ui.menu = null;
+    ui.screen = s; ui.menu = null; closeTray();
     SCREENS.forEach((x) => { $("#s-" + x).hidden = x !== s; });
     renderAll();
   }
@@ -1931,6 +2205,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
     listen("comments", db.collection("comments").orderBy("ts", "desc").limit(800), (s) => { S.comments = s.docs; });
     listen("chat", db.collection("chat").orderBy("ts", "desc").limit(300), (s) => { S.chat = s.docs; });
     listen("sauna", db.collection("sauna").where("ts", ">=", monthStart()).limit(500), (s) => { S.sauna = s.docs; });
+    listen("runs", db.collection("runs").limit(3000), (s) => { S.runs = s.docs; });
     listen("eats", db.collection("eats").orderBy("ts", "desc").limit(300), (s) => { S.eats = s.docs; });
     listen("notices", db.collection("notices").orderBy("ts", "desc").limit(20), (s) => { S.notices = s.docs; if (!$("#noticeModal").hidden) renderNoticeList(); });
     if (myId) listen("dm", db.collection("dm").where("members", "array-contains", myId).limit(500), (s) => { S.dm = s.docs; });
