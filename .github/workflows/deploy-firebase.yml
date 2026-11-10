@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: env.HAS_KEY == 'true'
         with:
-          node-version: 20
+          node-version: 22
       - name: 알림 기능 준비
         if: env.HAS_KEY == 'true'
         working-directory: functions
