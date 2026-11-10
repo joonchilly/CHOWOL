@@ -2174,8 +2174,9 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const L = (c) => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
     return 0.2126 * L(r) + 0.7152 * L(g) + 0.0722 * L(b);
   }
-  function onColor(hex) { return lum(hex) > 0.35 ? "#15130F" : "#FFFFFF"; }
   function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); }
+  // 포인트 색 위 글자: 흰색/검정 중 대비가 더 높은 쪽
+  function onColor(hex) { return contrast(hex, "#FFFFFF") >= contrast(hex, "#15130F") ? "#FFFFFF" : "#15130F"; }
   let theme = (() => { try { return cleanTheme(JSON.parse(store("chowol.theme") || "{}")); } catch { return cleanTheme({}); } })();
   function applyTheme(t) {
     const P = PRESETS[t.preset], s = document.documentElement.style;
