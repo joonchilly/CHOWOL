@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0B0A09">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -32,14 +32,14 @@
 <style>
 /* Layout: a phone-width photo-sharing app — top bar, scrolling screen, bottom tab bar (홈 · 만들기 · 메시지 · 프로필). One dark world from the intro film: lamp-black ground, paper text, subtitle-gold accent, red only for a given heart. */
 :root {
-  --bg: #0B0A09;
-  --surface: #161411;
-  --raise: #201D19;
-  --ink: #EFE9DD;
-  --muted: #9A9183;
-  --line: #2A2722;
-  --accent: #F2C94C;
-  --on-accent: #15130F;
+  --bg: #F2A541;
+  --surface: #F6B862;
+  --raise: #F9CB86;
+  --ink: #1F1408;
+  --muted: #6A4515;
+  --line: #D98B2B;
+  --accent: #13263D;
+  --on-accent: #FFFFFF;
   --heart: #ED4956;
   --water: #3E86A8;
   --logo: #5B8FD0;
@@ -51,7 +51,7 @@
   --danger: #E57A62;
   --font-display: "Do Hyeon", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-body: "Do Hyeon", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -100,7 +100,8 @@ svg.i.filled { fill: currentColor; }
 .logo { flex: 1; display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: .14em; color: var(--accent); line-height: 1; }
 .logo-mark { width: 30px; height: 38px; flex: none; }
 .logo span { color: var(--logo); }
-.logo-mark path, .splash-logo path { fill: var(--logo); }
+.logo-mark path { fill: var(--logo); }
+.splash-logo path { fill: #5B8FD0; }
 body.no-stories .stories { display: none; }
 .icon-btn { position: relative; padding: 4px; border-radius: 8px; }
 .dot { position: absolute; top: 0; right: -2px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--heart); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; padding: 0 5px; border: 2px solid var(--bg); font-variant-numeric: tabular-nums; }
@@ -218,7 +219,12 @@ body.no-stories .stories { display: none; }
 .nt-item { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .nt-item p { margin: 0; white-space: pre-wrap; word-break: break-word; color: var(--ink); }
 .nt-item small { color: var(--muted); display: flex; gap: 10px; align-items: center; }
-.lightbox { position: fixed; inset: 0; z-index: 45; background: rgba(0,0,0,.92); display: grid; place-items: center; padding: 12px; }
+html { touch-action: pan-x pan-y; }
+.lightbox { position: fixed; inset: 0; z-index: 45; background: rgba(0,0,0,.95); display: grid; place-items: center; overflow: hidden; touch-action: none; }
+.lightbox img { max-width: 100%; max-height: 100%; transform-origin: 0 0; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.lb-close { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; font-size: 20px; z-index: 2; }
+.lb-hint { position: absolute; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; color: rgba(255,255,255,.6); font-size: 13px; pointer-events: none; }
+.media img { cursor: zoom-in; }
 .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .dm-form textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; outline: none; height: 34px; max-height: 110px; padding: 6px 0; line-height: 1.5; }
 .dm-form button { color: var(--accent); font-weight: 600; padding: 6px 10px; }
@@ -279,7 +285,7 @@ body.no-stories .stories { display: none; }
 .splash { position: absolute; inset: 0; display: grid; place-items: center; background: #0B0A09; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
 .splash-logo { width: min(38vw, 180px); aspect-ratio: 420 / 533; opacity: 0; transform: translateY(-40px) scale(.86); }
 .splash-logo svg { width: 100%; height: 100%; display: block; }
-.ripple { position: absolute; left: 50%; top: calc(50% + min(19vw, 90px) * 1.27 + 10px); width: min(44vw, 210px); height: min(9vw, 42px); margin-left: calc(min(44vw, 210px) / -2); border: 2px solid var(--logo); border-radius: 50%; opacity: 0; transform: scale(.2); }
+.ripple { position: absolute; left: 50%; top: calc(50% + min(19vw, 90px) * 1.27 + 10px); width: min(44vw, 210px); height: min(9vw, 42px); margin-left: calc(min(44vw, 210px) / -2); border: 2px solid #5B8FD0; border-radius: 50%; opacity: 0; transform: scale(.2); }
 .intro.splashing video { opacity: 0; }
 .intro.splashing .splash { opacity: 1; }
 .intro.splashing .splash-logo { animation: dropIn .6s cubic-bezier(.3,1.4,.5,1) .1s forwards; }
@@ -294,8 +300,8 @@ body.no-stories .stories { display: none; }
 .tap-word { font-family: var(--font-display); font-weight: 800; font-size: clamp(48px, 14vw, 96px); letter-spacing: .3em; padding-left: .3em; color: var(--accent); }
 .tap-logo { width: min(36vw, 170px); aspect-ratio: 420 / 533; }
 .tap-logo svg { width: 100%; height: 100%; display: block; }
-.tap-logo path { fill: var(--logo); }
-.tap-hint { font-family: "Do Hyeon", sans-serif; font-size: 20px; color: var(--logo); letter-spacing: .06em; animation: breathe 2.4s ease-in-out infinite; }
+.tap-logo path { fill: #5B8FD0; }
+.tap-hint { font-family: "Do Hyeon", sans-serif; font-size: 20px; color: #5B8FD0; letter-spacing: .06em; animation: breathe 2.4s ease-in-out infinite; }
 @keyframes breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 
 
@@ -561,7 +567,7 @@ body.no-stories .stories { display: none; }
     </div>
   </form>
 </div>
-<div class="lightbox" id="lightbox" hidden><img id="lightImg" alt="크게 보기"></div>
+<div class="lightbox" id="lightbox" hidden><button type="button" class="lb-close" id="lbClose" aria-label="닫기">✕</button><img id="lightImg" alt="크게 보기"><div class="lb-hint">두 손가락으로 확대 · 두 번 탭하면 2.5배</div></div>
 
 <!-- activity -->
 <div class="modal" id="actModal" hidden role="dialog" aria-modal="true" aria-labelledby="actTitle">
@@ -1059,6 +1065,10 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       if (!liked) setLike(p.id, true);
     };
     media.addEventListener("dblclick", (e) => { if (!media._touch) flex(); });
+    if (src) media.addEventListener("click", () => {
+      if (media._tapT) { clearTimeout(media._tapT); media._tapT = null; return; }
+      media._tapT = setTimeout(() => { media._tapT = null; openViewer(src); }, 330);
+    });
     let lastTap = 0;
     media.addEventListener("pointerup", (e) => {
       if (e.pointerType === "mouse") return;
@@ -1182,7 +1192,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       box.append(ph);
       if (window.__media) window.__media.url(d.media).then((u) => {
         const img = h("img", { alt: "사진", style: d.w && d.h ? "aspect-ratio:" + d.w + " / " + d.h : null }); img.src = u;
-        img.addEventListener("click", () => { $("#lightImg").src = u; $("#lightbox").hidden = false; });
+        img.addEventListener("click", () => openViewer(u));
         ph.replaceWith(img);
       }).catch(() => { ph.textContent = "사진을 불러올 수 없어요."; });
       return box;
@@ -1231,7 +1241,58 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       h("small", {}, nameOf(d.author) + " · " + ago(d.ts), canDelete(d.author) ? h("button", { type: "button", class: "del", text: "내리기", onclick: () => write(() => db.doc("notices/" + n.id).delete()) }) : null)); }));
   }
   $("#noticeBar").addEventListener("click", () => { $("#noticeModal").hidden = false; renderNoticeList(); });
-  $("#lightbox").addEventListener("click", () => { $("#lightbox").hidden = true; });
+  // ----- zoomable photo viewer (only photos zoom, not the page) -----
+  const lb = { s: 1, x: 0, y: 0, pts: new Map(), start: null, lastTap: 0, moved: false };
+  function lbApply() { $("#lightImg").style.transform = "translate(" + lb.x + "px," + lb.y + "px) scale(" + lb.s + ")"; }
+  function lbBase() { const r = $("#lightImg").getBoundingClientRect(); return { left: r.left - lb.x, top: r.top - lb.y }; }
+  function openViewer(src) { const img = $("#lightImg"); img.src = src; Object.assign(lb, { s: 1, x: 0, y: 0 }); lb.pts.clear(); lbApply(); $("#lightbox").hidden = false; }
+  window.__openViewer = openViewer;
+  function lbClose() { $("#lightbox").hidden = true; $("#lightImg").removeAttribute("src"); }
+  $("#lbClose").addEventListener("click", lbClose);
+  function zoomAt(cx, cy, ns) {
+    ns = Math.min(6, Math.max(1, ns));
+    const b = lbBase(), px = (cx - b.left - lb.x) / lb.s, py = (cy - b.top - lb.y) / lb.s;
+    lb.x = cx - b.left - px * ns; lb.y = cy - b.top - py * ns; lb.s = ns;
+    if (ns === 1) { lb.x = 0; lb.y = 0; }
+    lbApply();
+  }
+  const lbEl = $("#lightbox");
+  lbEl.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".lb-close")) return;
+    lbEl.setPointerCapture(e.pointerId); lb.pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); lb.moved = false;
+    if (lb.pts.size === 2) { const [a, c] = [...lb.pts.values()]; lb.start = { d: Math.hypot(a.x - c.x, a.y - c.y), s: lb.s, mx: (a.x + c.x) / 2, my: (a.y + c.y) / 2, x: lb.x, y: lb.y }; }
+    else lb.start = { px: e.clientX, py: e.clientY, x: lb.x, y: lb.y };
+  });
+  lbEl.addEventListener("pointermove", (e) => {
+    if (!lb.pts.has(e.pointerId)) return;
+    lb.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (lb.pts.size === 2 && lb.start && lb.start.d) {
+      const [a, c] = [...lb.pts.values()], d = Math.hypot(a.x - c.x, a.y - c.y);
+      lb.moved = true; zoomAt(lb.start.mx, lb.start.my, lb.start.s * d / lb.start.d);
+    } else if (lb.pts.size === 1 && lb.start && lb.start.px != null) {
+      const dx = e.clientX - lb.start.px, dy = e.clientY - lb.start.py;
+      if (Math.abs(dx) + Math.abs(dy) > 6) lb.moved = true;
+      if (lb.s > 1) { lb.x = lb.start.x + dx; lb.y = lb.start.y + dy; lbApply(); }
+    }
+  });
+  function lbUp(e) {
+    if (!lb.pts.has(e.pointerId)) return;
+    lb.pts.delete(e.pointerId);
+    if (lb.pts.size === 1) { const [a] = [...lb.pts.values()]; lb.start = { px: a.x, py: a.y, x: lb.x, y: lb.y }; return; }
+    if (lb.pts.size) return;
+    if (!lb.moved) {
+      const n = Date.now();
+      if (n - lb.lastTap < 300) { lb.lastTap = 0; zoomAt(e.clientX, e.clientY, lb.s > 1 ? 1 : 2.5); }
+      else { lb.lastTap = n; const s0 = lb.s; setTimeout(() => { if (lb.lastTap === n && s0 === 1 && lb.s === 1 && !e.target.closest("img")) lbClose(); }, 320); }
+    }
+    if (lb.s <= 1.02) zoomAt(0, 0, 1);
+  }
+  lbEl.addEventListener("pointerup", lbUp); lbEl.addEventListener("pointercancel", lbUp);
+  // stop the whole page from zooming (iPhone ignores the viewport setting)
+  document.addEventListener("gesturestart", (e) => e.preventDefault());
+  document.addEventListener("touchmove", (e) => { if (e.touches.length > 1 && !e.target.closest("#lightbox")) e.preventDefault(); }, { passive: false });
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => { const n = Date.now(); if (n - lastTouchEnd < 300 && !e.target.closest("#lightbox, .media")) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
   const attachMenu = $("#attachMenu");
   $("#dmAttach").addEventListener("click", () => { attachMenu.hidden = !attachMenu.hidden; $("#dmAttach").setAttribute("aria-expanded", String(!attachMenu.hidden)); });
   $("#amMedia").addEventListener("click", () => { attachMenu.hidden = true; $("#dmFile").click(); });
@@ -1725,14 +1786,15 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
 
   // ---------- theme (owner edits live, everyone sees it) ----------
   const PRESETS = {
+    amber: { label: "앰버", bg: "#F2A541", surface: "#F6B862", raise: "#F9CB86", ink: "#1F1408", muted: "#6A4515", line: "#D98B2B", scheme: "light" },
     ink: { label: "먹색", bg: "#0B0A09", surface: "#161411", raise: "#201D19", ink: "#EFE9DD", muted: "#9A9183", line: "#2A2722", scheme: "dark" },
     sea: { label: "깊은 바다", bg: "#06121A", surface: "#0D1D27", raise: "#152A37", ink: "#E6F0F5", muted: "#8DA5B3", line: "#1F3644", scheme: "dark" },
     wood: { label: "밤 나무", bg: "#140F0B", surface: "#1F1812", raise: "#2B2119", ink: "#F2E8DA", muted: "#A8977F", line: "#3A2D22", scheme: "dark" },
     paper: { label: "밝은 종이", bg: "#F4F1EA", surface: "#FFFFFF", raise: "#ECE7DD", ink: "#1C1A16", muted: "#6B6458", line: "#DDD6C8", scheme: "light" }
   };
-  const ACCENTS = ["#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
+  const ACCENTS = ["#13263D", "#2F64B3", "#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
   const RATIOS = { auto: "원본", "1 / 1": "정사각형", "4 / 5": "세로 4:5" };
-  const THEME_DEFAULT = { preset: "ink", accent: "#F2C94C", logo: "#5B8FD0", bubble: "accent", fs: 16, radius: 14, ratio: "auto", name: "초월", stories: true };
+  const THEME_DEFAULT = { preset: "amber", accent: "#13263D", logo: "#2F64B3", bubble: "accent", fs: 16, radius: 14, ratio: "auto", name: "초월", stories: true };
   const HEX = /^#[0-9a-fA-F]{6}$/;
   function cleanTheme(t) {
     t = t || {}; const d = THEME_DEFAULT; const num = (v, lo, hi, df) => (typeof v === "number" && isFinite(v)) ? Math.min(hi, Math.max(lo, Math.round(v))) : df;
