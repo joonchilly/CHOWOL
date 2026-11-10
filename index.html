@@ -806,7 +806,7 @@ onAuthStateChanged(auth, async (u) => {
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 // 앱을 꺼도 오는 휴대폰 알림 (Firebase Cloud Messaging)
-const VAPID_KEY = "VAPID_KEY_HERE";
+const VAPID_KEY = "BNQza9sLw4Xp0XIA4_MsIZ9etRyiGic_69Nb-x0v3-SS2bB0xYiZtzeb8SxoCRjE7iR_rOkmT4Pb16qv2CPa9zs";
 window.__push = {
   ready: () => VAPID_KEY.length > 40,
   async enable(ask) {
