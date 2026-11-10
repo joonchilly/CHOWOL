@@ -93,7 +93,7 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 svg.i { width: 26px; height: 26px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 svg.i.filled { fill: currentColor; }
 
-.app { height: 100%; height: var(--appH, 100dvh); max-width: 480px; margin: 0 auto; display: grid; grid-template-rows: 1fr auto; border-left: 1px solid var(--line); border-right: 1px solid var(--line); background: var(--bg); }
+.app { height: 100%; height: var(--appH, 100dvh); max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; border-left: 1px solid var(--line); border-right: 1px solid var(--line); background: var(--bg); }
 .screen { min-height: 0; display: flex; flex-direction: column; }
 .topbar { display: flex; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 10px calc(16px + env(safe-area-inset-left, 0px)); min-height: 54px; border-bottom: 1px solid var(--line); }
 .topbar .title { flex: 1; min-width: 0; font-weight: 600; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
