@@ -599,7 +599,18 @@ async function login() {
     if (e && e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") msg.textContent = "로그인하지 못했어요. 다시 눌러 주세요. (" + (e.code || "") + ")";
   }
 }
-btn.addEventListener("click", login);
+// 카톡·인스타 같은 앱 안의 브라우저에서는 구글이 로그인을 막는다 → 바깥 브라우저로 보낸다
+const UA = navigator.userAgent || "";
+const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER\(inapp|DaumApps|everytimeApp/i.test(UA);
+if (inApp) {
+  if (/KAKAOTALK/i.test(UA)) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); }
+  msg.textContent = "지금은 앱 안의 브라우저라서 구글 로그인이 막혀 있어요. 오른쪽 위나 아래의 ⋯ 메뉴에서 '다른 브라우저로 열기'(사파리·크롬)를 눌러 주세요.";
+  btn.textContent = "사파리·크롬으로 열기";
+  btn.addEventListener("click", () => {
+    if (/KAKAOTALK/i.test(UA)) location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+    else if (/android/i.test(UA)) location.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end";
+  });
+} else btn.addEventListener("click", login);
 out.addEventListener("click", async () => { await signOut(auth); login(); });
 window.__signOut = async () => { await signOut(auth); location.reload(); };
 getRedirectResult(auth).catch(() => {});
