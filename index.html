@@ -1225,7 +1225,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
         unread ? h("span", { class: "unread-dot", "aria-label": "안 읽은 메시지 " + unread + "개" }) : null);
     });
     box.replaceChildren(h("div", { class: "inbox-h", text: "메시지" }), ...list,
-      friends().length ? null : h("p", { class: "empty", text: "친구들이 들어와서 이름을 정하면 여기에 1:1 대화가 생겨요." }));
+      ...(friends().length ? [] : [h("p", { class: "empty", text: "친구들이 들어와서 이름을 정하면 여기에 1:1 대화가 생겨요." })]));
   }
   let lastThreadRendered = null;
   function renderThread() {
@@ -1477,7 +1477,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const likes = posts.reduce((n, p) => n + heartsOf(p.data()).length, 0);
     const m = S.members[id] || {};
     const btns = h("div", { class: "prof-btns" });
-    if (mine) btns.append(h("button", { type: "button", class: "btn", text: "프로필 편집", disabled: readOnly, onclick: openEdit }), h("button", { type: "button", class: "btn", text: "새 게시물", disabled: readOnly, onclick: openCreate }), isOwner ? h("button", { type: "button", class: "btn btn-primary", text: "앱 꾸미기", onclick: openTheme }) : null);
+    if (mine) btns.append(h("button", { type: "button", class: "btn", text: "프로필 편집", disabled: readOnly, onclick: openEdit }), h("button", { type: "button", class: "btn", text: "새 게시물", disabled: readOnly, onclick: openCreate }), ...(isOwner ? [h("button", { type: "button", class: "btn btn-primary", text: "앱 꾸미기", onclick: openTheme })] : []));
     else if (id !== "guide") btns.append(h("button", { type: "button", class: "btn btn-primary", text: "메시지 보내기", onclick: () => openThread(id) }));
     const grid = h("div", { class: "grid" }, ...posts.map((p) => {
       const d = p.data();
