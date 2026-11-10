@@ -195,8 +195,8 @@ body.no-stories .stories { display: none; }
 .msg.mine .bubble { background: var(--bubble); color: var(--on-bubble); }
 .msg time { font-size: 10px; color: var(--muted); padding: 0 8px; align-self: flex-end; }
 .msg.mine time { text-align: right; }
-.dm-form { display: flex; align-items: center; gap: 8px; margin: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border: 1px solid var(--line); border-radius: 24px; padding: 4px 6px 4px 16px; background: var(--surface); }
-.attach { color: var(--accent); font-size: 26px; line-height: 1; padding: 0 4px 2px !important; }
+.dm-form { display: flex; align-items: flex-end; gap: 0; min-height: 48px; margin: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border: 1px solid var(--line); border-radius: 24px; padding: 1px 2px; background: var(--surface); }
+.attach { color: var(--accent); }
 .attach-menu { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 12px 0; }
 .attach-menu button { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 15px; }
 .media-bub { border-radius: calc(var(--r) * 1.2); overflow: hidden; width: min(240px, 62vw); background: var(--raise); border: 1px solid var(--line); }
@@ -230,7 +230,13 @@ html { touch-action: pan-x pan-y; }
 .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
 #dmAttach, #dmSend, #threadBack { min-width: 44px; min-height: 44px; display: grid; place-items: center; }
 .dm-form textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; outline: none; height: 34px; max-height: 110px; padding: 6px 0; line-height: 1.5; }
-.dm-form button { color: var(--accent); font-weight: 600; padding: 6px 10px; }
+.dm-form button { padding: 0; }
+.dm-form textarea { align-self: center; }
+.send-ic { width: 32px; height: 32px; display: block; }
+.send-ic circle { fill: var(--accent); }
+.send-ic path { fill: none; stroke: var(--on-accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#dmSend { opacity: 1; transition: opacity 120ms ease-out; }
+#dmSend:disabled { opacity: .3; }
 
 /* profile */
 .prof { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -436,10 +442,10 @@ html { touch-action: pan-x pan-y; }
         </div>
         <input type="file" id="dmFile" accept="image/*,video/*" hidden>
         <form class="dm-form" id="dmForm">
-          <button type="button" class="attach" id="dmAttach" aria-label="사진·동영상·투표·공지 보내기" aria-expanded="false">+</button>
+          <button type="button" class="attach" id="dmAttach" aria-label="사진·동영상·투표·공지 보내기" aria-expanded="false"><svg class="i" viewBox="0 0 28 28" style="width:28px;height:28px" aria-hidden="true"><circle cx="14" cy="14" r="12.6"/><path d="M14 9v10M9 14h10"/></svg></button>
           <label for="dmInput" hidden>메시지</label>
           <textarea id="dmInput" rows="1" placeholder="메시지 보내기…" maxlength="1000"></textarea>
-          <button type="submit" id="dmSend">보내기</button>
+          <button type="submit" id="dmSend" aria-label="보내기" disabled><svg class="send-ic" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16"/><path d="M16 23V10M10.5 15.5 16 10l5.5 5.5"/></svg></button>
         </form>
       </div>
     </section>
@@ -1425,17 +1431,17 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   $("#dmFile").addEventListener("change", async (e) => {
     const f = e.target.files && e.target.files[0]; e.target.value = "";
     if (!f || !myId || !ui.thread || !window.__media) return;
-    const sendBtn = $("#dmSend"), label = sendBtn.textContent;
-    const busy = (txt) => { sendBtn.disabled = true; sendBtn.textContent = txt; };
+    const sendBtn = $("#dmSend"), inp = $("#dmInput"), label = inp.placeholder;
+    const busy = (txt) => { sendBtn.disabled = true; inp.placeholder = txt; };
     try {
       if (f.type.startsWith("video/")) {
         if (f.size > 25 * 1048576) { notice("동영상은 25MB까지 보낼 수 있어요. 짧게 잘라서 보내 주세요."); return; }
-        busy("올리는 중 0%");
-        const id = await window.__media.put(f, (p) => { sendBtn.textContent = "올리는 중 " + Math.round(p * 100) + "%"; });
+        busy("동영상 올리는 중 0%");
+        const id = await window.__media.put(f, (p) => { inp.placeholder = "동영상 올리는 중 " + Math.round(p * 100) + "%"; });
         vidReady.add(id);
         await sendChat({ kind: "video", media: id, size: f.size });
       } else {
-        busy("올리는 중…");
+        busy("사진 올리는 중…");
         const bmp = await loadBitmap(f);
         const c = toCanvas(bmp, 1600);
         const blob = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.82));
@@ -1443,14 +1449,16 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
         await sendChat({ kind: "image", media: id, w: c.width, h: c.height });
       }
     } catch { notice("보내지 못했어요. 잠시 후 다시 시도해 주세요."); }
-    finally { sendBtn.disabled = false; sendBtn.textContent = label; }
+    finally { inp.placeholder = label; syncSend(); }
   });
 
   function openThread(t) { ui.thread = t; lastThreadRendered = null; go("dm", true); setTimeout(() => $("#dmInput").focus(), 50); }
   $("#threadBack").addEventListener("click", () => { ui.thread = null; renderAll(); });
   $("#threadWho").addEventListener("click", () => { if (ui.thread && ui.thread !== GROUP) openProfile(ui.thread); });
   const dmInput = $("#dmInput");
-  const sizeDm = () => { dmInput.style.height = "34px"; dmInput.style.height = Math.min(110, dmInput.scrollHeight) + "px"; };
+  // 빈 칸이면 보내기 버튼 비활성
+  function syncSend() { $("#dmSend").disabled = !dmInput.value.trim(); }
+  const sizeDm = () => { dmInput.style.height = "34px"; dmInput.style.height = Math.min(110, dmInput.scrollHeight) + "px"; syncSend(); };
   dmInput.addEventListener("input", sizeDm);
   dmInput.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#dmForm").requestSubmit(); } });
   $("#dmForm").addEventListener("submit", async (e) => {
