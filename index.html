@@ -652,6 +652,7 @@ window.claude = { use: (n) => window.__ready.then((api) => (api && api[n]) || nu
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getMessaging, getToken, isSupported as pushSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 import { getFirestore, Bytes, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -803,6 +804,29 @@ onAuthStateChanged(auth, async (u) => {
 });
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+// 앱을 꺼도 오는 휴대폰 알림 (Firebase Cloud Messaging)
+const VAPID_KEY = "VAPID_KEY_HERE";
+window.__push = {
+  ready: () => VAPID_KEY.length > 40,
+  async enable(ask) {
+    if (!window.__push.ready()) return "notready";
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !(await pushSupported().catch(() => false))) return "unsupported";
+    let perm = Notification.permission;
+    if (perm === "default" && ask) perm = await Notification.requestPermission();
+    if (perm !== "granted") return perm === "denied" ? "denied" : "off";
+    const u = auth.currentUser; if (!u) return "off";
+    const reg = await navigator.serviceWorker.register("sw.js");
+    await navigator.serviceWorker.ready;
+    const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if (!token) return "off";
+    await setDoc(doc(fs, "pushTokens", token), { uid: u.uid, ts: Date.now(), ua: navigator.userAgent.slice(0, 160) });
+    try { localStorage.setItem("chowol.push", "1"); } catch {}
+    return "on";
+  }
+};
+// 이미 허용한 기기는 열 때마다 조용히 주소를 새로 고침
+window.__ready.then(() => { if ("Notification" in window && Notification.permission === "granted") window.__push.enable(false).catch(() => {}); });
 </script>
 
 <script>
@@ -980,7 +1004,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   }
   function sysNotify(i) {
     try {
-      if (!document.hidden || !("Notification" in window) || Notification.permission !== "granted") return;
+      if (!document.hidden || !("Notification" in window) || Notification.permission !== "granted" || localStorage.getItem("chowol.push") === "1") return;
       const n = new Notification("초월", { body: nameOf(i.who) + i.text + (i.sub ? "\n" + i.sub : ""), tag: i.k });
       n.onclick = () => { try { window.focus(); } catch {} i.go(); n.close(); };
     } catch {}
@@ -999,14 +1023,26 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   }
   function openActivity() { $("#actModal").hidden = false; renderActivity(); const it = listed(); if (it.length) store("chowol.actSeen", String(it[0].ts)); renderNav(); }
   $("#homeAct").addEventListener("click", openActivity);
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const PUSH_MSG = {
+    on: "알림이 켜졌어요 🔔 초월앱을 꺼도 친구 활동이 휴대폰 알림으로 와요. 끄고 싶으면 휴대폰 설정 → 알림 → 초월에서 끄면 돼요.",
+    denied: "알림이 막혀 있어요. 휴대폰 설정 → 알림 → 초월(또는 브라우저)에서 알림을 허용한 뒤 다시 눌러주세요.",
+    off: "알림을 허용하지 않았어요. 다시 누르고 '허용'을 눌러주세요.",
+    notready: "휴대폰 알림은 곧 열려요. 준비되면 이 버튼으로 켤 수 있어요.",
+    unsupported: isIOS && !standalone ? "아이폰은 홈 화면에 추가한 초월앱 아이콘으로 열어야 알림을 켤 수 있어요." : "이 브라우저에서는 휴대폰 알림을 켤 수 없어요. 크롬이나 홈 화면 초월앱에서 열어주세요."
+  };
+  function pushLabel() {
+    const on = (() => { try { return localStorage.getItem("chowol.push") === "1"; } catch { return false; } })() && "Notification" in window && Notification.permission === "granted";
+    $("#pushBtn").textContent = on ? "🔔 휴대폰 알림 켜짐 (다시 연결하기)" : "🔔 휴대폰 알림 켜기";
+    if (on) $("#pushNote").textContent = "초월앱을 꺼도 알림이 와요. 끄고 싶으면 휴대폰 설정 → 알림 → 초월에서 끄면 돼요.";
+  }
+  pushLabel();
   $("#pushBtn").addEventListener("click", async () => {
-    const note = $("#pushNote");
-    try {
-      if (!("Notification" in window)) throw 0;
-      const r = await Notification.requestPermission();
-      if (r !== "granted") throw 0;
-      note.textContent = "켜졌어요. 초월앱이 열려 있는 동안 다른 탭이나 앱을 보고 있어도 알림이 와요.";
-    } catch { note.textContent = "이 화면에서는 휴대폰 알림을 켤 수 없어요. 초월앱을 열어두면 새 활동이 화면 위에 바로 떠요."; }
+    const note = $("#pushNote"); note.textContent = "연결하는 중…";
+    let r = "unsupported";
+    try { r = window.__push ? await window.__push.enable(true) : "unsupported"; } catch (e) { console.warn(e); r = "unsupported"; }
+    note.textContent = PUSH_MSG[r] || PUSH_MSG.unsupported; if (r === "on") pushLabel();
   });
 
   // keep already-loaded photos between renders so the page does not jump

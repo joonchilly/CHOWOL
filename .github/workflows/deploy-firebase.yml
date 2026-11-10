@@ -1,0 +1,35 @@
+name: Firebase 배포 (푸시 알림 기능 + 보안 규칙)
+on:
+  push:
+    branches: [main]
+    paths: ["functions/**", "firestore.rules", "firebase.json", ".github/workflows/deploy-firebase.yml"]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+    steps:
+      - name: 열쇠 확인
+        if: env.HAS_KEY != 'true'
+        run: echo "FIREBASE_SERVICE_ACCOUNT 열쇠가 아직 등록되지 않아서 배포를 건너뛰어요."
+      - uses: actions/checkout@v4
+        if: env.HAS_KEY == 'true'
+      - uses: actions/setup-node@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          node-version: 20
+      - name: 알림 기능 준비
+        if: env.HAS_KEY == 'true'
+        working-directory: functions
+        run: npm install --no-audit --no-fund
+      - name: Firebase 열쇠 준비
+        if: env.HAS_KEY == 'true'
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+      - name: Firebase에 배포
+        if: env.HAS_KEY == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: npx --yes firebase-tools@13 deploy --only functions,firestore:rules --project chowol-13c02 --non-interactive --force
