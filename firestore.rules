@@ -31,5 +31,10 @@ service cloud.firestore {
     match /posts/{id} { allow read, write: if allowed(); }
     match /comments/{id} { allow read, write: if allowed(); }
     match /chat/{id} { allow read, write: if allowed(); }
+    // 단체방 공지
+    match /notices/{id} { allow read, write: if allowed(); }
+    // 채팅 사진·동영상 (조각으로 나눠 저장)
+    match /media/{id} { allow read, write: if allowed(); }
+    match /media/{id}/c/{part} { allow read, write: if allowed(); }
   }
 }

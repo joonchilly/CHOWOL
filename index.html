@@ -193,6 +193,33 @@ body.no-stories .stories { display: none; }
 .msg time { font-size: 10px; color: var(--muted); padding: 0 8px; align-self: flex-end; }
 .msg.mine time { text-align: right; }
 .dm-form { display: flex; align-items: center; gap: 8px; margin: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border: 1px solid var(--line); border-radius: 24px; padding: 4px 6px 4px 16px; background: var(--surface); }
+.attach { color: var(--accent); font-size: 26px; line-height: 1; padding: 0 4px 2px !important; }
+.attach-menu { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 12px 0; }
+.attach-menu button { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 15px; }
+.media-bub { border-radius: calc(var(--r) * 1.2); overflow: hidden; width: min(240px, 62vw); background: var(--raise); border: 1px solid var(--line); }
+.media-bub img, .media-bub video { display: block; width: 100%; height: auto; }
+.media-bub .ph { display: grid; place-items: center; color: var(--muted); font-size: 14px; padding: 12px; text-align: center; }
+.media-bub .vid-btn { width: 100%; aspect-ratio: 4 / 3; display: grid; place-items: center; gap: 6px; color: var(--ink); background: linear-gradient(160deg, var(--raise), var(--bg)); }
+.media-bub .vid-btn b { font-size: 34px; color: var(--logo); }
+.poll-bub { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; width: min(270px, 72vw); display: flex; flex-direction: column; gap: 8px; }
+.poll-bub .tag { color: var(--logo); font-size: 13px; }
+.poll-bub .q { font-size: 17px; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+.pb-opt { position: relative; overflow: hidden; display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 9px 12px; border-radius: calc(var(--r) * .6); border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.pb-opt .bar { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--logo) 28%, transparent); transition: width .3s; }
+.pb-opt > span { position: relative; }
+.pb-opt .lb { flex: 1; min-width: 0; word-break: break-word; }
+.pb-opt .ct { color: var(--muted); font-variant-numeric: tabular-nums; }
+.pb-opt.on { border-color: var(--logo); }
+.pb-opt.on .lb::before { content: "✓ "; color: var(--logo); }
+.poll-bub small { color: var(--muted); font-size: 13px; }
+.notice-bar { display: flex; gap: 10px; align-items: center; margin: 8px 12px 0; padding: 10px 12px; background: var(--raise); border: 1px solid var(--line); border-radius: var(--r); text-align: left; color: var(--ink); }
+.notice-bar b { color: var(--logo); flex: none; }
+.notice-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nt-item { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.nt-item p { margin: 0; white-space: pre-wrap; word-break: break-word; color: var(--ink); }
+.nt-item small { color: var(--muted); display: flex; gap: 10px; align-items: center; }
+.lightbox { position: fixed; inset: 0; z-index: 45; background: rgba(0,0,0,.92); display: grid; place-items: center; padding: 12px; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .dm-form textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; outline: none; height: 34px; max-height: 110px; padding: 6px 0; line-height: 1.5; }
 .dm-form button { color: var(--accent); font-weight: 600; padding: 6px 10px; }
 
@@ -320,8 +347,16 @@ body.no-stories .stories { display: none; }
           <button class="icon-btn" type="button" id="threadBack" aria-label="메시지 목록으로"><span data-icon="back"></span></button>
           <button type="button" id="threadWho" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left"></button>
         </header>
+        <button type="button" class="notice-bar" id="noticeBar" hidden></button>
         <div class="msgs" id="msgs" aria-live="polite"></div>
+        <div class="attach-menu" id="attachMenu" hidden>
+          <button type="button" id="amMedia">🖼️ 사진·동영상</button>
+          <button type="button" id="amPoll">📊 투표</button>
+          <button type="button" id="amNotice">📢 공지</button>
+        </div>
+        <input type="file" id="dmFile" accept="image/*,video/*" hidden>
         <form class="dm-form" id="dmForm">
+          <button type="button" class="attach" id="dmAttach" aria-label="사진·동영상·투표·공지 보내기" aria-expanded="false">+</button>
           <label for="dmInput" hidden>메시지</label>
           <textarea id="dmInput" rows="1" placeholder="메시지 보내기…" maxlength="1000"></textarea>
           <button type="submit" id="dmSend">보내기</button>
@@ -404,6 +439,29 @@ body.no-stories .stories { display: none; }
   </div>
 </div>
 
+<!-- chat poll -->
+<div class="modal" id="pollModal" hidden role="dialog" aria-modal="true" aria-labelledby="pollTitle">
+  <form class="sheet" id="pollForm">
+    <div class="sheet-h"><button type="button" class="cancel" data-close="pollModal">취소</button><div class="title" id="pollTitle">투표 만들기</div><button type="submit" class="act">올리기</button></div>
+    <div class="sheet-b">
+      <div class="field"><label for="pollQ">질문</label><input id="pollQ" maxlength="120" placeholder="예: 이번 주 모임 언제가 좋아?" required></div>
+      <div id="pollOpts" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button type="button" class="btn" id="pollAdd" style="flex:none">항목 추가</button>
+    </div>
+  </form>
+</div>
+<!-- chat notices -->
+<div class="modal" id="noticeModal" hidden role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+  <form class="sheet" id="noticeForm">
+    <div class="sheet-h"><button type="button" class="cancel" data-close="noticeModal">닫기</button><div class="title" id="noticeTitle">공지</div><button type="submit" class="act" id="noticeSave">등록</button></div>
+    <div class="sheet-b">
+      <div class="field"><label for="noticeText">새 공지 (단체방 맨 위에 고정돼요)</label><textarea id="noticeText" rows="3" maxlength="500" placeholder="예: 12월 20일 저녁 7시 송년회!"></textarea></div>
+      <div id="noticeList"></div>
+    </div>
+  </form>
+</div>
+<div class="lightbox" id="lightbox" hidden><img id="lightImg" alt="크게 보기"></div>
+
 <!-- activity -->
 <div class="modal" id="actModal" hidden role="dialog" aria-modal="true" aria-labelledby="actTitle">
   <div class="sheet">
@@ -439,7 +497,7 @@ window.claude = { use: (n) => window.__ready.then((api) => (api && api[n]) || nu
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, Bytes, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyABcv9Uhfu1u1RBIXvdFQGWTRy7J3IJ5UY",
@@ -499,6 +557,36 @@ class Q {
   add(data) { return guard(addDoc(collection(fs, this.path), data)).then((r) => D(r.path)); }
 }
 const dbApi = { doc: (p) => D(p), collection: (p) => new Q(p) };
+
+// 사진·동영상: Firestore 문서 하나는 1MB까지라서 900KB 조각으로 나눠 저장하고, 볼 때 다시 합친다
+const mediaCache = new Map();
+const chunkPath = (id, i) => "media/" + id + "/c/" + String(i).padStart(4, "0");
+window.__media = {
+  async put(blob, onProg) {
+    const id = doc(collection(fs, "media")).id;
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    const CH = 900 * 1024, n = Math.max(1, Math.ceil(buf.length / CH));
+    for (let i = 0; i < n; i++) {
+      await setDoc(doc(fs, chunkPath(id, i)), { d: Bytes.fromUint8Array(buf.subarray(i * CH, (i + 1) * CH)) });
+      if (onProg) onProg((i + 1) / n);
+    }
+    await setDoc(doc(fs, "media/" + id), { type: blob.type || "application/octet-stream", size: buf.length, n, ts: Date.now() });
+    return id;
+  },
+  url(id) {
+    if (mediaCache.has(id)) return mediaCache.get(id);
+    const p = (async () => {
+      const m = await getDoc(doc(fs, "media/" + id));
+      if (!m.exists()) throw new Error("missing");
+      const meta = m.data();
+      const parts = await Promise.all(Array.from({ length: meta.n }, (_, i) => getDoc(doc(fs, chunkPath(id, i))).then((c) => c.data().d.toUint8Array())));
+      return URL.createObjectURL(new Blob(parts, { type: meta.type }));
+    })();
+    p.catch(() => mediaCache.delete(id));
+    mediaCache.set(id, p);
+    return p;
+  }
+};
 
 const gate = $g("#gate"), msg = $g("#gateMsg"), btn = $g("#gateBtn"), out = $g("#gateOut");
 let started = false;
@@ -575,7 +663,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   document.querySelectorAll("[data-icon]").forEach((el) => el.replaceWith(icon(el.dataset.icon)));
 
   let db = null, user = null, assets = null, myId = null, isOwner = false, readOnly = false;
-  const S = { posts: [], comments: [], chat: [], dm: [], members: {}, profiles: {}, loaded: {} };
+  const S = { posts: [], comments: [], chat: [], dm: [], notices: [], members: {}, profiles: {}, loaded: {} };
   const ui = { screen: "home", thread: null, profileId: null, openPost: null, expanded: new Set(), drafts: {}, menu: null, confirmDel: null, createFile: null, editFile: null };
 
   function h(tag, props, ...kids) {
@@ -668,28 +756,41 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   let queued = false;
   function schedule() { if (queued) return; queued = true; requestAnimationFrame(async () => { queued = false; await resolveProfiles(); renderAll(); }); }
   // ---------- activity & alerts ----------
+  // 알림은 각자에게 해당하는 활동만: 내 글의 💪·댓글, 내가 댓글 단 글의 새 댓글, 나에게 온 메시지, 내 투표 참여, 단체방 공지·투표
   function activity() {
     if (!myId) return [];
-    const out = [], mine = new Set();
+    const out = [], mine = new Set(), myCommentAt = new Map();
     S.posts.forEach((p) => {
       const d = p.data();
-      if (d.author === myId) {
-        mine.add(p.id);
-        const hm = (d.reactions && d.reactions.heart) || {};
-        for (const [u, v] of Object.entries(hm)) if (u !== myId && typeof v === "number" && v > 0) out.push({ k: "l" + p.id + u, ts: v, who: u, text: "님이 내 게시물에 💪를 보냈어요", sub: d.text, go: () => openPost(p.id) });
-      } else if (d.author !== "guide") out.push({ k: "p" + p.id, ts: d.ts, who: d.author, text: "님이 새 게시물을 올렸어요", sub: d.text || "사진", go: () => openPost(p.id) });
+      if (d.author !== myId) return;
+      mine.add(p.id);
+      const hm = (d.reactions && d.reactions.heart) || {};
+      for (const [u, v] of Object.entries(hm)) if (u !== myId && typeof v === "number" && v > 0) out.push({ k: "l" + p.id + u, ts: v, who: u, text: "님이 내 게시물에 💪를 보냈어요", sub: d.text, go: () => openPost(p.id) });
     });
-    S.comments.forEach((c) => { const d = c.data(); if (d.author !== myId && mine.has(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, text: "님이 내 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) }); });
-    S.dm.forEach((m) => { const d = m.data(); if (d.author !== myId) out.push({ k: "d" + m.id, ts: d.ts, who: d.author, text: "님의 메시지", sub: d.text, thread: d.author, go: () => openThread(d.author) }); });
-    S.chat.forEach((m) => { const d = m.data(); if (d.author !== myId) out.push({ k: "g" + m.id, ts: d.ts, who: d.author, text: "님 · 초월 단체방", sub: d.text, thread: GROUP, go: () => openThread(GROUP) }); });
-    Object.entries(S.members).forEach(([id, m]) => { if (id !== myId && m.joined) out.push({ k: "m" + id, ts: m.joined, who: id, text: "님이 초월에 들어왔어요", go: () => openProfile(id) }); });
+    S.comments.forEach((c) => { const d = c.data(); if (d.author === myId) { const t = myCommentAt.get(d.postId); if (!t || d.ts < t) myCommentAt.set(d.postId, d.ts); } });
+    S.comments.forEach((c) => {
+      const d = c.data(); if (d.author === myId) return;
+      if (mine.has(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, text: "님이 내 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) });
+      else if (myCommentAt.has(d.postId) && d.ts > myCommentAt.get(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, text: "님도 같은 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) });
+    });
+    S.dm.forEach((m) => { const d = m.data(); if (d.author !== myId) out.push({ k: "d" + m.id, ts: d.ts, who: d.author, text: "님의 메시지", sub: msgPreview(d), thread: d.author, go: () => openThread(d.author) }); });
+    S.chat.forEach((m) => {
+      const d = m.data();
+      if (d.author === myId) {
+        if (d.kind === "poll") for (const [u, v] of Object.entries(d.votes || {})) if (u !== myId && v && typeof v === "object" && v.t) out.push({ k: "v" + m.id + u + v.t, ts: v.t, who: u, text: "님이 내 투표에 참여했어요", sub: d.q, go: () => openThread(GROUP) });
+        return;
+      }
+      if (d.kind === "poll") out.push({ k: "g" + m.id, ts: d.ts, who: d.author, text: "님이 단체방에 투표를 올렸어요", sub: d.q, go: () => openThread(GROUP) });
+      else out.push({ k: "g" + m.id, ts: d.ts, who: d.author, text: "님 · 초월 단체방", sub: msgPreview(d), thread: GROUP, go: () => openThread(GROUP) });
+    });
+    S.notices.forEach((n) => { const d = n.data(); if (d.author !== myId) out.push({ k: "n" + n.id, ts: d.ts, who: d.author, text: "님이 단체방 공지를 올렸어요", sub: d.text, go: () => openThread(GROUP) }); });
     return out.filter((i) => i.ts > Date.now() - 30 * DAY).sort((a, b) => b.ts - a.ts);
   }
   const listed = () => activity().filter((i) => !i.thread).slice(0, 60);
   const actSeen = () => Number(store("chowol.actSeen") || 0);
   let primed = false; const toasted = new Set();
   function checkAlerts() {
-    if (!myId || !["posts", "comments", "chat", "members", "dm"].every((k) => S.loaded[k])) return;
+    if (!myId || !["posts", "comments", "chat", "members", "dm", "notices"].every((k) => S.loaded[k])) return;
     const items = activity();
     if (!primed) { items.forEach((i) => toasted.add(i.k)); primed = true; return; }
     for (const i of items.slice(0, 20).reverse()) {
@@ -885,9 +986,9 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
   // ---------- DM ----------
   const pairKey = (a, b) => [a, b].sort().join("|");
   function threadMsgs(t) {
-    if (t === GROUP) return S.chat.map((m) => m.data()).sort((a, b) => a.ts - b.ts);
+    if (t === GROUP) return S.chat.map((m) => ({ ...m.data(), _id: m.id, _col: "chat" })).sort((a, b) => a.ts - b.ts);
     const k = pairKey(myId, t);
-    return S.dm.map((m) => m.data()).filter((d) => d.pair === k).sort((a, b) => a.ts - b.ts);
+    return S.dm.map((m) => ({ ...m.data(), _id: m.id, _col: "dm" })).filter((d) => d.pair === k).sort((a, b) => a.ts - b.ts);
   }
   const seenKey = (t) => "chowol.seen." + (t === GROUP ? GROUP : pairKey(myId || "", t));
   function unreadIn(t) {
@@ -906,7 +1007,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
     rows.sort((a, b) => (a.t === GROUP ? -1 : b.t === GROUP ? 1 : ((b.last ? b.last.ts : 0) - (a.last ? a.last.ts : 0))));
     const list = rows.map(({ t, last, unread }) => {
       const name = t === GROUP ? "초월 단체방" : nameOf(t);
-      let preview = last ? ((last.author === myId ? "나: " : (t === GROUP ? nameOf(last.author) + ": " : "")) + last.text.replace(/\s+/g, " ")) : (t === GROUP ? "모두에게 말 걸어보세요" : "메시지를 보내보세요");
+      let preview = last ? ((last.author === myId ? "나: " : (t === GROUP ? nameOf(last.author) + ": " : "")) + msgPreview(last)) : (t === GROUP ? "모두에게 말 걸어보세요" : "메시지를 보내보세요");
       return h("button", { type: "button", class: "thread-row" + (unread ? " unread" : ""), onclick: () => openThread(t) },
         avatar(t), h("div", { class: "t" }, h("b", { text: name }), h("span", { text: preview + (last ? " · " + ago(last.ts) : "") })),
         unread ? h("span", { class: "unread-dot", "aria-label": "안 읽은 메시지 " + unread + "개" }) : null);
@@ -932,7 +1033,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
         const mine = d.author === myId, first = d.author !== lastA || d.ts - lastTs > 5 * 60000;
         const col = h("div", { class: "col" });
         if (!mine && first && t === GROUP) col.append(h("span", { class: "who", text: nameOf(d.author) }));
-        col.append(h("div", { class: "bubble", text: d.text }));
+        col.append(msgBody(d));
         if (first || d.ts - lastTs > 60000) col.append(h("time", { text: hhmm(d.ts) }));
         const row = h("div", { class: "msg" + (mine ? " mine" : "") + (first ? " first" : "") });
         if (!mine) row.append(h("span", { class: "slot" }, first ? avatar(d.author) : null));
@@ -942,10 +1043,143 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       box.replaceChildren(...out);
     }
     if (near) box.scrollTop = box.scrollHeight;
+    renderNoticeBar(t);
+    if (lastThreadRendered !== t) { $("#attachMenu").hidden = true; }
+    $("#amPoll").hidden = t !== GROUP; $("#amNotice").hidden = t !== GROUP;
     lastThreadRendered = t;
     markSeen(t);
     renderNav();
   }
+  // ----- chat: media, polls, notices -----
+  const voteIdx = (v) => (v && typeof v === "object" ? v.i : v);
+  function msgPreview(d) {
+    if (d.kind === "image") return "사진";
+    if (d.kind === "video") return "동영상";
+    if (d.kind === "poll") return "📊 " + (d.q || "투표");
+    return String(d.text || "").replace(/\s+/g, " ");
+  }
+  const mb = (n) => (n / 1048576).toFixed(n < 10485760 ? 1 : 0) + "MB";
+  function msgBody(d) {
+    if (d.kind === "image") {
+      const box = h("div", { class: "media-bub" });
+      const ph = h("div", { class: "ph", text: "사진 불러오는 중…", style: d.w && d.h ? "aspect-ratio:" + d.w + " / " + d.h : "aspect-ratio:1" });
+      box.append(ph);
+      if (window.__media) window.__media.url(d.media).then((u) => {
+        const img = h("img", { alt: "사진", style: d.w && d.h ? "aspect-ratio:" + d.w + " / " + d.h : null }); img.src = u;
+        img.addEventListener("click", () => { $("#lightImg").src = u; $("#lightbox").hidden = false; });
+        ph.replaceWith(img);
+      }).catch(() => { ph.textContent = "사진을 불러올 수 없어요."; });
+      return box;
+    }
+    if (d.kind === "video") {
+      const box = h("div", { class: "media-bub" });
+      const show = (u) => { const v = h("video", { controls: true, playsinline: true, preload: "metadata" }); v.src = u; box.replaceChildren(v); return v; };
+      const btn = h("button", { type: "button", class: "vid-btn" }, h("b", { text: "▶" }), h("span", { text: "동영상 보기" + (d.size ? " · " + mb(d.size) : "") }));
+      btn.addEventListener("click", () => {
+        btn.disabled = true; btn.lastChild.textContent = "불러오는 중…";
+        window.__media.url(d.media).then((u) => { const v = show(u); v.play().catch(() => {}); }).catch(() => { btn.disabled = false; btn.lastChild.textContent = "불러오지 못했어요. 다시 누르기"; });
+      });
+      box.append(btn);
+      if (window.__media && vidReady.has(d.media)) window.__media.url(d.media).then(show);
+      return box;
+    }
+    if (d.kind === "poll") return pollBubble(d);
+    return h("div", { class: "bubble", text: d.text });
+  }
+  const vidReady = new Set();
+  function pollBubble(d) {
+    const votes = d.votes || {};
+    const opts = d.options || [];
+    const counts = opts.map((_, i) => Object.values(votes).filter((v) => voteIdx(v) === i).length);
+    const total = counts.reduce((a, b) => a + b, 0), mine = voteIdx(votes[myId]);
+    const card = h("div", { class: "poll-bub" }, h("span", { class: "tag", text: "📊 투표" }), h("div", { class: "q", text: d.q || "" }));
+    opts.forEach((label, i) => {
+      const voters = Object.keys(votes).filter((u) => voteIdx(votes[u]) === i);
+      card.append(h("button", { type: "button", class: "pb-opt" + (mine === i ? " on" : ""), title: voters.map(nameOf).join(", "), disabled: readOnly || !myId,
+        onclick: () => write(() => db.doc(d._col + "/" + d._id).update({ votes: { [myId]: mine === i ? null : { i, t: Date.now() } } })) },
+        h("span", { class: "bar", style: "width:" + (total ? Math.round(counts[i] / total * 100) : 0) + "%" }), h("span", { class: "lb", text: label }), h("span", { class: "ct", text: String(counts[i]) })));
+    });
+    card.append(h("small", { text: total + "명 참여 · 다시 누르면 취소" }));
+    return card;
+  }
+  function renderNoticeBar(t) {
+    const bar = $("#noticeBar");
+    const n = t === GROUP && S.notices.length ? S.notices[0].data() : null;
+    bar.hidden = !n;
+    if (n) bar.replaceChildren(h("b", { text: "📢 공지" }), h("span", { text: String(n.text).replace(/\s+/g, " ") }));
+  }
+  function renderNoticeList() {
+    const box = $("#noticeList");
+    if (!S.notices.length) { box.replaceChildren(h("p", { class: "empty", style: "padding:16px 0", text: "아직 공지가 없어요." })); return; }
+    box.replaceChildren(...S.notices.map((n) => { const d = n.data(); return h("div", { class: "nt-item" }, h("p", { text: d.text }),
+      h("small", {}, nameOf(d.author) + " · " + ago(d.ts), canDelete(d.author) ? h("button", { type: "button", class: "del", text: "내리기", onclick: () => write(() => db.doc("notices/" + n.id).delete()) }) : null)); }));
+  }
+  $("#noticeBar").addEventListener("click", () => { $("#noticeModal").hidden = false; renderNoticeList(); });
+  $("#lightbox").addEventListener("click", () => { $("#lightbox").hidden = true; });
+  const attachMenu = $("#attachMenu");
+  $("#dmAttach").addEventListener("click", () => { attachMenu.hidden = !attachMenu.hidden; $("#dmAttach").setAttribute("aria-expanded", String(!attachMenu.hidden)); });
+  $("#amMedia").addEventListener("click", () => { attachMenu.hidden = true; $("#dmFile").click(); });
+  $("#amPoll").addEventListener("click", () => {
+    attachMenu.hidden = true; $("#pollForm").reset(); $("#pollOpts").replaceChildren(); addPollOpt(); addPollOpt();
+    $("#pollModal").hidden = false; $("#pollQ").focus();
+  });
+  $("#amNotice").addEventListener("click", () => { attachMenu.hidden = true; $("#noticeModal").hidden = false; renderNoticeList(); $("#noticeText").focus(); });
+  let pollSeq = 0;
+  function addPollOpt() {
+    const box = $("#pollOpts"); if (box.children.length >= 8) return;
+    const id = "po-" + (++pollSeq);
+    box.append(h("div", { class: "field" }, h("label", { for: id, text: "항목 " + (box.children.length + 1) }), h("input", { id, maxlength: "60", placeholder: box.children.length ? "예: 토요일 저녁" : "예: 금요일 저녁" })));
+    $("#pollAdd").disabled = box.children.length >= 8;
+  }
+  $("#pollAdd").addEventListener("click", addPollOpt);
+  $("#pollForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); if (!myId) return;
+    const q = $("#pollQ").value.trim();
+    const options = [...$("#pollOpts").querySelectorAll("input")].map((i) => i.value.trim()).filter(Boolean);
+    if (!q) return;
+    if (options.length < 2) { notice("투표 항목을 두 개 이상 적어 주세요."); return; }
+    const ok = await write(() => db.collection("chat").add({ author: myId, kind: "poll", q, options, votes: {}, ts: Date.now() }));
+    if (ok) { closeModal("pollModal"); $("#msgs").scrollTop = $("#msgs").scrollHeight; }
+  });
+  $("#noticeForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); if (!myId) return;
+    const text = $("#noticeText").value.trim(); if (!text) return;
+    const ok = await write(() => db.collection("notices").add({ author: myId, text, ts: Date.now() }));
+    if (ok) { $("#noticeText").value = ""; closeModal("noticeModal"); }
+  });
+  async function sendChat(fields) {
+    const t = ui.thread, ts = Date.now();
+    const body = { author: myId, ts, ...fields };
+    const ok = t === GROUP
+      ? await write(() => db.collection("chat").add(body))
+      : await write(() => db.collection("dm").add({ ...body, members: [myId, t], pair: pairKey(myId, t) }));
+    if (ok) $("#msgs").scrollTop = $("#msgs").scrollHeight;
+    return ok;
+  }
+  $("#dmFile").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f || !myId || !ui.thread || !window.__media) return;
+    const sendBtn = $("#dmSend"), label = sendBtn.textContent;
+    const busy = (txt) => { sendBtn.disabled = true; sendBtn.textContent = txt; };
+    try {
+      if (f.type.startsWith("video/")) {
+        if (f.size > 25 * 1048576) { notice("동영상은 25MB까지 보낼 수 있어요. 짧게 잘라서 보내 주세요."); return; }
+        busy("올리는 중 0%");
+        const id = await window.__media.put(f, (p) => { sendBtn.textContent = "올리는 중 " + Math.round(p * 100) + "%"; });
+        vidReady.add(id);
+        await sendChat({ kind: "video", media: id, size: f.size });
+      } else {
+        busy("올리는 중…");
+        const bmp = await loadBitmap(f);
+        const c = toCanvas(bmp, 1600);
+        const blob = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.82));
+        const id = await window.__media.put(blob);
+        await sendChat({ kind: "image", media: id, w: c.width, h: c.height });
+      }
+    } catch { notice("보내지 못했어요. 잠시 후 다시 시도해 주세요."); }
+    finally { sendBtn.disabled = false; sendBtn.textContent = label; }
+  });
+
   function openThread(t) { ui.thread = t; lastThreadRendered = null; go("dm", true); setTimeout(() => $("#dmInput").focus(), 50); }
   $("#threadBack").addEventListener("click", () => { ui.thread = null; renderAll(); });
   $("#threadWho").addEventListener("click", () => { if (ui.thread && ui.thread !== GROUP) openProfile(ui.thread); });
@@ -957,12 +1191,9 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
     e.preventDefault(); if (!db || !myId || !ui.thread) return;
     const text = dmInput.value.trim(); if (!text) return;
     dmInput.value = ""; sizeDm();
-    const t = ui.thread, ts = Date.now();
-    const ok = t === GROUP
-      ? await write(() => db.collection("chat").add({ author: myId, text, ts }))
-      : await write(() => db.collection("dm").add({ author: myId, text, ts, members: [myId, t], pair: pairKey(myId, t) }));
+    const t = ui.thread;
+    const ok = await sendChat({ text });
     if (!ok) { dmInput.value = text; sizeDm(); return; }
-    $("#msgs").scrollTop = $("#msgs").scrollHeight;
     if (Math.random() < 0.1) prune(t === GROUP ? "chat" : "dm");
   });
   async function prune(col) {
@@ -1260,6 +1491,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
     listen("posts", db.collection("posts").orderBy("ts", "desc").limit(100), (s) => { S.posts = s.docs; });
     listen("comments", db.collection("comments").orderBy("ts", "desc").limit(800), (s) => { S.comments = s.docs; });
     listen("chat", db.collection("chat").orderBy("ts", "desc").limit(300), (s) => { S.chat = s.docs; });
+    listen("notices", db.collection("notices").orderBy("ts", "desc").limit(20), (s) => { S.notices = s.docs; if (!$("#noticeModal").hidden) renderNoticeList(); });
     if (myId) listen("dm", db.collection("dm").where("members", "array-contains", myId).limit(500), (s) => { S.dm = s.docs; });
     db.doc("config/theme").onSnapshot((snap) => {
       if (themeDirty) return;
