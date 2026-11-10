@@ -1254,8 +1254,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       }
       box.replaceChildren(...out);
     }
+    renderNoticeBar(t); // 공지 바를 먼저 그려야 메시지 영역 높이가 확정됨
     if (near) box.scrollTop = box.scrollHeight;
-    renderNoticeBar(t);
     if (lastThreadRendered !== t) { $("#attachMenu").hidden = true; }
     $("#amPoll").hidden = t !== GROUP; $("#amNotice").hidden = t !== GROUP;
     lastThreadRendered = t;
