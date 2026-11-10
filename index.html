@@ -126,10 +126,11 @@ body.no-stories .stories { display: none; }
 /* stories row */
 .stories { display: flex; gap: 14px; padding: 12px 14px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
 .story { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 68px; flex: none; }
-.ring { padding: 3px; border-radius: 50%; background: conic-gradient(from 200deg, var(--accent), var(--water), var(--accent)); }
+.ring { display: grid; place-items: center; width: 64px; height: 64px; padding: 3px; border-radius: 50%; flex: none; overflow: hidden; background: conic-gradient(from 200deg, var(--accent), var(--water), var(--accent)); }
 .ring.seen { background: var(--line); }
-.ring .av { width: 58px; height: 58px; border: 3px solid var(--bg); font-size: 20px; }
-.story span { font-size: 12px; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.ring .av { width: 58px; height: 58px; max-width: none; border: 3px solid var(--bg); font-size: 20px; display: grid; }
+.av img { display: block; }
+.story .story-nm { font-size: 12px; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 
 /* post */
 .post { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
@@ -1062,7 +1063,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
       const latest = S.posts.find((p) => p.data().author === id);
       const seen = !latest || Number(store("chowol.story." + id) || 0) >= latest.data().ts;
       return h("button", { class: "story", type: "button", onclick: () => { if (latest) store("chowol.story." + id, String(latest.data().ts)); openProfile(id); } },
-        h("span", { class: "ring" + (seen ? " seen" : "") }, avatar(id)), h("span", { text: id === myId ? "내 프로필" : nameOf(id) }));
+        h("span", { class: "ring" + (seen ? " seen" : "") }, avatar(id)), h("span", { class: "story-nm", text: id === myId ? "내 프로필" : nameOf(id) }));
     }));
     $("#stories").hidden = !ids.length;
     const feed = $("#feed");
