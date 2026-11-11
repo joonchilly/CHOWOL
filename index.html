@@ -1644,7 +1644,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
 
   // ---------- profile ----------
-  function openProfile(id) { morePosts(100); ui.profileId = id; if (ui.openPost) closeModal("postModal"); go("profile", true); $("#profBody").scrollTop = 0; }
+  // 프로필로 들어오기 직전 화면을 기억했다가 '뒤로'에서 그대로 돌아감
+  function openProfile(id) { if (ui.screen !== "profile") ui.prevScreen = ui.screen; morePosts(100); ui.profileId = id; if (ui.openPost) closeModal("postModal"); go("profile", true); $("#profBody").scrollTop = 0; }
   function renderProfile() {
     const id = ui.profileId || myId;
     const body = $("#profBody");
@@ -1681,7 +1682,10 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       h("div", { class: "grid-tabs" }, h("span", { "aria-label": "게시물" }, icon("grid"))),
       posts.length ? grid : h("p", { class: "empty", text: mine ? "첫 게시물을 올려보세요." : "아직 게시물이 없어요." }));
   }
-  $("#profBack").addEventListener("click", () => { ui.profileId = null; history.length > 1 ? go("home") : go("home"); });
+  $("#profBack").addEventListener("click", () => {
+    const back = ui.prevScreen && ui.prevScreen !== "profile" ? ui.prevScreen : "home";
+    ui.profileId = null; ui.prevScreen = null; go(back);
+  });
 
   // ---------- post modal ----------
   function openPost(id) { ui.openPost = id; $("#postModal").hidden = false; renderPostModal(); }
