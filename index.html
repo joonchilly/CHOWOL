@@ -443,6 +443,71 @@ html { touch-action: pan-x pan-y; }
 .stk-pick .stk .e { font-size: 13cqw; }
 .stk.ghost { position: fixed; z-index: 60; pointer-events: none; font-size: 15px; max-width: 200px; border-width: 3px; padding: 6px 10px; border-radius: 14px; transform: translate(-50%, -50%) rotate(-6deg) scale(1.05); }
 .stk.ghost .e { font-size: 22px; }
+/* ----- 운동(가라지 짐) ----- */
+.gm-sec { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.gm-sec b { color: var(--ink); font-size: 17px; }
+.gm-sec span { color: var(--muted); font-size: 13px; }
+.tacho-wrap { width: min(100%, 300px); margin: 0 auto; touch-action: none; border-radius: 50%; transition: filter .2s; }
+.tacho { width: 100%; display: block; cursor: grab; user-select: none; -webkit-user-select: none; }
+.tacho .tk { stroke: #1E1A15; stroke-width: 2; } .tacho .tk.mj { stroke-width: 4; } .tacho .tk.red { stroke: #C8321E; }
+.tacho .tn { font: 20px "Do Hyeon", sans-serif; fill: #1E1A15; text-anchor: middle; } .tacho .tn.red { fill: #C8321E; }
+.tacho .t-red { fill: none; stroke: #C8321E; stroke-width: 7; }
+.tacho .t-lab { font: 11px "Do Hyeon", sans-serif; fill: #5B4A2E; text-anchor: middle; letter-spacing: .2em; } .tacho .t-lab.sm { font-size: 12px; letter-spacing: .08em; }
+.tacho .t-brand { font: 15px "Do Hyeon", sans-serif; fill: #8A2A18; text-anchor: middle; letter-spacing: .14em; }
+.tacho .t-needle { transform-origin: 150px 150px; transform-box: view-box; transition: transform .25s cubic-bezier(.3,1.4,.5,1); }
+.tacho-wrap.hot .t-bezel { filter: drop-shadow(0 0 4px rgba(230,60,30,.7)); }
+.tacho-wrap.over { filter: drop-shadow(0 0 14px rgba(235,55,25,.85)); animation: overheat .9s ease-in-out infinite alternate; }
+.tacho-wrap.over .t-bezel { fill: #C8321E; }
+.tacho-wrap.over .t-needle { animation: shake .09s linear infinite alternate; }
+@keyframes overheat { from { filter: drop-shadow(0 0 6px rgba(235,55,25,.6)); } to { filter: drop-shadow(0 0 20px rgba(255,80,30,1)); } }
+@keyframes shake { from { translate: -0.8px 0; } to { translate: 0.8px 0; } }
+.tacho-read { display: flex; justify-content: center; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
+.tacho-read span { color: var(--ink); font-size: 18px; }
+.tacho-read b { color: var(--muted); font-size: 15px; }
+.tacho-wrap.hot + .tacho-read b { color: var(--danger); }
+.poster { background: #E8D7A8; background-image: radial-gradient(120% 80% at 20% 10%, rgba(255,250,230,.55), transparent 60%), radial-gradient(60% 40% at 85% 90%, rgba(140,95,40,.25), transparent 70%); border-radius: 4px; padding: 12px 10px 6px; box-shadow: 0 2px 10px rgba(0,0,0,.25), inset 0 0 40px rgba(120,80,30,.35); color: #3A2A16; position: relative; }
+.poster::before, .poster::after { content: ""; position: absolute; top: -6px; width: 44px; height: 16px; background: rgba(240,225,180,.75); transform: rotate(-6deg); left: 14px; }
+.poster::after { left: auto; right: 14px; transform: rotate(5deg); }
+.poster-h { text-align: center; display: flex; flex-direction: column; gap: 1px; border-bottom: 2px solid #3A2A16; padding-bottom: 6px; margin-bottom: 4px; }
+.poster-h span { font-family: "Do Hyeon", sans-serif; font-size: 20px; letter-spacing: .14em; color: #3A2A16; }
+.poster-h small { font-size: 11px; color: #6B5432; letter-spacing: .06em; }
+.poster-svg, .crew-svg { width: 100%; display: block; }
+.poster-svg .bp-base { fill: #D9C08A; stroke: #5A4325; stroke-width: 1.2; }
+.poster-svg .bp { fill: #C79C6A; stroke: #5A4325; stroke-width: 1.2; cursor: pointer; transition: fill .15s; }
+.poster-svg .bp.on { fill: #D9563C; }
+.poster-svg .bp-detail { fill: none; stroke: #5A4325; stroke-width: .9; opacity: .7; pointer-events: none; }
+.poster-svg .bp-heart path { fill: #8E2A1A; } .poster-svg .bp-heart text, .poster-svg .bp-cap { font: 9px "Do Hyeon", sans-serif; fill: #3A2A16; letter-spacing: .12em; }
+.poster-svg .bp-cap, .crew-svg .bp-cap { text-anchor: middle; }
+.poster-svg .pst { pointer-events: none; }
+.poster-svg .pst rect { fill: rgba(232,215,168,.55); stroke: #C42E1C; stroke-width: 1.6; }
+.poster-svg .pst text { font: 10px "Do Hyeon", sans-serif; fill: #C42E1C; text-anchor: middle; letter-spacing: .08em; }
+.poster-svg .pst-in { animation: stampIn .28s cubic-bezier(.2,1.6,.4,1) both; transform-box: fill-box; transform-origin: center; }
+@keyframes stampIn { from { transform: scale(2.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.gym-crew .gc-count { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.gc-fig { background: color-mix(in srgb, var(--ink) 6%, transparent); border-radius: calc(var(--r) * .7); padding: 8px 18px 2px; }
+.crew-svg .bp-base { fill: color-mix(in srgb, var(--ink) 14%, transparent); }
+.crew-svg .bp { fill: color-mix(in srgb, var(--ink) 22%, transparent); transition: fill .3s; }
+.crew-svg .bp.on { fill: var(--accent); filter: drop-shadow(0 0 3px var(--accent)); }
+.crew-svg .bp-detail { fill: none; stroke: var(--bg); stroke-width: .9; opacity: .5; }
+.crew-svg .bp-heart path { fill: var(--muted); } .crew-svg .bp-heart text, .crew-svg .bp-cap { font: 9px "Do Hyeon", sans-serif; fill: var(--muted); letter-spacing: .12em; }
+.crew-svg .bp[data-part="cardio"].on ~ .bp-heart path { fill: var(--on-accent); }
+.gc-msg { color: var(--ink); font-size: 15px; text-align: center; padding: 6px 0 2px; }
+.gym-crew.done .gc-msg { color: var(--accent); font-size: 18px; }
+.gym-crew.done { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.gc-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; margin-top: 4px; }
+.gc-row { display: flex; gap: 8px; align-items: baseline; font-size: 14px; min-width: 0; }
+.gc-part { color: var(--muted); flex: none; min-width: 42px; }
+.gc-row.on .gc-part { color: var(--ink); }
+.gc-row.on .gc-part::before { content: "● "; color: var(--accent); }
+.gc-who { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-row.on .gc-who { color: var(--ink); }
+.gc-reset { color: var(--muted); font-size: 12px; text-align: right; }
+.combo-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; font-size: 12px; color: #2A1A04; background: linear-gradient(110deg, #B8862B 0%, #F6DC8A 30%, #FFF4CC 45%, #E2B44E 60%, #B8862B 100%); background-size: 220% 100%; animation: shine 2.6s linear infinite; box-shadow: 0 0 0 1px rgba(120,80,10,.5); white-space: nowrap; }
+@keyframes shine { from { background-position: 100% 0; } to { background-position: -120% 0; } }
+.stk .px { width: 7cqw; height: 6cqw; flex: none; image-rendering: pixelated; }
+.stk-pick .stk .px { width: 15cqw; height: 13cqw; }
+.stk.ghost .px { width: 30px; height: 26px; }
+.stk.vint { background: #F4E9CC; color: #2A1E10; border-style: dashed; box-shadow: 0 0.8cqw 1.6cqw rgba(0,0,0,.35); }
 /* sign-in gate */
 .gate { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 24px; text-align: center; }
 .gate svg { width: min(34vw, 150px); aspect-ratio: 420 / 533; margin-bottom: 32px; }
@@ -516,7 +581,7 @@ html { touch-action: pan-x pan-y; }
       <div class="log-tabs" role="tablist" aria-label="기록 종류">
         <button type="button" role="tab" data-kind="sauna" aria-selected="true">사우나</button>
         <button type="button" role="tab" data-kind="run" aria-selected="false">러닝</button>
-        <button type="button" role="tab" data-kind="gym" aria-selected="false">💪 운동</button>
+        <button type="button" role="tab" data-kind="gym" aria-selected="false">운동</button>
       </div>
       <div class="scroll" id="logBody">
         <div class="log-wrap" id="logSauna">
@@ -534,7 +599,11 @@ html { touch-action: pan-x pan-y; }
           <button type="button" class="btn btn-primary" id="runNew" style="padding:12px;font-size:16px">러닝 인증하기</button>
           <div id="runFeed"></div>
         </div>
-        <p class="empty" id="logSoon" hidden></p>
+        <div class="log-wrap" id="logGym" hidden>
+          <div id="gymCrew"></div>
+          <button type="button" class="btn btn-primary" id="gymNew" style="padding:12px;font-size:16px">운동 인증하기</button>
+          <div id="gymFeed"></div>
+        </div>
       </div>
     </section>
 
@@ -649,6 +718,26 @@ html { touch-action: pan-x pan-y; }
       <div class="field"><label for="rnCond">오늘의 컨디션</label><input id="rnCond" maxlength="40" placeholder="예: 역풍 불어서 1분 손해 봄" autocomplete="off"></div>
       <div class="chips" id="rnEx"></div>
       <div class="field"><label for="rnKm">달린 거리 km (크루 누적 거리에 쌓여요)</label><input id="rnKm" type="number" inputmode="decimal" step="0.01" min="0" placeholder="예: 5.2"></div>
+    </div>
+  </form>
+</div>
+
+<div class="modal" id="gymModal" hidden role="dialog" aria-modal="true" aria-labelledby="gymTitle">
+  <form class="sheet" id="gymForm">
+    <div class="sheet-h"><button type="button" class="cancel" data-close="gymModal">취소</button><div class="title" id="gymTitle">오운완 인증</div><button type="submit" class="act" id="gmPost">올리기</button></div>
+    <div class="sheet-b">
+      <div class="gm-sec"><b>① 오늘의 RPM</b><span>바늘을 손가락으로 돌려 오늘 얼마나 불태웠는지 맞춰주세요</span></div>
+      <div class="tacho-wrap" id="gmTacho"></div>
+      <div class="tacho-read"><span id="gmRpmVal">강도 5 / 10</span><b id="gmRpmWord"></b></div>
+      <div class="gm-sec"><b>② 오늘 조진 부위</b><span>포스터를 눌러 도장 쾅! (다시 누르면 지워져요)</span></div>
+      <div class="poster" id="gmPoster"><div class="poster-h"><span>THE ANATOMY OF IRON</span><small>초월 근육 해부도 · EST. 1987</small></div><div class="poster-fig"></div></div>
+      <small id="gmParts" style="color:var(--muted)"></small>
+      <div class="gm-sec"><b>③ 라커룸 거울 샷</b><span>사진을 손가락으로 끌면 위치를 옮길 수 있어요</span></div>
+      <canvas id="gymCv" class="stamp-cv" width="1080" height="1350" role="img" aria-label="운동 인증 미리보기" style="touch-action:none"></canvas>
+      <label class="btn" for="gmPhoto" style="flex:none">오운완 사진 불러오기<input type="file" id="gmPhoto" accept="image/*" hidden></label>
+      <div class="chips" id="gmFrame"></div>
+      <div class="field"><label for="gmFuel">오늘의 연료</label><input id="gmFuel" maxlength="30" placeholder="예: 끝나고 제육볶음" autocomplete="off"></div>
+      <div class="chips" id="gmFuelEx"></div>
     </div>
   </form>
 </div>
@@ -933,7 +1022,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   document.querySelectorAll("[data-icon]").forEach((el) => el.replaceWith(icon(el.dataset.icon)));
 
   let db = null, user = null, assets = null, myId = null, isOwner = false, readOnly = false;
-  const S = { posts: [], comments: [], chat: [], dm: [], notices: [], members: {}, profiles: {}, loaded: {} };
+  const S = { posts: [], comments: [], chat: [], dm: [], notices: [], workouts: [], members: {}, profiles: {}, loaded: {} };
   const ui = { screen: "home", thread: null, profileId: null, openPost: null, expanded: new Set(), drafts: {}, menu: null, confirmDel: null, createFile: null, editFile: null };
 
   function h(tag, props, ...kids) {
@@ -1036,7 +1125,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       mine.add(p.id);
       const hm = (d.reactions && d.reactions.heart) || {};
       for (const [u, v] of Object.entries(hm)) if (u !== myId && typeof v === "number" && v > 0) out.push({ k: "l" + p.id + u, ts: v, who: u, text: "님이 내 게시물에 💪를 보냈어요", sub: d.text, go: () => openPost(p.id) });
-      for (const [sid, v] of Object.entries(d.stickers || {})) if (v && v.by && v.by !== myId && STICKERS[v.s]) out.push({ k: "s" + p.id + sid, ts: v.t || 0, who: v.by, text: "님이 내 러닝에 스티커를 붙였어요 " + STICKERS[v.s][0], sub: STICKERS[v.s][1], go: () => openPost(p.id) });
+      for (const [sid, v] of Object.entries(d.stickers || {})) if (v && v.by && v.by !== myId && STICKERS[v.s]) out.push({ k: "s" + p.id + sid, ts: v.t || 0, who: v.by, text: "님이 내 " + (d.gym ? "운동 인증" : "러닝") + "에 스티커를 붙였어요 " + STICKERS[v.s][0], sub: STICKERS[v.s][1], go: () => openPost(p.id) });
     });
     S.comments.forEach((c) => { const d = c.data(); if (d.author === myId) { const t = myCommentAt.get(d.postId); if (!t || d.ts < t) myCommentAt.set(d.postId, d.ts); } });
     S.comments.forEach((c) => {
@@ -1208,7 +1297,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const key = (detail ? "d-" : "") + p.id;
     const head = h("div", { class: "p-head" },
       h("button", { type: "button", onclick: () => openProfile(d.author), "aria-label": nameOf(d.author) + " 프로필" }, avatar(d.author)),
-      h("div", { class: "grow" }, h("button", { type: "button", class: "nm", text: nameOf(d.author), onclick: () => openProfile(d.author) }), h("span", { class: "tm", text: "· " + ago(d.ts) })));
+      h("div", { class: "grow" }, h("button", { type: "button", class: "nm", text: nameOf(d.author), onclick: () => openProfile(d.author) }), h("span", { class: "tm", text: "· " + ago(d.ts) }),
+        isCombo(d) ? h("span", { class: "combo-badge", title: "같은 날 운동·러닝·사우나 모두 인증", text: "🏆 철인 3종 콤보 마스터" }) : null));
     if (canDelete(d.author)) {
       if (ui.menu === key) {
         const armed = ui.confirmDel === p.id;
@@ -1219,6 +1309,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
             const ok = await write(() => db.doc("posts/" + p.id).delete());
             if (ok && d.sauna) write(() => db.doc("sauna/" + p.id).delete());
             if (ok && d.run) write(() => db.doc("runs/" + p.id).delete());
+            if (ok && d.gym) write(() => db.doc("workouts/" + p.id).delete());
             if (ok && ui.openPost === p.id) closeModal("postModal");
           } }),
           h("button", { type: "button", class: "linkish", text: "취소", onclick: () => { ui.menu = null; ui.confirmDel = null; renderAll(); } })));
@@ -1234,7 +1325,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       const b = h("div", { class: "burst" }, h("span", { class: "emo-big", text: "💪" })); media.append(b); setTimeout(() => b.remove(), 950);
       if (!liked) setLike(p.id, true);
     };
-    if (d.run) stickerLayer(p, d, media);
+    if (d.run || d.gym) stickerLayer(p, d, media);
     media.addEventListener("dblclick", (e) => { if (!media._touch) flex(); });
     if (src) media.addEventListener("click", () => {
       if (media._tapT) { clearTimeout(media._tapT); media._tapT = null; return; }
@@ -1692,9 +1783,9 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   function renderLog() {
     document.querySelectorAll(".log-tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.kind === logUi.kind)));
-    $("#logSauna").hidden = logUi.kind !== "sauna"; $("#logRun").hidden = logUi.kind !== "run"; $("#logSoon").hidden = logUi.kind !== "gym";
+    $("#logSauna").hidden = logUi.kind !== "sauna"; $("#logRun").hidden = logUi.kind !== "run"; $("#logGym").hidden = logUi.kind !== "gym";
     if (logUi.kind === "run") { renderRunCrew(); renderRunFeed(); return; }
-    if (logUi.kind === "gym") { $("#logSoon").textContent = "💪 운동 기록은 곧 열려요!"; return; }
+    if (logUi.kind === "gym") { renderGymCrew(); renderGymFeed(); return; }
     renderRank();
     document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.seg === logUi.seg)));
     $("#saunaFeed").hidden = logUi.seg !== "feed"; $("#eatWrap").hidden = logUi.seg !== "map";
@@ -2092,18 +2183,356 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     btn.disabled = false; btn.textContent = "올리기";
   });
 
-  // ----- stickers on run posts (drag & drop) -----
+  // =====================================================================
+  // ----- 운동(GYM): 올드스쿨 가라지 짐 — RPM 계기판 · 해부도 도장 · 라커룸 프레임 · 크루 바디 -----
+  // =====================================================================
+  const PARTS = [
+    ["chest", "가슴", "PECTORALIS"], ["back", "등", "LATISSIMUS"], ["shoulder", "어깨", "DELTOIDEUS"], ["arm", "팔", "BICEPS · TRICEPS"],
+    ["core", "코어", "RECTUS ABDOMINIS"], ["legs", "하체", "QUADRICEPS"], ["cardio", "유산소", "COR · CARDIO"]
+  ];
+  const PART_NAME = Object.fromEntries(PARTS.map(([k, n]) => [k, n]));
+  const weekStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+  // 해부도 도형: 앞(0~120) · 뒤(140~260). [부위, 모양] — 부위가 null이면 몸통 바탕
+  const BODY = {
+    base: '<ellipse cx="60" cy="22" rx="11" ry="14"/><rect x="54" y="33" width="12" height="14" rx="4"/><path d="M36 54 Q60 44 84 54 L80 124 Q60 134 40 124 Z"/><path d="M42 118 Q60 128 78 118 L80 142 L40 142 Z"/><circle cx="23" cy="134" r="5"/><circle cx="97" cy="134" r="5"/><ellipse cx="50" cy="229" rx="8" ry="4"/><ellipse cx="70" cy="229" rx="8" ry="4"/>' +
+      '<g transform="translate(140 0)"><ellipse cx="60" cy="22" rx="11" ry="14"/><rect x="54" y="33" width="12" height="14" rx="4"/><path d="M36 54 Q60 44 84 54 L80 124 Q60 134 40 124 Z"/><path d="M42 118 Q60 128 78 118 L80 142 L40 142 Z"/><circle cx="23" cy="134" r="5"/><circle cx="97" cy="134" r="5"/><ellipse cx="50" cy="229" rx="8" ry="4"/><ellipse cx="70" cy="229" rx="8" ry="4"/></g>',
+    chest: '<path d="M60 52 C52 49 42 50 38 58 C36 67 41 76 50 77 C56 78 59 75 60 71 Z"/><path d="M60 52 C68 49 78 50 82 58 C84 67 79 76 70 77 C64 78 61 75 60 71 Z"/>',
+    shoulder: '<ellipse cx="33" cy="58" rx="9" ry="10"/><ellipse cx="87" cy="58" rx="9" ry="10"/><ellipse cx="173" cy="58" rx="9" ry="10"/><ellipse cx="227" cy="58" rx="9" ry="10"/>',
+    arm: '<ellipse cx="29" cy="84" rx="7" ry="15"/><ellipse cx="91" cy="84" rx="7" ry="15"/><ellipse cx="25" cy="114" rx="6" ry="14"/><ellipse cx="95" cy="114" rx="6" ry="14"/><ellipse cx="169" cy="84" rx="7" ry="15"/><ellipse cx="231" cy="84" rx="7" ry="15"/><ellipse cx="165" cy="114" rx="6" ry="14"/><ellipse cx="235" cy="114" rx="6" ry="14"/>',
+    core: '<rect x="48" y="80" width="24" height="40" rx="7"/>',
+    legs: '<ellipse cx="51" cy="157" rx="10" ry="28"/><ellipse cx="69" cy="157" rx="10" ry="28"/><ellipse cx="50" cy="205" rx="7" ry="19"/><ellipse cx="70" cy="205" rx="7" ry="19"/><ellipse cx="192" cy="134" rx="10" ry="10"/><ellipse cx="208" cy="134" rx="10" ry="10"/><ellipse cx="191" cy="165" rx="9" ry="22"/><ellipse cx="209" cy="165" rx="9" ry="22"/><ellipse cx="190" cy="205" rx="8" ry="19"/><ellipse cx="210" cy="205" rx="8" ry="19"/>',
+    back: '<path d="M190 48 L200 44 L210 48 L222 56 L200 63 L178 56 Z"/><path d="M180 61 L200 66 L220 61 L216 100 L200 109 L184 100 Z"/><path d="M188 105 L200 111 L212 105 L212 121 L188 121 Z"/>',
+    cardio: '<rect x="88" y="256" width="84" height="30" rx="8"/>'
+  };
+  const DETAIL = '<path d="M60 80 V120 M48 93 H72 M48 106 H72" /><path d="M200 66 V109 M190 48 L200 56 L210 48" /><path d="M51 136 Q51 160 53 182 M69 136 Q69 160 67 182" />';
+  // 도장 찍힐 자리 [x, y]
+  const STAMP_AT = { chest: [60, 64], shoulder: [33, 46], arm: [91, 98], core: [60, 100], legs: [60, 168], back: [200, 84], cardio: [130, 271] };
+  function bodySvg(cls, lit, extra) {
+    const part = (k) => '<g class="bp' + (lit.has(k) ? " on" : "") + '" data-part="' + k + '">' + BODY[k] + "</g>";
+    return '<svg class="' + cls + '" viewBox="0 0 260 292" role="img" aria-label="근육 해부도">' +
+      '<g class="bp-base">' + BODY.base + "</g>" + PARTS.map(([k]) => part(k)).join("") +
+      '<g class="bp-detail">' + DETAIL + "</g>" +
+      '<g class="bp-heart" pointer-events="none"><path d="M106 266 c-3-4 -9-2 -9 3 c0 4 9 9 9 9 s9-5 9-9 c0-5 -6-7 -9-3z"/><text x="122" y="275">CARDIO</text></g>' +
+      '<text class="bp-cap" x="60" y="248">ANTERIOR</text><text class="bp-cap" x="200" y="248">POSTERIOR</text>' + (extra || "") + "</svg>";
+  }
+
+  // ----- 크루 바디: 이번 주(월요일 0시~) 친구들이 켠 부위 -----
+  function crewWeek() {
+    const ws = weekStart(), by = {};
+    (S.workouts || []).forEach((w) => { const d = w.data(); if (d.ts < ws) return; (d.parts || []).forEach((k) => { if (PART_NAME[k]) (by[k] = by[k] || new Set()).add(d.author); }); });
+    return by;
+  }
+  function renderGymCrew() {
+    const by = crewWeek(), lit = new Set(Object.keys(by)), n = lit.size, done = n === PARTS.length;
+    const card = h("div", { class: "rank gym-crew" + (done ? " done" : "") },
+      h("div", { class: "rank-h" }, h("b", { text: "초월 크루 바디" }), h("span", { class: "gc-count", text: n + " / " + PARTS.length + " 점등" })));
+    const fig = h("div", { class: "gc-fig" }); fig.innerHTML = bodySvg("crew-svg", lit);
+    card.append(fig,
+      h("div", { class: "gc-msg", text: done ? "이번 주 크루 바디 완성! 득근 파티 열자!" : "이번 주 남은 부위: " + PARTS.filter(([k]) => !lit.has(k)).map(([, nm]) => nm).join(" · ") }),
+      h("div", { class: "gc-list" }, ...PARTS.map(([k, nm]) => h("div", { class: "gc-row" + (lit.has(k) ? " on" : "") },
+        h("span", { class: "gc-part", text: nm }), h("span", { class: "gc-who", text: lit.has(k) ? [...by[k]].map(nameOf).join(", ") : "—" })))),
+      h("small", { class: "gc-reset", text: "매주 월요일 0시에 다시 꺼져요" }));
+    $("#gymCrew").replaceChildren(card);
+  }
+  function renderGymFeed() {
+    const list = S.posts.filter((p) => p.data().gym);
+    if (!list.length) { $("#gymFeed").replaceChildren(h("p", { class: "empty", text: "아직 운동 인증이 없어요. 계기판을 끝까지 올려 첫 오운완을 찍어보세요!" })); return; }
+    $("#gymFeed").replaceChildren(h("div", { class: "s-grid" }, ...list.map((p) => {
+      const d = p.data(), g = d.gym || {}, src = d.imageData, n = Object.keys(d.stickers || {}).length;
+      return h("button", { type: "button", class: "s-card", onclick: () => openPost(p.id) },
+        src ? keptImg("g:" + p.id, src, "") : h("div", { class: "s-ph", text: "💪" }),
+        h("div", { class: "s-meta" }, h("b", { text: "RPM " + (g.rpm || "-") + (n ? " · 스티커 " + n : "") }),
+          h("span", { text: (g.parts || []).map((k) => PART_NAME[k]).filter(Boolean).join(" · ") || "오운완" }),
+          h("small", { text: nameOf(d.author) + " · " + ago(d.ts) })));
+    })));
+  }
+
+  // ----- 3단 콤보: 같은 날 운동·러닝·사우나 모두 인증 -----
+  function comboSet() {
+    const kinds = {}; const mark = (a, ts, k) => { if (!a || !ts) return; const key = a + "|" + dayKey(ts); (kinds[key] = kinds[key] || new Set()).add(k); };
+    S.posts.forEach((p) => { const d = p.data(); if (d.gym) mark(d.author, d.ts, "g"); if (d.run) mark(d.author, d.ts, "r"); if (d.sauna) mark(d.author, d.ts, "s"); });
+    (S.workouts || []).forEach((w) => { const d = w.data(); mark(d.author, d.ts, "g"); });
+    (S.runs || []).forEach((r) => { const d = r.data(); mark(d.author, d.ts, "r"); });
+    (S.sauna || []).forEach((s) => { const d = s.data(); mark(d.author, d.ts, "s"); });
+    return new Set(Object.keys(kinds).filter((k) => kinds[k].size === 3));
+  }
+  var comboCache = { at: -1, set: new Set() };
+  function isCombo(d) {
+    if (!(d.gym || d.run || d.sauna)) return false;
+    const stamp = S.posts.length + (S.workouts || []).length * 1e3 + (S.runs || []).length * 1e6 + (S.sauna || []).length * 1e9;
+    if (comboCache.at !== stamp) comboCache = { at: stamp, set: comboSet() };
+    return comboCache.set.has(d.author + "|" + dayKey(d.ts));
+  }
+
+  // ----- 인증 시트 -----
+  const gv = { img: null, ox: 0.5, oy: 0.5, rpm: 5, parts: new Set(), fuel: "", frame: "locker" };
+  const FUEL_EX = ["끝나고 제육볶음", "보충제 초코맛", "아아 수혈 중", "닭가슴살 또 너야?", "치킨은 내일부터 참음"];
+  const rpmWord = (v) => (v >= 10 ? "엔진 과열! 오운완" : v >= 8 ? "레드존 진입" : v >= 5 ? "적당히 달궈짐" : v >= 3 ? "예열 중" : "시동만 걸었음");
+  const tachoAng = (v) => -120 + v * 24;
+  function tachoSvg() {
+    const cx = 150, cy = 150, R = 118, pt = (a, r) => [cx + r * Math.sin(a * Math.PI / 180), cy - r * Math.cos(a * Math.PI / 180)];
+    let ticks = "", nums = "";
+    for (let i = 0; i <= 20; i++) {
+      const v = i / 2, a = tachoAng(v), major = i % 2 === 0, [x1, y1] = pt(a, R), [x2, y2] = pt(a, R - (major ? 18 : 10));
+      ticks += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" class="' + (v >= 8 ? "tk red" : "tk") + (major ? " mj" : "") + '"/>';
+      if (major) { const [tx, ty] = pt(a, R - 34); nums += '<text x="' + tx.toFixed(1) + '" y="' + (ty + 7).toFixed(1) + '" class="' + (v >= 8 ? "tn red" : "tn") + '">' + v + "</text>"; }
+    }
+    const [ax, ay] = pt(tachoAng(8), R + 2), [bx, by] = pt(tachoAng(10), R + 2);
+    return '<svg class="tacho" viewBox="0 0 300 300" role="slider" aria-label="오늘의 운동 강도" aria-valuemin="1" aria-valuemax="10" tabindex="0">' +
+      '<defs><radialGradient id="tFace" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#F6EDD3"/><stop offset="1" stop-color="#D9C79C"/></radialGradient>' +
+      '<linearGradient id="tBezel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F4F4"/><stop offset=".45" stop-color="#8B8E92"/><stop offset=".55" stop-color="#C9CBCE"/><stop offset="1" stop-color="#5A5D61"/></linearGradient></defs>' +
+      '<circle class="t-bezel" cx="150" cy="150" r="146" fill="url(#tBezel)"/><circle cx="150" cy="150" r="136" fill="#16120D"/><circle cx="150" cy="150" r="131" fill="url(#tFace)"/>' +
+      '<path d="M' + ax.toFixed(1) + " " + ay.toFixed(1) + " A" + (R + 2) + " " + (R + 2) + " 0 0 1 " + bx.toFixed(1) + " " + by.toFixed(1) + '" class="t-red"/>' +
+      ticks + nums +
+      '<text x="150" y="124" class="t-lab">TACHOMETER</text><text x="150" y="196" class="t-lab sm">x1000 r/min</text><text x="150" y="218" class="t-brand">CHOWOL GARAGE</text>' +
+      '<g class="t-needle"><path d="M150 150 L146.5 150 L149 36 L151 36 L153.5 150 Z" fill="#C8321E"/><circle cx="150" cy="150" r="13" fill="#1E1A15"/><circle cx="150" cy="150" r="5" fill="#9A9DA1"/></g></svg>';
+  }
+  function setRpm(v) {
+    gv.rpm = Math.max(1, Math.min(10, Math.round(v)));
+    const wrap = $("#gmTacho"), svg = wrap.querySelector("svg");
+    svg.querySelector(".t-needle").style.transform = "rotate(" + tachoAng(gv.rpm) + "deg)";
+    svg.setAttribute("aria-valuenow", String(gv.rpm));
+    wrap.classList.toggle("hot", gv.rpm >= 8); wrap.classList.toggle("over", gv.rpm >= 10);
+    $("#gmRpmVal").textContent = "강도 " + gv.rpm + " / 10";
+    $("#gmRpmWord").textContent = rpmWord(gv.rpm);
+    paintPoster(); drawGym();
+  }
+  function initTacho() {
+    const wrap = $("#gmTacho"); wrap.innerHTML = tachoSvg();
+    const svg = wrap.querySelector("svg"); let drag = false;
+    const pick = (e) => {
+      const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 300 - 150, y = (e.clientY - r.top) / r.height * 300 - 150;
+      let a = Math.atan2(x, -y) * 180 / Math.PI;
+      setRpm((Math.max(-120, Math.min(120, a)) + 120) / 24);
+    };
+    svg.addEventListener("pointerdown", (e) => { drag = true; svg.setPointerCapture(e.pointerId); pick(e); });
+    svg.addEventListener("pointermove", (e) => { if (drag) pick(e); });
+    const end = () => { drag = false; }; svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+    svg.addEventListener("keydown", (e) => { if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); setRpm(gv.rpm + 1); } if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); setRpm(gv.rpm - 1); } });
+  }
+  const stampWord = () => (gv.rpm >= 8 ? "DESTROYED" : "PUMPED");
+  function paintPoster() {
+    const box = $("#gmPoster");
+    const stamps = [...gv.parts].map((k) => { const [x, y] = STAMP_AT[k]; const w = stampWord(); return '<g class="pst" transform="translate(' + x + " " + y + ') rotate(' + ((k.charCodeAt(0) % 5) * 4 - 9) + ')"><g class="pst-in"><rect x="' + (-w.length * 3.4 - 5) + '" y="-8" width="' + (w.length * 6.8 + 10) + '" height="15" rx="2"/><text y="3.6">' + w + "</text></g></g>"; }).join("");
+    box.querySelector(".poster-fig").innerHTML = bodySvg("poster-svg", gv.parts, stamps);
+    $("#gmParts").textContent = gv.parts.size ? "오늘 조진 부위: " + [...gv.parts].map((k) => PART_NAME[k]).join(" · ") : "포스터에서 오늘 운동한 부위를 눌러 도장을 찍어주세요";
+  }
+  $("#gmPoster").addEventListener("click", (e) => {
+    const g = e.target.closest && e.target.closest(".bp[data-part]"); if (!g) return;
+    const k = g.dataset.part; if (gv.parts.has(k)) gv.parts.delete(k); else gv.parts.add(k);
+    paintPoster(); drawGym();
+  });
+  function fillGym() {
+    chipRowT("#gmFrame", [["locker", "녹슨 라커 문"], ["mirror", "짐 거울"], ["none", "프레임 없음"]], gv.frame, (v) => { gv.frame = v; fillGym(); drawGym(); });
+    $("#gmFuelEx").replaceChildren(...FUEL_EX.map((t) => h("button", { type: "button", class: "chip-btn", text: t, onclick: () => { $("#gmFuel").value = t; gv.fuel = t; drawGym(); } })));
+  }
+  function openGym() {
+    if (readOnly || !myId) return;
+    Object.assign(gv, { img: null, ox: 0.5, oy: 0.5, rpm: 5, parts: new Set(), fuel: "", frame: "locker" });
+    $("#gymForm").reset(); $("#gymModal").hidden = false; fillGym(); initTacho(); setRpm(5);
+  }
+  $("#gymNew").addEventListener("click", openGym);
+  $("#gmPhoto").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    try { gv.img = await loadBitmap(f); gv.ox = 0.5; gv.oy = gv.img.height > gv.img.width * 1.4 ? 0.35 : 0.5; drawGym(); } catch { notice("사진을 열지 못했어요."); }
+  });
+  $("#gmFuel").addEventListener("input", (e) => { gv.fuel = e.target.value; drawGym(); });
+  (() => {
+    const cv = $("#gymCv"); let st = null;
+    cv.addEventListener("pointerdown", (e) => { if (!gv.img) return; cv.setPointerCapture(e.pointerId); st = { x: e.clientX, y: e.clientY, ox: gv.ox, oy: gv.oy }; });
+    cv.addEventListener("pointermove", (e) => {
+      if (!st) return;
+      const r = cv.getBoundingClientRect(), W = cv.width, H = cv.height, s = Math.max(W / gv.img.width, H / gv.img.height);
+      const spanX = gv.img.width * s - W, spanY = gv.img.height * s - H, k = W / r.width;
+      if (spanX > 0) gv.ox = Math.min(1, Math.max(0, st.ox - (e.clientX - st.x) * k / spanX));
+      if (spanY > 0) gv.oy = Math.min(1, Math.max(0, st.oy - (e.clientY - st.y) * k / spanY));
+      drawGym();
+    });
+    const end = () => { st = null; }; cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+  })();
+  // 같은 사진에서 녹·긁힘 무늬가 매번 같게 나오도록 고정 난수
+  function seeded(n) { let s = n >>> 0 || 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function drawLocker(ctx, W, H) {
+    const L = 58, T = 150, B = 70, Rr = 78, rnd = seeded(7);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.rect(L, T, W - L - Rr, H - T - B);
+    const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#5D6B57"); g.addColorStop(.5, "#4E5B49"); g.addColorStop(1, "#3F4A3B");
+    ctx.fillStyle = g; ctx.fill("evenodd"); ctx.clip("evenodd");
+    for (let i = 0; i < 900; i++) { // 페인트 얼룩·녹
+      const x = rnd() * W, y = rnd() * H, r = rnd() * (rnd() < .08 ? 14 : 4);
+      ctx.fillStyle = rnd() < .55 ? "rgba(122,62,24," + (.15 + rnd() * .45) + ")" : "rgba(255,255,240," + (rnd() * .06) + ")";
+      ctx.beginPath(); ctx.ellipse(x, y, r * (1 + rnd()), r, rnd() * 3, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.strokeStyle = "rgba(230,230,210,.10)"; ctx.lineWidth = 1.5;
+    for (let i = 0; i < 70; i++) { const x = rnd() * W, y = rnd() * H; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + rnd() * 60 - 30, y + rnd() * 14 - 7); ctx.stroke(); }
+    // 환기구 슬릿
+    for (let i = 0; i < 5; i++) {
+      const y = 24 + i * 22, x0 = W / 2 - 230;
+      ctx.fillStyle = "#151A13"; rr(ctx, x0, y, 460, 12, 6); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x0 + 6, y + 12, 448, 2);
+    }
+    // 번호판(놋쇠)
+    const pg = ctx.createLinearGradient(0, 0, 0, 60); pg.addColorStop(0, "#E8C878"); pg.addColorStop(1, "#9C7A32");
+    ctx.fillStyle = pg; rr(ctx, W - 250, 34, 170, 70, 8); ctx.fill();
+    ctx.strokeStyle = "rgba(60,40,10,.6)"; ctx.lineWidth = 3; rr(ctx, W - 244, 40, 158, 58, 6); ctx.stroke();
+    ctx.fillStyle = "#3B2A0E"; ctx.textAlign = "center"; ctx.font = '44px "Do Hyeon", sans-serif';
+    ctx.fillText("No." + String(new Date().getDate()).padStart(2, "0"), W - 165, 85); ctx.textAlign = "left";
+    // 손잡이
+    const hx = W - Rr / 2, hy = H / 2;
+    const hg = ctx.createLinearGradient(hx - 16, 0, hx + 16, 0); hg.addColorStop(0, "#2A2D30"); hg.addColorStop(.5, "#9EA3A8"); hg.addColorStop(1, "#2A2D30");
+    ctx.fillStyle = hg; rr(ctx, hx - 15, hy - 110, 30, 220, 12); ctx.fill();
+    ctx.fillStyle = "#1A1C1E"; rr(ctx, hx - 7, hy - 22, 14, 44, 5); ctx.fill();
+    // 리벳
+    const rivet = (x, y) => { const r = ctx.createRadialGradient(x - 3, y - 3, 1, x, y, 9); r.addColorStop(0, "#D7D9D2"); r.addColorStop(1, "#4B4F48"); ctx.fillStyle = r; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill(); };
+    [[29, 29], [W - 39, 29], [29, H - 35], [W - 39, H - 35]].forEach(([x, y]) => rivet(x, y));
+    for (let y = 220; y < H - 120; y += 180) { rivet(29, y); }
+    ctx.restore();
+    // 안쪽 그림자
+    ctx.save(); ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.lineWidth = 10; ctx.strokeRect(L + 5, T + 5, W - L - Rr - 10, H - T - B - 10);
+    ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.lineWidth = 2; ctx.strokeRect(L - 2, T - 2, W - L - Rr + 4, H - T - B + 4); ctx.restore();
+  }
+  function drawMirror(ctx, W, H) {
+    const t = 44;
+    ctx.save();
+    // 거울 반사 줄
+    ctx.globalCompositeOperation = "screen";
+    [[0.18, 150], [0.36, 60]].forEach(([p, w]) => {
+      const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(Math.max(0, p - .05), "rgba(255,255,255,0)"); g.addColorStop(p, "rgba(255,255,255,.16)"); g.addColorStop(Math.min(1, p + w / 2000), "rgba(255,255,255,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = "source-over";
+    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.rect(t, t, W - 2 * t, H - 2 * t);
+    const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#F2F3F4"); g.addColorStop(.25, "#8E9296"); g.addColorStop(.5, "#E3E5E7"); g.addColorStop(.75, "#6E7276"); g.addColorStop(1, "#C9CCCF");
+    ctx.fillStyle = g; ctx.fill("evenodd");
+    ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.lineWidth = 4; ctx.strokeRect(t, t, W - 2 * t, H - 2 * t);
+    const screw = (x, y) => { ctx.fillStyle = "#5A5E62"; ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#2B2E31"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y + 6); ctx.stroke(); };
+    [[22, 22], [W - 22, 22], [22, H - 22], [W - 22, H - 22]].forEach(([x, y]) => screw(x, y));
+    // 거울에 붙은 짐 규칙 스티커
+    ctx.translate(W - 250, t + 40); ctx.rotate(0.06);
+    ctx.fillStyle = "rgba(245,236,210,.95)"; rr(ctx, 0, 0, 190, 64, 6); ctx.fill();
+    ctx.strokeStyle = "#B4321E"; ctx.lineWidth = 3; rr(ctx, 6, 6, 178, 52, 4); ctx.stroke();
+    ctx.fillStyle = "#B4321E"; ctx.textAlign = "center"; ctx.font = '22px "Do Hyeon", sans-serif'; ctx.fillText("GYM RULE No.1", 95, 30);
+    ctx.fillStyle = "#2A2118"; ctx.font = '20px "Do Hyeon", sans-serif'; ctx.fillText("핑계는 라커에 두고 올 것", 95, 52);
+    ctx.restore(); ctx.textAlign = "left";
+  }
+  function drawPriceTape(ctx, x, y, text, FF) {
+    ctx.font = "50px " + FF;
+    const lines = wrapLines(ctx, text, 620), w = Math.max(...lines.map((l) => ctx.measureText(l).width), 240) + 80, hh = 74 + lines.length * 58;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.045);
+    ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 16; ctx.shadowOffsetY = 6;
+    ctx.beginPath(); ctx.moveTo(0, 0);
+    ctx.lineTo(w, 0);
+    for (let yy = 0; yy <= hh; yy += 12) ctx.lineTo(w + (((yy / 12) % 3) * 5 - 5), yy); // 찢어진 오른쪽
+    ctx.lineTo(0, hh); for (let yy = hh; yy >= 0; yy -= 10) ctx.lineTo(((yy / 10) % 2 ? -6 : 0), yy);
+    ctx.closePath(); ctx.fillStyle = "#FBF5E3"; ctx.fill(); ctx.shadowColor = "transparent";
+    ctx.fillStyle = "#D23A26"; ctx.fillRect(0, 8, w - 4, 6); ctx.fillRect(0, hh - 14, w - 4, 6);
+    ctx.fillStyle = "#D23A26"; ctx.font = "30px " + FF; ctx.fillText("오늘의 연료", 30, 52);
+    ctx.font = "26px " + FF; ctx.textAlign = "right"; ctx.fillText("FUEL ₩0", w - 26, 52); ctx.textAlign = "left";
+    ctx.fillStyle = "#231A12"; ctx.font = "50px " + FF; lines.forEach((l, i) => ctx.fillText(l, 30, 108 + i * 58));
+    ctx.restore();
+  }
+  let gymTok = 0;
+  async function drawGym() {
+    const tok = ++gymTok;
+    try { await document.fonts.load('60px "Do Hyeon"'); } catch {}
+    if (tok !== gymTok) return;
+    const cv = $("#gymCv"), W = 1080, H = 1350, ctx = cv.getContext("2d"), FF = '"Do Hyeon", "Apple SD Gothic Neo", sans-serif';
+    ctx.clearRect(0, 0, W, H);
+    if (gv.img) {
+      const iw = gv.img.width, ih = gv.img.height, s = Math.max(W / iw, H / ih);
+      ctx.drawImage(gv.img, (W - iw * s) * gv.ox, (H - ih * s) * gv.oy, iw * s, ih * s);
+      ctx.fillStyle = "rgba(60,40,20,.10)"; ctx.fillRect(0, 0, W, H); // 살짝 바랜 필름 톤
+    } else {
+      const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#2B2520"); g.addColorStop(1, "#0D0B09");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.font = "52px " + FF; ctx.textAlign = "center";
+      ctx.fillText("오운완 사진을 불러와 주세요", W / 2, H / 2); ctx.textAlign = "left";
+    }
+    if (gv.frame === "locker") drawLocker(ctx, W, H); else if (gv.frame === "mirror") drawMirror(ctx, W, H);
+    const inset = gv.frame === "locker" ? { l: 58, t: 150, r: 78, b: 70 } : gv.frame === "mirror" ? { l: 44, t: 44, r: 44, b: 44 } : { l: 0, t: 0, r: 0, b: 0 };
+    const fuel = gv.fuel.trim();
+    if (fuel) drawPriceTape(ctx, inset.l + 34, inset.t + 40, fuel, FF);
+    // 부위 도장 (왼쪽 아래)
+    const ink = "rgba(206,52,32,.92)";
+    if (gv.parts.size) {
+      const word = stampWord(), sub = [...gv.parts].map((k) => PART_NAME[k]).join(" · ");
+      ctx.save(); ctx.translate(inset.l + 230, H - inset.b - 150); ctx.rotate(0.08);
+      ctx.font = "84px " + FF; const w1 = Math.max(ctx.measureText(word).width, 300) + 70;
+      ctx.strokeStyle = ink; ctx.lineWidth = 8; rr(ctx, -w1 / 2, -78, w1, 150, 10); ctx.stroke();
+      ctx.fillStyle = ink; ctx.textAlign = "center"; ctx.fillText(word, 0, 14);
+      ctx.font = "34px " + FF; ctx.fillText(sub, 0, 56);
+      ctx.globalCompositeOperation = "destination-out";
+      for (let i = 0; i < 240; i++) { ctx.globalAlpha = Math.random() * .6; ctx.beginPath(); ctx.arc(Math.random() * w1 - w1 / 2, Math.random() * 150 - 78, Math.random() * 3.2, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore(); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+    }
+    // 초월 짐 도장 (오른쪽 아래) + RPM 칸
+    const d = new Date(), date = d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
+    ctx.save(); ctx.translate(W - inset.r - 190, H - inset.b - 140); ctx.rotate(-0.14);
+    ctx.strokeStyle = ink; ctx.lineWidth = 9; rr(ctx, -150, -96, 300, 192, 22); ctx.stroke();
+    ctx.lineWidth = 3; rr(ctx, -136, -82, 272, 164, 14); ctx.stroke();
+    ctx.fillStyle = ink; ctx.textAlign = "center"; ctx.font = "88px " + FF; ctx.fillText("초월", 0, 8);
+    ctx.font = "24px " + FF; ctx.fillText("GARAGE GYM", 0, -50);
+    for (let i = 0; i < 10; i++) { const x = -110 + i * 22.5; if (i < gv.rpm) ctx.fillRect(x, 34, 17, 22); else { ctx.lineWidth = 2.5; ctx.strokeRect(x + 1, 35, 15, 20); } }
+    ctx.font = "22px " + FF; ctx.fillText("RPM " + gv.rpm + "/10 · " + date, 0, 80);
+    ctx.globalCompositeOperation = "destination-out";
+    for (let i = 0; i < 260; i++) { ctx.globalAlpha = Math.random() * .6; ctx.beginPath(); ctx.arc(Math.random() * 300 - 150, Math.random() * 192 - 96, Math.random() * 3.2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore(); ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1; ctx.textAlign = "left";
+    // 엔진 과열 대각선 도장
+    if (gv.rpm >= 10) {
+      ctx.save(); ctx.translate(W / 2, H / 2 - 40); ctx.rotate(-0.32); ctx.globalAlpha = .82;
+      ctx.strokeStyle = "#E0371F"; ctx.lineWidth = 10; rr(ctx, -330, -72, 660, 144, 12); ctx.stroke();
+      ctx.fillStyle = "#E0371F"; ctx.textAlign = "center"; ctx.font = "96px " + FF; ctx.fillText("OVERHEAT", 0, 18); ctx.font = "34px " + FF; ctx.fillText("엔진 과열 · 오운완", 0, 58);
+      ctx.restore(); ctx.textAlign = "left"; ctx.globalAlpha = 1;
+    }
+  }
+  $("#gymForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); if (!myId) return;
+    if (!gv.img) { notice("오운완 사진을 먼저 불러와 주세요."); return; }
+    if (!gv.parts.size) { notice("해부도에서 오늘 운동한 부위를 하나 이상 눌러 주세요."); return; }
+    const btn = $("#gmPost"); btn.disabled = true; btn.textContent = "올리는 중";
+    try {
+      await drawGym();
+      const cv = $("#gymCv"); let q = 0.86, imageData = "";
+      for (let i = 0; i < 5; i++) { imageData = cv.toDataURL("image/jpeg", q); if (imageData.length < 600000) break; q -= 0.1; }
+      const ts = Date.now(), fuel = gv.fuel.trim(), parts = PARTS.map(([k]) => k).filter((k) => gv.parts.has(k));
+      const gym = { rpm: gv.rpm, parts, fuel, frame: gv.frame };
+      const text = "💪 오운완 · RPM " + gv.rpm + (gv.rpm >= 10 ? " (엔진 과열!)" : "") + "\n부위: " + parts.map((k) => PART_NAME[k]).join(" · ") + (fuel ? "\n오늘의 연료: " + fuel : "");
+      const ref = db.collection("posts").doc();
+      let ok = await write(() => ref.set({ author: myId, text, imageData, ts, reactions: {}, gym, stickers: {} }));
+      if (ok) ok = await write(() => db.doc("workouts/" + ref.id).set({ author: myId, rpm: gv.rpm, parts, ts }));
+      if (ok) { closeModal("gymModal"); renderAll(); notice(gv.rpm >= 10 ? "엔진 과열! 오운완 인증 완료 🔥" : "오운완 인증 완료! 크루 바디에 불이 들어갔어요 💪"); }
+    } catch { notice("올리지 못했어요. 잠시 후 다시 시도해 주세요."); }
+    btn.disabled = false; btn.textContent = "올리기";
+  });
+
+  // ----- stickers on run/gym posts (drag & drop) -----
   const STICKERS = {
     door: ["🚪", "현관문 문턱이 에베레스트", "#7BC8A4"],
     turtle: ["🐢", "소파에 누운 나보다 100배 빠름", "#5B8FD0"],
     beer: ["🍺", "어제 마신 알콜, 땀으로 승화 중", "#F2A541"],
     shoe: ["👟", "폼은 이미 킵초게", "#B58CF0"],
     fire: ["🔥", "내일의 근육통을 환영해!", "#ED4956"],
-    clap: ["👏", "꺾였는데도 하는 마음", "#F2C94C"]
+    clap: ["👏", "꺾였는데도 하는 마음", "#F2C94C"],
+    // 운동 전용 (4번째 = 세트, 5번째 = 픽셀 그림)
+    pump: ["💪", "풍선 근육 펌핑 중", "#E07A5F", "gym"],
+    chicken: ["🍗", "오늘은 치킨 시켜도 무죄", "#C8873A", "gym"],
+    siren: ["🚨", "근손실 경보! 5분 내 단백질 섭취 요망", "#D23A26", "gym"],
+    gravity: ["🏋️", "중력과 싸워 이긴 자", "#3E5C76", "gym"],
+    protein: ["🥤", "프로틴 짠~", "#7B4A2A", "gym", "pixel"]
   };
+  const stickerSet = (k) => (STICKERS[k] && STICKERS[k][3]) || "run";
+  // 8비트 프로틴 쉐이커 두 개가 짠
+  const PIX_CUP = ["kkkk", "wwww", "bbbb", "bwwb", "bwwb", "bbbb", "bbbb", ".bb."], PIX_C = { k: "#2B2B2B", w: "#F4EBD0", b: "#7B4A2A" };
+  function pixelProtein() {
+    const cup = (tx, rot) => '<g transform="translate(' + tx + ' 3) rotate(' + rot + ' 2 8)">' + PIX_CUP.map((row, y) => [...row].map((c, x) => PIX_C[c] ? '<rect x="' + x + '" y="' + y + '" width="1.02" height="1.02" fill="' + PIX_C[c] + '"/>' : "").join("")).join("") + "</g>";
+    const el = document.createElement("span"); el.className = "px";
+    el.innerHTML = '<svg viewBox="0 0 14 12" width="100%" height="100%" shape-rendering="crispEdges">' + cup(1, 14) + cup(9, -14) +
+      '<rect x="6" y="0" width="1" height="1" fill="#E9D29A"/><rect x="7.5" y="1" width="1" height="1" fill="#E9D29A"/><rect x="5" y="1.6" width="1" height="1" fill="#E9D29A"/></svg>';
+    return el;
+  }
   function stickerEl(key) {
     const s = STICKERS[key] || ["⭐", "", "#F2C94C"];
-    return h("div", { class: "stk", style: "--c:" + s[2] }, h("span", { class: "e", text: s[0] }), s[1] ? h("span", { class: "t", text: s[1] }) : null);
+    return h("div", { class: "stk" + (s[3] === "gym" ? " vint" : ""), style: "--c:" + s[2] }, s[4] === "pixel" ? pixelProtein() : h("span", { class: "e", text: s[0] }), s[1] ? h("span", { class: "t", text: s[1] }) : null);
   }
   function stickerLayer(p, d, media) {
     const list = Object.entries(d.stickers || {}).filter(([, v]) => v && STICKERS[v.s]).sort((a, b) => (a[1].t || 0) - (b[1].t || 0));
@@ -2120,17 +2549,17 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     });
     if (readOnly || !myId) return;
     const box = h("button", { type: "button", class: "stk-box", "aria-label": "스탬프함 열기", text: "🧰" });
-    box.addEventListener("click", (e) => { e.stopPropagation(); openTray(p.id); });
+    box.addEventListener("click", (e) => { e.stopPropagation(); openTray(p.id, d.gym ? "gym" : "run"); });
     media.append(box);
   }
   let tray = null;
   function closeTray() { if (tray) { tray.remove(); tray = null; } }
-  function openTray(postId) {
+  function openTray(postId, set) {
     closeTray();
     tray = h("div", { class: "stk-tray", role: "dialog", "aria-label": "스탬프함" },
       h("div", { class: "stk-tray-h" }, h("b", { text: "🧰 스탬프함" }), h("span", { text: "사진 위로 끌어다 놓기 · 누르면 가운데에" }), h("button", { type: "button", text: "닫기", onclick: closeTray })));
     const grid = h("div", { class: "stk-grid" });
-    Object.keys(STICKERS).forEach((key) => {
+    Object.keys(STICKERS).filter((k) => stickerSet(k) === (set || "run")).forEach((key) => {
       const item = h("div", { class: "stk-pick", tabindex: "0", role: "button", "aria-label": STICKERS[key][1] }, stickerEl(key));
       item.addEventListener("pointerdown", (e) => startDrag(e, key, postId, item));
       item.addEventListener("keydown", (e) => { if (e.key === "Enter") placeSticker(postId, key, 50 + (Math.random() * 20 - 10), 45 + (Math.random() * 20 - 10)); });
@@ -2360,6 +2789,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     listen("chat", db.collection("chat").orderBy("ts", "desc").limit(300), (s) => { S.chat = s.docs; });
     listen("sauna", db.collection("sauna").where("ts", ">=", monthStart()).limit(500), (s) => { S.sauna = s.docs; });
     listen("runs", db.collection("runs").limit(3000), (s) => { S.runs = s.docs; });
+    listen("workouts", db.collection("workouts").where("ts", ">=", weekStart() - 86400000).limit(400), (s) => { S.workouts = s.docs; });
     listen("eats", db.collection("eats").orderBy("ts", "desc").limit(300), (s) => { S.eats = s.docs; });
     listen("notices", db.collection("notices").orderBy("ts", "desc").limit(20), (s) => { S.notices = s.docs; if (!$("#noticeModal").hidden) renderNoticeList(); });
     if (myId) listen("dm", db.collection("dm").where("members", "array-contains", myId).limit(500), (s) => { S.dm = s.docs; });

@@ -7,7 +7,7 @@ admin.initializeApp();
 setGlobalOptions({ region: "asia-northeast3", maxInstances: 3 });
 const db = admin.firestore();
 const APP_URL = "https://joonchilly.github.io/CHOWOL/";
-const STICKERS = { door: "🚪", turtle: "🐢", beer: "🍺", shoe: "👟", fire: "🔥", clap: "👏" };
+const STICKERS = { door: "🚪", turtle: "🐢", beer: "🍺", shoe: "👟", fire: "🔥", clap: "👏", pump: "💪", chicken: "🍗", siren: "🚨", gravity: "🏋️", protein: "🥤" };
 
 const clip = (t, n = 60) => { t = String(t || "").replace(/\s+/g, " ").trim(); return t.length > n ? t.slice(0, n) + "…" : t; };
 const preview = (d) => (d.kind === "image" ? "사진" : d.kind === "video" ? "동영상" : d.kind === "poll" ? "📊 " + (d.q || "투표") : clip(d.text));
@@ -48,7 +48,7 @@ async function send(uids, title, body, hash, tag) {
 exports.onPost = onDocumentCreated("posts/{id}", async (e) => {
   const d = e.data.data();
   if (!d || !d.author || d.author === "guide") return;
-  const what = d.sauna ? "🧖 사우나 인증을" : d.run ? "🏃 러닝 인증을" : "새 게시물을";
+  const what = d.sauna ? "🧖 사우나 인증을" : d.run ? "🏃 러닝 인증을" : d.gym ? (d.gym.rpm >= 10 ? "🔥 엔진 과열 오운완을" : "💪 오운완 인증을") : "새 게시물을";
   await send(await everyoneBut(d.author), "초월", (await nameOf(d.author)) + "님이 " + what + " 올렸어요", "#home", "post-" + e.params.id);
 });
 
@@ -62,7 +62,7 @@ exports.onPostUpdate = onDocumentUpdated("posts/{id}", async (e) => {
   }
   const bs = b.stickers || {}, as = a.stickers || {};
   for (const [sid, v] of Object.entries(as)) {
-    if (v && !bs[sid] && v.by && v.by !== owner) await send([owner], "초월", (await nameOf(v.by)) + "님이 내 러닝에 스티커를 붙였어요 " + (STICKERS[v.s] || ""), "#home", "stk-" + e.params.id);
+    if (v && !bs[sid] && v.by && v.by !== owner) await send([owner], "초월", (await nameOf(v.by)) + "님이 내 " + (a.gym ? "운동 인증" : "러닝") + "에 스티커를 붙였어요 " + (STICKERS[v.s] || ""), "#home", "stk-" + e.params.id);
   }
 });
 
@@ -104,4 +104,23 @@ exports.onChatUpdate = onDocumentUpdated("chat/{id}", async (e) => {
 exports.onNotice = onDocumentCreated("notices/{id}", async (e) => {
   const d = e.data.data(); if (!d) return;
   await send(await everyoneBut(d.author), "📢 초월 공지", clip(d.text, 80), "#dm", "notice");
+});
+
+// 크루 바디: 이번 주(월요일 0시, 한국 시간) 7부위가 처음으로 다 켜지면 모두에게
+const PARTS = ["chest", "back", "shoulder", "arm", "core", "legs", "cardio"];
+function weekStartKST(ts) {
+  const k = new Date(ts + 9 * 3600000); // 한국 시간 기준 날짜
+  const day = (k.getUTCDay() + 6) % 7;
+  return Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate() - day) - 9 * 3600000;
+}
+exports.onWorkout = onDocumentCreated("workouts/{id}", async (e) => {
+  const d = e.data.data(); if (!d || !d.ts) return;
+  const ws = weekStartKST(d.ts);
+  const docs = (await db.collection("workouts").where("ts", ">=", ws).get()).docs;
+  const before = new Set(), after = new Set();
+  docs.forEach((x) => { const w = x.data(); if (w.ts >= ws + 7 * 86400000) return; (w.parts || []).forEach((p) => { after.add(p); if (x.id !== e.params.id) before.add(p); }); });
+  const full = (set) => PARTS.every((p) => set.has(p));
+  if (!full(after) || full(before)) return;
+  const all = (await db.collection("members").get()).docs.map((m) => m.id);
+  await send(all, "💪 초월 크루 바디 완성!", "이번 주 7부위 전부 점등! 득근 파티 열자! (마지막 퍼즐: " + (await nameOf(d.author)) + "님)", "#log", "crewbody-" + ws);
 });
