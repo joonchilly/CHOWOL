@@ -242,6 +242,37 @@ body.no-stories .stories { display: none; }
 .msg.mine.last :is(.bubble, .media-bub) { border-top-right-radius: 6px; }
 .dm-form { display: flex; align-items: flex-end; gap: 0; min-height: 48px; margin: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border: 1px solid var(--line); border-radius: 24px; padding: 1px 2px; background: var(--surface); }
 .attach { color: var(--accent); }
+.lp { -webkit-touch-callout: none; transition: transform .15s; }
+.lp.held { transform: scale(1.03); }
+.mm-bg { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,.28); animation: fadeIn .12s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.mm-panel { position: fixed; display: flex; flex-direction: column; gap: 6px; width: max-content; max-width: calc(100vw - 20px); animation: popIn .16s cubic-bezier(.2,1.3,.4,1); }
+@keyframes popIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.mm-react { display: flex; gap: 2px; padding: 4px 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+.mm-react button { width: 44px; height: 44px; border-radius: 50%; font-size: 24px; display: grid; place-items: center; transition: transform .1s; }
+.mm-react button:active { transform: scale(1.25); }
+.mm-react button.on { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.mm-list { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: calc(var(--r) * .8); overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,.25); min-width: 160px; align-self: flex-start; }
+.mm-list button { min-height: 44px; padding: 0 16px; text-align: left; color: var(--ink); font-size: 16px; }
+.mm-list button + button { border-top: 1px solid var(--line); }
+.mm-list button.del { color: var(--danger); }
+.reacts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; padding: 0 4px; position: relative; z-index: 1; }
+.msg.mine .reacts { justify-content: flex-end; }
+.rx { display: inline-flex; align-items: center; gap: 3px; height: 24px; padding: 0 8px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rx.me { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.rx .n { font-size: 12px; }
+.quote { display: flex; flex-direction: column; align-items: flex-start; text-align: left; max-width: 100%; margin: 0 0 3px; padding: 4px 10px; border-left: 3px solid var(--accent); border-radius: 4px; background: color-mix(in srgb, var(--ink) 6%, transparent); font-size: 12px; color: var(--muted); }
+.msg.mine .quote { align-self: flex-end; }
+.quote b { color: var(--ink); font-size: 12px; }
+.quote span { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg.flash .lp { animation: flash 1.2s ease-out; }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.reply-bar { display: flex; align-items: center; gap: 8px; margin: 6px 12px 0; padding: 6px 4px 6px 12px; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 6px; }
+.reply-bar[hidden] { display: none; }
+.rb-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rb-t b { font-size: 12px; color: var(--ink); }
+.rb-t span { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#replyX { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--muted); }
 .attach-menu { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 12px 0; }
 .attach-menu button { display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 15px; }
 .media-bub { border-radius: calc(var(--r) * 1.2); overflow: hidden; width: min(240px, 62vw); background: var(--raise); border: 1px solid var(--line); }
@@ -576,6 +607,7 @@ html { touch-action: pan-x pan-y; }
           <button type="button" id="amNotice"><svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px" aria-hidden="true"><path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>공지</button>
         </div>
         <input type="file" id="dmFile" accept="image/*,video/*" hidden>
+        <div class="reply-bar" id="replyBar" hidden><div class="rb-t"><b id="replyWho"></b><span id="replyText"></span></div><button type="button" id="replyX" aria-label="답장 취소"><svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
         <form class="dm-form" id="dmForm">
           <button type="button" class="attach" id="dmAttach" aria-label="사진·동영상·투표·공지 보내기" aria-expanded="false"><svg class="i" viewBox="0 0 28 28" style="width:28px;height:28px" aria-hidden="true"><circle cx="14" cy="14" r="12.6"/><path d="M14 9v10M9 14h10"/></svg></button>
           <label for="dmInput" hidden>메시지</label>
@@ -1439,8 +1471,13 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
         const pos = first && last ? "single" : first ? "first" : last ? "last" : "middle";
         const col = h("div", { class: "col" });
         if (!mine && first && t === GROUP) col.append(h("span", { class: "who", text: nameOf(d.author) }));
-        col.append(h("div", { class: "line" }, msgBody(d), last ? h("time", { text: hhmm(d.ts) }) : null));
-        const row = h("div", { class: "msg " + pos + (mine ? " mine" : "") });
+        if (d.replyTo && d.replyTo.id) col.append(h("button", { type: "button", class: "quote", onclick: () => jumpTo(d.replyTo.id) },
+          h("b", { text: (d.replyTo.author === myId ? "나" : nameOf(d.replyTo.author)) + "에게 답장" }), h("span", { text: d.replyTo.text || "" })));
+        const body = msgBody(d); body.classList.add("lp");
+        holdable(body, d);
+        col.append(h("div", { class: "line" }, body, last ? h("time", { text: hhmm(d.ts) }) : null));
+        const rx = reactPills(d); if (rx) col.append(rx);
+        const row = h("div", { class: "msg " + pos + (mine ? " mine" : "") + (rx ? " has-rx" : "") }); row.dataset.id = d._id;
         if (!mine) row.append(h("span", { class: "slot" }, first ? avatar(d.author) : null));
         row.append(col); out.push(row);
       });
@@ -1448,11 +1485,80 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     }
     renderNoticeBar(t); // 공지 바를 먼저 그려야 메시지 영역 높이가 확정됨
     if (near) box.scrollTop = box.scrollHeight;
-    if (lastThreadRendered !== t) { $("#attachMenu").hidden = true; }
+    if (lastThreadRendered !== t) { $("#attachMenu").hidden = true; if (ui.reply && ui.reply.t !== t) setReply(null); closeMsgMenu(); }
     $("#amPoll").hidden = t !== GROUP; $("#amNotice").hidden = t !== GROUP;
     lastThreadRendered = t;
     markSeen(t);
     renderNav();
+  }
+
+  // ----- 말풍선 길게 누르기: 반응 · 답장 · 복사 · 삭제 -----
+  const REACTS = ["💪", "👍", "😂", "🔥", "❤️"];
+  function reactPills(d) {
+    const by = {}; Object.entries(d.reactions || {}).forEach(([u, e]) => { if (e && REACTS.includes(e)) (by[e] = by[e] || []).push(u); });
+    const keys = REACTS.filter((e) => by[e]); if (!keys.length) return null;
+    return h("div", { class: "reacts" }, ...keys.map((e) => h("button", { type: "button", class: "rx" + (by[e].includes(myId) ? " me" : ""), "aria-label": e + " " + by[e].length + "명: " + by[e].map(nameOf).join(", "),
+      title: by[e].map(nameOf).join(", "), onclick: () => react(d, e) }, h("span", { text: e }), h("span", { class: "n", text: String(by[e].length) }))));
+  }
+  function react(d, e) {
+    if (!myId || readOnly) return;
+    const cur = d.reactions && d.reactions[myId];
+    write(() => db.doc(d._col + "/" + d._id).update({ reactions: { [myId]: cur === e ? null : e } }));
+  }
+  function holdable(el, d) {
+    let t = null, sx = 0, sy = 0;
+    const cancel = () => { if (t) { clearTimeout(t); t = null; } };
+    el.addEventListener("pointerdown", (e) => {
+      if (e.button > 0) return; sx = e.clientX; sy = e.clientY; cancel();
+      t = setTimeout(() => { t = null; el._held = true; openMsgMenu(el, d); try { navigator.vibrate && navigator.vibrate(10); } catch {} }, 350);
+    });
+    el.addEventListener("pointermove", (e) => { if (t && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) cancel(); });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((n) => el.addEventListener(n, cancel));
+    // 길게 누른 뒤 손을 뗄 때 사진 열기·투표 같은 클릭이 같이 눌리지 않게
+    el.addEventListener("click", (e) => { if (el._held) { e.preventDefault(); e.stopPropagation(); el._held = false; } }, true);
+    el.addEventListener("contextmenu", (e) => { e.preventDefault(); openMsgMenu(el, d); });
+  }
+  let msgMenu = null;
+  function closeMsgMenu() { if (msgMenu) { msgMenu.remove(); msgMenu = null; document.querySelectorAll(".lp.held").forEach((x) => x.classList.remove("held")); } }
+  function openMsgMenu(el, d) {
+    if (!myId || readOnly) return;
+    closeMsgMenu(); el.classList.add("held");
+    const mine = d.author === myId, cur = d.reactions && d.reactions[myId];
+    const text = d.kind ? "" : String(d.text || "");
+    let armed = false;
+    const items = [h("button", { type: "button", text: "답장", onclick: () => { setReply(d); closeMsgMenu(); } })];
+    if (text) items.push(h("button", { type: "button", text: "복사", onclick: async () => {
+      try { await navigator.clipboard.writeText(text); notice("복사했어요"); } catch { notice("복사하지 못했어요"); } closeMsgMenu(); } }));
+    if (mine || isOwner) items.push(h("button", { type: "button", class: "del", text: "삭제", onclick: async (ev) => {
+      if (!armed) { armed = true; ev.currentTarget.textContent = "정말 삭제할까요?"; return; }
+      closeMsgMenu(); await write(() => db.doc(d._col + "/" + d._id).delete()); } }));
+    const panel = h("div", { class: "mm-panel", role: "menu" },
+      h("div", { class: "mm-react" }, ...REACTS.map((e) => h("button", { type: "button", class: cur === e ? "on" : "", "aria-label": e + " 반응", text: e, onclick: () => { react(d, e); closeMsgMenu(); } }))),
+      h("div", { class: "mm-list" }, ...items));
+    msgMenu = h("div", { class: "mm-bg", onclick: (e) => { if (e.target === msgMenu) closeMsgMenu(); } }, panel);
+    document.body.append(msgMenu);
+    // 말풍선 바로 위(자리가 없으면 아래)에 띄우기
+    const r = el.getBoundingClientRect(), pw = panel.offsetWidth, ph = panel.offsetHeight, vw = window.innerWidth;
+    const top = r.top - ph - 10 > 60 ? r.top - ph - 10 : Math.min(r.bottom + 10, window.innerHeight - ph - 12);
+    const left = mine ? Math.max(10, Math.min(vw - pw - 10, r.right - pw)) : Math.max(10, Math.min(vw - pw - 10, r.left));
+    panel.style.top = top + "px"; panel.style.left = left + "px";
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMsgMenu(); });
+  function setReply(d) {
+    ui.reply = d ? { t: ui.thread, id: d._id, author: d.author, text: msgPreview(d).slice(0, 60) } : null;
+    $("#replyBar").hidden = !ui.reply;
+    if (ui.reply) {
+      $("#replyWho").textContent = (d.author === myId ? "나" : nameOf(d.author)) + "에게 답장";
+      $("#replyText").textContent = ui.reply.text;
+      setTimeout(() => $("#dmInput").focus(), 30);
+    }
+  }
+  $("#replyX").addEventListener("click", () => setReply(null));
+  function jumpTo(id) {
+    const row = $("#msgs").querySelector('.msg[data-id="' + id + '"]');
+    if (!row) { notice("원래 메시지가 너무 오래됐거나 지워졌어요"); return; }
+    row.scrollIntoView({ block: "center", behavior: "smooth" });
+    row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
   }
   // ----- chat: media, polls, notices -----
   const voteIdx = (v) => (v && typeof v === "object" ? v.i : v);
@@ -1605,6 +1711,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   async function sendChat(fields) {
     const t = ui.thread, ts = Date.now();
     const body = { author: myId, ts, ...fields };
+    if (ui.reply && ui.reply.t === t) { body.replyTo = { id: ui.reply.id, author: ui.reply.author, text: ui.reply.text }; setReply(null); }
     const ok = t === GROUP
       ? await write(() => db.collection("chat").add(body))
       : await write(() => db.collection("dm").add({ ...body, members: [myId, t], pair: pairKey(myId, t) }));
