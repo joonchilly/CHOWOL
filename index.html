@@ -1656,6 +1656,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const mine = id === myId;
     const posts = S.posts.filter((p) => p.data().author === id);
     const likes = posts.reduce((n, p) => n + heartsOf(p.data()).length, 0);
+    // '친구 수'는 모두 같아서 대신 이번 달 사우나·러닝·운동 인증 횟수
+    const ms0 = monthStart(), monthCerts = posts.filter((p) => { const d = p.data(); return d.ts >= ms0 && (d.sauna || d.run || d.gym); }).length;
     const m = S.members[id] || {};
     const btns = h("div", { class: "prof-btns" });
     $("#profTheme").hidden = !(mine && isOwner); // 앱 꾸미기는 방장만, 상단바 톱니로
@@ -1676,7 +1678,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
           h("div", { class: "stats" },
             h("div", {}, h("b", { text: String(posts.length) }), h("span", { text: "게시물" })),
             h("div", {}, h("b", { text: String(likes) }), h("span", { text: "받은 💪" })),
-            h("div", {}, h("b", { text: String(Math.max(0, memberIds().length - (S.members[id] ? 1 : 0))) }), h("span", { text: "친구" })))),
+            h("div", {}, h("b", { text: String(monthCerts) }), h("span", { text: (new Date().getMonth() + 1) + "월 인증" })))),
         ...(m.bio ? [h("p", { class: "prof-bio", text: m.bio })] : (mine ? [h("p", { class: "prof-bio", style: "color:var(--muted)", text: "소개를 적어보세요." })] : [])),
         btns),
       h("div", { class: "grid-tabs" }, h("span", { "aria-label": "게시물" }, icon("grid"))),
