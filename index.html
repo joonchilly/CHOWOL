@@ -1677,7 +1677,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
             h("div", {}, h("b", { text: String(posts.length) }), h("span", { text: "게시물" })),
             h("div", {}, h("b", { text: String(likes) }), h("span", { text: "받은 💪" })),
             h("div", {}, h("b", { text: String(Math.max(0, memberIds().length - (S.members[id] ? 1 : 0))) }), h("span", { text: "친구" })))),
-        h("div", {}, h("div", { class: "prof-name", text: nameOf(id) }), m.bio ? h("p", { class: "prof-bio", text: m.bio }) : (mine ? h("p", { class: "prof-bio", style: "color:var(--muted)", text: "소개를 적어보세요." }) : null)),
+        ...(m.bio ? [h("p", { class: "prof-bio", text: m.bio })] : (mine ? [h("p", { class: "prof-bio", style: "color:var(--muted)", text: "소개를 적어보세요." })] : [])),
         btns),
       h("div", { class: "grid-tabs" }, h("span", { "aria-label": "게시물" }, icon("grid"))),
       posts.length ? grid : h("p", { class: "empty", text: mine ? "첫 게시물을 올려보세요." : "아직 게시물이 없어요." }));
