@@ -313,8 +313,9 @@ html { touch-action: pan-x pan-y; }
 .sheet { width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); display: flex; flex-direction: column; }
 .sheet-h { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .sheet-h .title { flex: 1; text-align: center; font-weight: 600; }
-.sheet-h .act { color: var(--accent); font-weight: 600; min-width: 48px; text-align: right; }
-.sheet-h .cancel { min-width: 48px; text-align: left; color: var(--muted); }
+.sheet-h .act { color: var(--accent); font-size: 17px; min-width: 64px; min-height: 44px; padding: 0 4px; text-align: right; }
+.sheet-h .cancel { font-size: 17px; min-width: 64px; min-height: 44px; padding: 0 4px; text-align: left; color: var(--muted); }
+.sheet-h { padding: 4px 12px; min-height: 52px; }
 .sheet-b { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .pick { aspect-ratio: 1; border: 1px dashed var(--line); border-radius: 10px; display: grid; place-items: center; color: var(--muted); cursor: pointer; overflow: hidden; position: relative; text-align: center; }
 .pick img { width: 100%; height: 100%; object-fit: cover; }
@@ -344,7 +345,11 @@ html { touch-action: pan-x pan-y; }
 .field input, .field textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; color: var(--ink); font-size: 15px; resize: vertical; }
 .edit-av { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .edit-av .av { width: 86px; height: 86px; font-size: 30px; }
-.edit-av label { color: var(--accent); font-weight: 600; cursor: pointer; position: relative; }
+.edit-av .av-pick { position: relative; cursor: pointer; border-radius: 50%; display: block; }
+.edit-av .av-pick:active { transform: scale(.97); }
+.edit-av .cam { position: absolute; right: -2px; bottom: -2px; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--surface); display: grid; place-items: center; }
+.edit-av .cam svg { width: 17px; height: 17px; fill: none; stroke: var(--on-accent); stroke-width: 1.8; stroke-linejoin: round; }
+.edit-av .av-link { color: var(--accent); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; }
 .edit-av input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .post-sheet { max-width: 480px; }
 
@@ -652,7 +657,11 @@ html { touch-action: pan-x pan-y; }
       <button type="submit" class="act" id="editSave">완료</button>
     </div>
     <div class="sheet-b">
-      <div class="edit-av"><span id="editAv"></span><label for="editPhoto">사진 바꾸기<input type="file" id="editPhoto" accept="image/*"></label></div>
+      <div class="edit-av">
+        <label for="editPhoto" class="av-pick" aria-label="프로필 사진 바꾸기"><span id="editAv"></span><span class="cam" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></label>
+        <label for="editPhoto" class="av-link">사진 바꾸기</label>
+        <input type="file" id="editPhoto" accept="image/*">
+      </div>
       <div class="field"><label for="editNick">이름</label><input id="editNick" maxlength="20" placeholder="친구들한테 보일 이름" required></div>
       <div class="field"><label for="editBio">소개</label><textarea id="editBio" rows="3" maxlength="150" placeholder="한 줄 소개"></textarea></div>
       <button type="button" class="btn" id="logoutBtn" style="flex:none">로그아웃</button>
