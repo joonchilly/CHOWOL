@@ -729,7 +729,7 @@ window.claude = { use: (n) => window.__ready.then((api) => (api && api[n]) || nu
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getMessaging, getToken, isSupported as pushSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-import { getFirestore, Bytes, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, Bytes, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, onSnapshot, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyABcv9Uhfu1u1RBIXvdFQGWTRy7J3IJ5UY",
@@ -744,7 +744,10 @@ const OWNER_EMAIL = "moonredcok@gmail.com";
 const app = initializeApp(firebaseConfig);
 // 한 번 로그인하면 이 기기에 계속 기억 (앱을 껐다 켜도 유지)
 const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence], popupRedirectResolver: browserPopupRedirectResolver });
-const fs = getFirestore(app);
+// 한 번 받은 데이터는 휴대폰에 저장 → 다음에 열 때 바로 보여주고, 바뀐 것만 새로 받음
+let fs;
+try { fs = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
+catch (e) { console.warn("offline cache off", e); fs = getFirestore(app); }
 const $g = (s) => document.querySelector(s);
 
 const mapErr = (e) => {
@@ -1126,7 +1129,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   function keptImg(key, src, alt) {
     let img = imgKeep.get(key);
     if (!img || img.dataset.src !== src) {
-      img = h("img", { alt, loading: "lazy" }); img.dataset.src = src; img.src = src;
+      img = h("img", { alt, loading: "lazy", decoding: "async" }); img.dataset.src = src; img.src = src;
       img.onerror = () => { const ph = h("p", { class: "empty", text: "사진을 불러올 수 없어요." }); img.replaceWith(ph); };
       imgKeep.set(key, img);
     }
@@ -1182,7 +1185,13 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     if (loadingOr(feed, "posts", "피드")) return;
     if (!S.posts.length) { feed.replaceChildren(h("p", { class: "empty", text: "아직 게시물이 없어요. 아래 + 버튼으로 첫 게시물을 올려보세요." })); return; }
     const byPost = commentsByPost();
-    feed.replaceChildren(...S.posts.map((p) => postView(p, byPost[p.id] || [], false)));
+    const tail = [];
+    if (S.postsMore && postLimit < 100) {
+      const more = h("p", { class: "empty", text: "이전 게시물 불러오는 중…" });
+      new IntersectionObserver((es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); morePosts(postLimit + 10); } }, { rootMargin: "600px" }).observe(more);
+      tail.push(more);
+    }
+    feed.replaceChildren(...S.posts.map((p) => postView(p, byPost[p.id] || [], false)), ...tail);
   }
   function commentsByPost() {
     const by = {};
@@ -1544,7 +1553,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
 
   // ---------- profile ----------
-  function openProfile(id) { ui.profileId = id; if (ui.openPost) closeModal("postModal"); go("profile", true); $("#profBody").scrollTop = 0; }
+  function openProfile(id) { morePosts(100); ui.profileId = id; if (ui.openPost) closeModal("postModal"); go("profile", true); $("#profBody").scrollTop = 0; }
   function renderProfile() {
     const id = ui.profileId || myId;
     const body = $("#profBody");
@@ -2164,6 +2173,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   function show(s) {
     if (!SCREENS.includes(s)) s = "home";
     ui.screen = s; ui.menu = null; closeTray();
+    if (s === "profile") morePosts(100);
     SCREENS.forEach((x) => { $("#s-" + x).hidden = x !== s; });
     renderAll();
   }
@@ -2315,6 +2325,17 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   // ---------- connect ----------
   let loadTimer = null;
+  // 게시물은 처음엔 최근 것만 받고, 아래로 내리거나 프로필을 열면 더 받음 (사진이 글 안에 들어 있어 무거움)
+  let postLimit = 8, postUnsub = null;
+  function listenPosts() {
+    const old = postUnsub;
+    postUnsub = listen("posts", db.collection("posts").orderBy("ts", "desc").limit(postLimit), (s) => { S.posts = s.docs; S.postsMore = s.size >= postLimit; });
+    if (old) old(); // 화면의 기존 게시물은 새 데이터가 올 때까지 그대로 유지됨
+  }
+  function morePosts(n) {
+    if (!db || postLimit >= 100 || (n <= postLimit)) return;
+    postLimit = Math.min(100, n); listenPosts();
+  }
   function listen(key, query, assign) {
     return query.onSnapshot((snap) => {
       assign(snap);
@@ -2334,7 +2355,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     if (!myId) setReadOnly();
     try { assets = await claude.use("assets"); } catch { assets = null; }
     loadTimer = setTimeout(() => notice("아직 초월에 연결되지 않았어요. 인터넷 연결을 확인해 주세요."), 10000);
-    listen("posts", db.collection("posts").orderBy("ts", "desc").limit(100), (s) => { S.posts = s.docs; });
+    listenPosts();
     listen("comments", db.collection("comments").orderBy("ts", "desc").limit(800), (s) => { S.comments = s.docs; });
     listen("chat", db.collection("chat").orderBy("ts", "desc").limit(300), (s) => { S.chat = s.docs; });
     listen("sauna", db.collection("sauna").where("ts", ">=", monthStart()).limit(500), (s) => { S.sauna = s.docs; });
