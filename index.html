@@ -2899,7 +2899,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     v.addEventListener("error", waves);
     // always with sound: try to start unmuted; if the browser refuses, wait for one tap
     v.muted = false; v.volume = 1;
-    $("#introPlay").addEventListener("click", (e) => { e.currentTarget.hidden = true; v.muted = false; v.currentTime = 0; v.play().catch(waves); });
+    $("#introPlay").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.hidden = true; v.muted = false; v.currentTime = 0; v.play().catch(waves); });
     // 영상이 나오는 중에 화면을 누르면 바로 로고 → 홈
     ov.addEventListener("click", (e) => { if (stage === "film" && $("#introPlay").hidden) { v.pause(); waves(); } else if (stage === "splash") leave(0); });
     const p = v.play(); if (p && p.catch) p.catch(() => { v.pause(); $("#introPlay").hidden = false; });
