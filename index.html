@@ -130,11 +130,11 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 @media (max-width: 480px) { .app { border: 0; } body .modal { padding: 0; place-items: end stretch; } body .modal .sheet { max-width: none; border-radius: var(--r) var(--r) 0 0; max-height: 92dvh; padding-bottom: env(safe-area-inset-bottom, 0px); } }
 /* toasts & activity */
 .toasts { position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 16px)); z-index: 35; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
-.toast { pointer-events: auto; display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--raise); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); animation: tIn .3s ease; backdrop-filter: blur(8px); }
+.toast { pointer-events: auto; display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--ink); border: 0; border-radius: var(--r); padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); animation: tIn .3s ease; }
 .toast.bye { animation: tOut .3s ease forwards; }
 .toast .t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.toast .t b { color: var(--ink); }
-.toast .t span { color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast .t b { color: var(--bg); }
+.toast .t span { color: color-mix(in srgb, var(--bg) 78%, transparent); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @keyframes tIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
 @keyframes tOut { to { opacity: 0; transform: translateY(-12px); } }
 .act-row { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 10px 14px; }
@@ -1246,7 +1246,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
   function toast(i) {
     const box = $("#toasts");
-    while (box.children.length >= 3) box.firstChild.remove();
+    box.replaceChildren(); // 한 번에 하나만: 새 소식이 오면 이전 것은 바로 교체
     const el = h("button", { type: "button", class: "toast", onclick: () => { el.remove(); closeModal("actModal"); i.go(); } },
       avatar(i.who), h("div", { class: "t" }, h("b", { text: nameOf(i.who) + i.text }), i.sub ? h("span", { text: String(i.sub).replace(/\s+/g, " ") }) : null));
     box.append(el);
