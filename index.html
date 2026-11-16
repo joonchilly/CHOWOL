@@ -175,15 +175,28 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 .toast .t span { color: color-mix(in srgb, var(--bg) 78%, transparent); font-size: var(--t-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @keyframes tIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
 @keyframes tOut { to { opacity: 0; transform: translateY(-12px); } }
+/* 알림 줄: 아바타 36 | 내용(15px, 최대 2줄, 첫 줄 끝에 시간) | 게시물 썸네일 44 */
 .act-row { display: flex; gap: var(--s-3); align-items: center; width: 100%; text-align: left; padding: var(--s-3) var(--s-4); }
-.act-row:hover { background: var(--raise); }
-.act-row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.act-row .t span { color: var(--muted); font-size: var(--t-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.act-row.new { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-.act-row time { color: var(--muted); font-size: var(--t-sm); white-space: nowrap; }
+.act-row:active { transform: none; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.act-row > .av { width: 36px; height: 36px; }
+.act-row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 15px; line-height: 1.4; }
+.act-row .tx { margin: 0; color: var(--ink); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.act-row .t.has-sub .tx { -webkit-line-clamp: 1; }
+.act-row .tx b { margin-right: 1px; }
+.act-row .tx time { color: var(--muted); font-size: var(--t-sm); white-space: nowrap; }
+.act-row .sub { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.new-dot { display: inline-block; width: 8px; height: 8px; border-radius: var(--r-full); background: var(--accent); margin-left: 6px; vertical-align: middle; }
+.act-thumb { flex: none; width: 44px; height: 44px; border-radius: var(--r-sm); overflow: hidden; background: var(--raise); }
+.act-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.act-thumb.txt { background: var(--accent); color: var(--on-accent); font-size: 9px; line-height: 1.2; padding: 4px; display: grid; place-items: center; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
+.push-card { display: flex; align-items: center; gap: var(--s-3); margin: var(--s-3) var(--s-4) var(--s-1); padding: var(--s-4); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--ink); }
+.push-card svg.i { width: 24px; height: 24px; flex: none; }
+.push-card .pc-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.push-card .pc-t b { font-size: 15px; }
+.push-card .pc-sub { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.push-card .pc-btn { flex: none; min-width: 44px; height: 44px; padding: 0; display: grid; place-items: center; }
+.push-card .pc-btn span { display: inline-flex; align-items: center; height: 36px; padding: 0 var(--s-4); border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent); white-space: nowrap; }
 .act-h { padding: var(--s-3) var(--s-4) var(--s-1); color: var(--muted); font-size: var(--t-sm); }
-.act-foot { padding: var(--s-3) var(--s-4) var(--s-4); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s-2); }
-.act-foot small { color: var(--muted); }
 svg.i { width: 26px; height: 26px; display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 svg.i.filled { fill: currentColor; }
 
@@ -450,7 +463,7 @@ html { touch-action: pan-x pan-y; }
 .chip-btn { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
 .chip-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .sw { width: 36px; height: 36px; border-radius: var(--r-full); border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); margin: var(--s-1); }
-.sw[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 3px; }
+.sw[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
 .th-preview { position: sticky; top: 0; z-index: 2; margin: -14px -14px 0; padding: var(--s-3) var(--s-4); height: 120px; box-sizing: border-box; background: var(--bg); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr; gap: var(--s-2) var(--s-3); }
 .pv-bar { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--s-2); color: var(--logo); font-family: var(--font-display); font-size: var(--t-lg); letter-spacing: .12em; }
 .pv-dot { width: 14px; height: 18px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: var(--logo); }
@@ -464,7 +477,13 @@ html { touch-action: pan-x pan-y; }
 .range-row { display: flex; align-items: center; gap: var(--s-3); }
 .range-row input { flex: 1; accent-color: var(--accent); }
 .range-row output { min-width: 42px; text-align: right; color: var(--ink); }
-.color-in { width: 30px; height: 30px; border: 0; padding: 0; background: none; border-radius: var(--r-full); overflow: hidden; }
+.color-in { width: 36px; height: 36px; margin: var(--s-1); border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); padding: 0; background: none; border-radius: var(--r-full); overflow: hidden; -webkit-appearance: none; appearance: none; cursor: pointer; }
+.color-in::-webkit-color-swatch-wrapper { padding: 0; }
+.color-in::-webkit-color-swatch { border: 0; border-radius: var(--r-full); }
+.color-in::-moz-color-swatch { border: 0; border-radius: var(--r-full); }
+.color-in.on { outline: 2px solid var(--ink); outline-offset: 2px; }
+.color-warn { display: block; font-size: 13px; color: var(--danger); margin-top: var(--s-1); }
+.color-warn[hidden] { display: none; }
 .field input, .field textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); color: var(--ink); font-size: var(--t-md); resize: vertical; }
 .edit-av { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
 .edit-av .av { width: 86px; height: 86px; font-size: var(--t-2xl); }
@@ -940,10 +959,6 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
   <div class="sheet">
     <div class="sheet-h"><button type="button" class="cancel" data-close="actModal">닫기</button><div class="title" id="actTitle">알림</div><span style="min-width:48px"></span></div>
     <div id="actList"></div>
-    <div class="act-foot">
-      <button type="button" class="btn" id="pushBtn">휴대폰 알림도 받기</button>
-      <small id="pushNote">초월앱을 열어두면 새 활동이 화면 위에 바로 떠요.</small>
-    </div>
   </div>
 </div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -1292,14 +1307,17 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       if (d.author !== myId) return;
       mine.add(p.id);
       const hm = (d.reactions && d.reactions.heart) || {};
-      for (const [u, v] of Object.entries(hm)) if (u !== myId && typeof v === "number" && v > 0) out.push({ k: "l" + p.id + u, ts: v, who: u, text: "님이 내 게시물에 💪를 보냈어요", sub: d.text, go: () => openPost(p.id) });
-      for (const [sid, v] of Object.entries(d.stickers || {})) if (v && v.by && v.by !== myId && STICKERS[v.s]) out.push({ k: "s" + p.id + sid, ts: v.t || 0, who: v.by, text: "님이 내 " + (d.gym ? "운동 인증" : "러닝") + "에 스티커를 붙였어요 " + STICKERS[v.s][0], sub: STICKERS[v.s][1], go: () => openPost(p.id) });
+      // 같은 게시물에 온 💪는 한 줄로: 가장 최근 사람 + '외 N명'
+      const ls = Object.entries(hm).filter(([u, v]) => u !== myId && typeof v === "number" && v > 0).sort((a, b) => b[1] - a[1]);
+      if (ls.length) out.push({ k: "l" + p.id + ls[0][0] + ls[0][1], ts: ls[0][1], who: ls[0][0], postId: p.id,
+        text: ls.length > 1 ? "님 외 " + (ls.length - 1) + "명이 힘을 보냈어요" : "님이 내 게시물에 💪를 보냈어요", go: () => openPost(p.id) });
+      for (const [sid, v] of Object.entries(d.stickers || {})) if (v && v.by && v.by !== myId && STICKERS[v.s]) out.push({ k: "s" + p.id + sid, ts: v.t || 0, who: v.by, postId: p.id, text: "님이 내 " + (d.gym ? "운동 인증" : "러닝") + "에 스티커를 붙였어요 " + STICKERS[v.s][0], sub: STICKERS[v.s][1], go: () => openPost(p.id) });
     });
     S.comments.forEach((c) => { const d = c.data(); if (d.author === myId) { const t = myCommentAt.get(d.postId); if (!t || d.ts < t) myCommentAt.set(d.postId, d.ts); } });
     S.comments.forEach((c) => {
       const d = c.data(); if (d.author === myId) return;
-      if (mine.has(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, text: "님이 내 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) });
-      else if (myCommentAt.has(d.postId) && d.ts > myCommentAt.get(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, text: "님도 같은 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) });
+      if (mine.has(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, postId: d.postId, text: "님이 내 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) });
+      else if (myCommentAt.has(d.postId) && d.ts > myCommentAt.get(d.postId)) out.push({ k: "c" + c.id, ts: d.ts, who: d.author, postId: d.postId, text: "님도 같은 게시물에 댓글을 남겼어요", sub: d.text, go: () => openPost(d.postId) });
     });
     S.dm.forEach((m) => { const d = m.data(); if (d.author !== myId) out.push({ k: "d" + m.id, ts: d.ts, who: d.author, text: "님의 메시지", sub: msgPreview(d), thread: d.author, go: () => openThread(d.author) }); });
     S.chat.forEach((m) => {
@@ -1345,41 +1363,55 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       n.onclick = () => { try { window.focus(); } catch {} i.go(); n.close(); };
     } catch {}
   }
+  // 게시물 썸네일 44×44: 사진이면 사진, 글이면 첫 글자들을 담은 작은 판
+  function postThumb(id) {
+    const p = id && S.posts.find((x) => x.id === id); if (!p) return null;
+    const d = p.data(), src = typeof d.imageData === "string" && d.imageData.startsWith("data:image/") ? d.imageData : null;
+    if (src) { const img = h("img", { alt: "", loading: "lazy", decoding: "async" }); img.src = src; return h("span", { class: "act-thumb" }, img); }
+    return h("span", { class: "act-thumb txt", text: [...String(d.text || "").replace(/\s+/g, " ").trim()].slice(0, 10).join("") });
+  }
+  const pushOn = () => { try { return localStorage.getItem("chowol.push") === "1" && "Notification" in window && Notification.permission === "granted"; } catch { return false; } };
+  function pushCard() {
+    const note = h("span", { class: "pc-sub", text: "새 글·💪·댓글·메시지를 휴대폰으로 받아요" });
+    const btn = h("button", { type: "button", class: "pc-btn", "aria-label": "휴대폰 알림 켜기" }, h("span", { text: "켜기" }));
+    btn.addEventListener("click", async () => {
+      btn.disabled = true; note.textContent = "연결하는 중…";
+      let r = "unsupported";
+      try { r = window.__push ? await window.__push.enable(true) : "unsupported"; } catch (e) { console.warn(e); r = "unsupported"; }
+      btn.disabled = false; note.textContent = PUSH_MSG[r] || PUSH_MSG.unsupported;
+      if (r === "on") setTimeout(renderActivity, 2500);
+    });
+    return h("div", { class: "push-card" }, icon("bell"), h("div", { class: "pc-t" }, h("b", { text: "앱이 꺼져 있어도 알림 받기" }), note), btn);
+  }
   function renderActivity() {
     const seen = actSeen(), items = listed(), box = $("#actList");
-    if (!items.length) { box.replaceChildren(h("p", { class: "empty", text: "아직 새 소식이 없어요." })); return; }
+    const top = pushOn() ? [] : [pushCard()];
+    if (!items.length) { box.replaceChildren(...top, h("p", { class: "empty", text: "아직 새 소식이 없어요." })); return; }
     const out = []; let head = null;
     for (const i of items) {
       const sec = Date.now() - i.ts < DAY ? "오늘" : Date.now() - i.ts < 7 * DAY ? "이번 주" : "이전";
       if (sec !== head) { out.push(h("div", { class: "act-h", text: sec })); head = sec; }
-      out.push(h("button", { type: "button", class: "act-row" + (i.ts > seen ? " new" : ""), onclick: () => { closeModal("actModal"); i.go(); } },
-        avatar(i.who), h("div", { class: "t" }, h("div", {}, h("b", { text: nameOf(i.who) }), i.text), i.sub ? h("span", { text: String(i.sub).replace(/\s+/g, " ") }) : null), h("time", { text: ago(i.ts) })));
+      const isNew = i.ts > seen;
+      out.push(h("button", { type: "button", class: "act-row" + (isNew ? " new" : ""), onclick: () => { closeModal("actModal"); i.go(); } },
+        avatar(i.who),
+        h("div", { class: "t" + (i.sub ? " has-sub" : "") },
+          h("p", { class: "tx" }, h("b", { text: nameOf(i.who) }), i.text + " ", h("time", { text: ago(i.ts) }), isNew ? h("span", { class: "new-dot", "aria-label": "새 알림" }) : null),
+          i.sub ? h("span", { class: "sub", text: String(i.sub).replace(/\s+/g, " ") }) : null),
+        postThumb(i.postId)));
     }
-    box.replaceChildren(...out);
+    box.replaceChildren(...top, ...out);
   }
   function openActivity() { $("#actModal").hidden = false; renderActivity(); const it = listed(); if (it.length) store("chowol.actSeen", String(it[0].ts)); renderNav(); }
   $("#homeAct").addEventListener("click", openActivity);
   const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
   const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
   const PUSH_MSG = {
-    on: "알림이 켜졌어요 🔔 초월앱을 꺼도 친구 활동이 휴대폰 알림으로 와요. 끄고 싶으면 휴대폰 설정 → 알림 → 초월에서 끄면 돼요.",
+    on: "알림이 켜졌어요. 초월앱을 꺼도 친구 활동이 휴대폰 알림으로 와요. 끄고 싶으면 휴대폰 설정 → 알림 → 초월에서 끄면 돼요.",
     denied: "알림이 막혀 있어요. 휴대폰 설정 → 알림 → 초월(또는 브라우저)에서 알림을 허용한 뒤 다시 눌러주세요.",
     off: "알림을 허용하지 않았어요. 다시 누르고 '허용'을 눌러주세요.",
     notready: "휴대폰 알림은 곧 열려요. 준비되면 이 버튼으로 켤 수 있어요.",
     unsupported: isIOS && !standalone ? "아이폰은 홈 화면에 추가한 초월앱 아이콘으로 열어야 알림을 켤 수 있어요." : "이 브라우저에서는 휴대폰 알림을 켤 수 없어요. 크롬이나 홈 화면 초월앱에서 열어주세요."
   };
-  function pushLabel() {
-    const on = (() => { try { return localStorage.getItem("chowol.push") === "1"; } catch { return false; } })() && "Notification" in window && Notification.permission === "granted";
-    $("#pushBtn").textContent = on ? "🔔 휴대폰 알림 켜짐 (다시 연결하기)" : "🔔 휴대폰 알림 켜기";
-    if (on) $("#pushNote").textContent = "초월앱을 꺼도 알림이 와요. 끄고 싶으면 휴대폰 설정 → 알림 → 초월에서 끄면 돼요.";
-  }
-  pushLabel();
-  $("#pushBtn").addEventListener("click", async () => {
-    const note = $("#pushNote"); note.textContent = "연결하는 중…";
-    let r = "unsupported";
-    try { r = window.__push ? await window.__push.enable(true) : "unsupported"; } catch (e) { console.warn(e); r = "unsupported"; }
-    note.textContent = PUSH_MSG[r] || PUSH_MSG.unsupported; if (r === "on") pushLabel();
-  });
 
   // keep already-loaded photos between renders so the page does not jump
   const imgKeep = new Map();
@@ -2918,7 +2950,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     wood: { label: "밤 나무", bg: "#140F0B", surface: "#1F1812", raise: "#2B2119", ink: "#F2E8DA", muted: "#A8977F", line: "#3A2D22", accent: "#F2C94C", logo: "#5B8FD0", scheme: "dark", danger: "#E57A62", badge: "#C8243A" },
     paper: { label: "밝은 종이", bg: "#F4F1EA", surface: "#FFFFFF", raise: "#ECE7DD", ink: "#1C1A16", muted: "#6B6458", line: "#DDD6C8", accent: "#13263D", logo: "#24509A", scheme: "light", danger: "#8E2A1C", badge: "#C8243A" }
   };
-  const ACCENTS = ["#13263D", "#2F64B3", "#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
+  const ACCENTS = ["#13263D", "#24509A", "#2F64B3", "#8E2A1C", "#2F5D3A", "#5A2A6E", "#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
   const RATIOS = { auto: "원본", "1 / 1": "정사각형", "4 / 5": "세로 4:5" };
   const THEME_DEFAULT = { preset: "amber", accent: "#13263D", logo: "#24509A", bubble: "accent", fs: 16, radius: 14, ratio: "auto", name: "초월", stories: true };
   const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -2993,11 +3025,18 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     chipRow("#thPreset", Object.entries(PRESETS).map(([k, p]) => [k, p.label, p.bg]), theme.preset, (v) => setTheme({ preset: v, accent: PRESETS[v].accent, logo: PRESETS[v].logo }));
     const bgNow = PRESETS[theme.preset].bg;
     const colorRow = (box, key) => {
-      // 포인트 색은 지금 배경과 대비가 3:1 미만이면 흐리게·선택 불가
-      chipRow(box, ACCENTS.map((c) => [c, "", c]), theme[key], (v) => setTheme({ [key]: v }), key === "accent" ? (c) => contrast(c, bgNow) < 3 : null);
-      const inp = h("input", { type: "color", class: "color-in", "aria-label": "직접 고르기", value: theme[key] });
-      inp.addEventListener("change", () => setTheme({ [key]: inp.value }));
+      // 지금 배경과 대비 3:1 미만인 칩은 아예 숨김 (WCAG 상대 휘도)
+      const ok = ACCENTS.filter((c) => contrast(c, bgNow) >= 3);
+      chipRow(box, ok.map((c) => [c, "", c]), theme[key], (v) => setTheme({ [key]: v }));
+      const custom = !ok.some((c) => c.toLowerCase() === String(theme[key]).toLowerCase());
+      const inp = h("input", { type: "color", class: "color-in" + (custom ? " on" : ""), "aria-label": "직접 고르기", value: theme[key] });
+      const warn = h("small", { class: "color-warn", hidden: true, text: "배경과 너무 비슷해서 잘 안 보여요" });
+      inp.addEventListener("change", () => {
+        if (contrast(inp.value, bgNow) < 3) { warn.hidden = false; inp.value = theme[key]; return; }
+        warn.hidden = true; setTheme({ [key]: inp.value });
+      });
       $(box).append(inp);
+      $(box).after(warn); const old = $(box).parentElement.querySelectorAll(".color-warn"); old.forEach((w) => { if (w !== warn) w.remove(); });
     };
     colorRow("#thAccent", "accent"); colorRow("#thLogo", "logo");
     chipRow("#thBubble", [["accent", "포인트 색", theme.accent], ["logo", "로고 색", theme.logo]], theme.bubble, (v) => setTheme({ bubble: v }));
