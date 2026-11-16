@@ -21,6 +21,17 @@
 })();
 </script>
 <script>
+// 상태바(시간·배터리) 글자색: 밝은 배경(앰버·밝은 종이)이면 검은 글자, 어두운 배경이면 흰 글자
+(function () {
+  var BG = { amber: "#F2A541", ink: "#0B0A09", sea: "#06121A", wood: "#140F0B", paper: "#F4F1EA" }, preset = "amber";
+  try { var t = JSON.parse(localStorage.getItem("chowol.theme") || "{}"); if (t && BG[t.preset]) preset = t.preset; } catch (e) {}
+  var light = preset === "amber" || preset === "paper", root = document.documentElement;
+  root.classList.toggle("sb-light", light);
+  var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]'); if (sb) sb.setAttribute("content", light ? "default" : "black-translucent");
+  var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", BG[preset]);
+})();
+</script>
+<script>
 // 홈 화면 앱(아이폰)에서 화면 아래가 비는 문제: 실제 화면 높이에 맞춘다
 (function () {
   var sa = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
@@ -29,7 +40,10 @@
   function fit() {
     var portrait = window.matchMedia && matchMedia("(orientation: portrait)").matches;
     var full = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-    root.style.setProperty("--appH", Math.max(window.innerHeight, full) + "px");
+    // 상태바 아래까지 화면이 깔리는 경우(흰 글자 모드)만 화면 전체 높이, 아니면(검은 글자 모드) 실제 보이는 높이
+    var pr = document.createElement("div"); pr.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top,0px);visibility:hidden";
+    root.appendChild(pr); var under = pr.offsetHeight > 0; root.removeChild(pr);
+    root.style.setProperty("--appH", (under ? Math.max(window.innerHeight, full) : window.innerHeight) + "px");
   }
   fit(); window.addEventListener("resize", fit); window.addEventListener("orientationchange", function () { setTimeout(fit, 300); });
 })();
@@ -420,6 +434,8 @@ html { touch-action: pan-x pan-y; }
 @keyframes ripple { 0% { opacity: .7; transform: scale(.2); } 100% { opacity: 0; transform: scale(1.4); } }
 .intro.out { opacity: 0; pointer-events: none; }
 html.no-intro .intro { display: none; }
+/* 밝은 배경인데 상태바가 아직 흰 글자일 때(테마를 막 바꾼 경우 등) 상태바 뒤에 어두운 띠 */
+html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: color-mix(in srgb, var(--ink) 90%, transparent); z-index: 100; pointer-events: none; }
 .intro-skip { position: absolute; left: 0; right: 0; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); text-align: center; color: rgba(238,231,218,.55); font-size: 13px; letter-spacing: .06em; pointer-events: none; z-index: 1; transition: opacity .4s; }
 .intro.splashing .intro-skip { opacity: 0; }
 .intro-ctrl { position: absolute; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; z-index: 2; }
@@ -2808,6 +2824,12 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const nm = document.querySelector(".logo span"); if (nm) nm.textContent = t.name;
     document.body.classList.toggle("no-stories", !t.stories);
     const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = P.bg;
+    // 상태바 글자색은 앱을 다시 켤 때 반영됨. 그 전까지는 밝은 배경 위 흰 글자가 보이도록 상태바 뒤에 어두운 띠를 깔아줌
+    const light = P.scheme === "light", sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (sb) sb.content = light ? "default" : "black-translucent";
+    const probe = document.createElement("div"); probe.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top,0px);visibility:hidden"; document.body.append(probe);
+    const underBar = probe.offsetHeight > 0; probe.remove();
+    document.documentElement.classList.toggle("sb-scrim", light && underBar);
   }
   applyTheme(theme);
   let themeDirty = false, themeTimer = null;
