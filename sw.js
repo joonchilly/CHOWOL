@@ -1,13 +1,21 @@
 // 초월 service worker: network first (2.5s timeout), falls back to the saved copy when slow/offline.
-const CACHE = "chowol-v3";
+const CACHE = "chowol-v4";
 self.addEventListener("install", (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "index.html", "manifest.webmanifest", "icon-192.png", "apple-touch-icon.png"])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "index.html", "manifest.webmanifest", "icon-192.png", "apple-touch-icon.png", "fonts/DoHyeon-Regular.woff2"])));
 });
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+// 새 버전이 켜지면 예전 캐시(chowol-v1~v3)는 지움
+self.addEventListener("activate", (e) => e.waitUntil(
+  caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("chowol-") && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())
+));
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin || url.pathname.endsWith(".mp4")) return;
+  // 글꼴은 바뀌지 않으니 저장된 것을 먼저(오프라인에서도 바로 도현체)
+  if (url.pathname.endsWith(".woff2")) {
+    e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); } return res; })));
+    return;
+  }
   // 새 버전을 먼저 받아보되, 인터넷이 느리면 2.5초 뒤 휴대폰에 저장된 버전으로 바로 열기
   const net = fetch(e.request).then((res) => {
     if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
