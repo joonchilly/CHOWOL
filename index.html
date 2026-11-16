@@ -173,6 +173,8 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 /* toasts & activity */
 .toasts { position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 16px)); z-index: 35; display: flex; flex-direction: column; gap: var(--s-2); pointer-events: none; }
 .toast { pointer-events: auto; display: flex; gap: var(--s-3); align-items: center; width: 100%; text-align: left; background: var(--ink); border: 0; border-radius: var(--r-md); padding: var(--s-3) var(--s-3); box-shadow: var(--e2); animation: tIn var(--d-slow) var(--ease); }
+.toast.undo { cursor: default; }
+.toast .undo-btn { flex: none; min-height: 44px; padding: 0 var(--s-3); color: var(--bg); text-decoration: underline; text-underline-offset: 3px; }
 .toast.bye { animation: tOut var(--d-slow) var(--ease) forwards; }
 .toast .t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .toast .t b { color: var(--bg); }
@@ -898,14 +900,14 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
 <!-- theme -->
 <div class="modal" id="themeModal" hidden role="dialog" aria-modal="true" aria-labelledby="themeTitle">
   <div class="sheet">
-    <div class="sheet-h"><span class="cancel" aria-hidden="true"></span><div class="title" id="themeTitle">앱 꾸미기</div><button type="button" class="act" data-close="themeModal">완료</button></div>
+    <div class="sheet-h"><button type="button" class="cancel" id="themeCancel">취소</button><div class="title" id="themeTitle">앱 꾸미기</div><button type="button" class="act" id="themeApply">적용</button></div>
     <div class="sheet-b" id="themeBody">
       <div class="th-preview" aria-label="미리보기">
         <div class="pv-bar"><span class="pv-dot"></span><span id="pvName">초월</span></div>
         <div class="pv-msgs"><span class="pv-b pv-you">오늘 사우나 갈 사람?</span><span class="pv-b pv-me">나! 7시에 보자</span></div>
         <span class="pv-btn">버튼</span>
       </div>
-      <p style="margin:0;color:var(--muted);font-size:var(--t-sm)">바꾸는 즉시 친구들 화면에도 똑같이 적용돼요.</p>
+      <p style="margin:0;color:var(--muted);font-size:var(--t-sm)">고르는 동안은 내 화면에서만 미리 보여요. '적용'을 눌러야 6명 모두에게 반영돼요.</p>
       <div class="theme-sec"><span>배경</span><div class="chips" id="thPreset"></div></div>
       <div class="theme-sec"><span>포인트 색 (버튼·숫자·강조)</span><div class="chips" id="thAccent"></div></div>
       <div class="theme-sec"><span>로고 색 (로고·앱 이름)</span><div class="chips" id="thLogo"></div></div>
@@ -2160,7 +2162,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
 
   // ---------- modals ----------
-  function closeModal(id) { $("#" + id).hidden = true; if (id === "postModal") ui.openPost = null; }
+  function closeModal(id) { $("#" + id).hidden = true; if (id === "postModal") ui.openPost = null; if (id === "themeModal") revertTheme(); }
   document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => closeModal(b.dataset.close)));
   document.querySelectorAll(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) closeModal(m.id); }));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll(".modal:not([hidden])").forEach((m) => closeModal(m.id)); });
@@ -3170,18 +3172,45 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     document.documentElement.classList.toggle("sb-scrim", light && underBar);
   }
   applyTheme(theme);
-  let themeDirty = false, themeTimer = null;
+  // 앱 꾸미기: 고르는 동안은 내 화면에서만 미리보기, '적용'을 눌러야 config/theme에 저장
+  let themeDirty = false, themeOrig = null;
   function setTheme(patch) {
-    theme = cleanTheme({ ...theme, ...patch }); applyTheme(theme); store("chowol.theme", JSON.stringify(theme)); fillTheme();
-    themeDirty = true; $("#thStatus").textContent = "저장 중…";
-    clearTimeout(themeTimer);
-    themeTimer = setTimeout(async () => {
-      const snapshot = theme;
-      const ok = await write(() => db.doc("config/theme").set(snapshot));
-      themeDirty = false;
-      $("#thStatus").textContent = ok ? "저장했어요. 친구들 화면에도 적용됐어요." : "저장하지 못했어요. 다시 바꿔보세요.";
-    }, 600);
+    theme = cleanTheme({ ...theme, ...patch }); applyTheme(theme); fillTheme();
+    themeDirty = true; // 미리보기 중에는 서버 테마가 와도 덮어쓰지 않음
+    const changed = themeOrig && JSON.stringify(themeOrig) !== JSON.stringify(theme);
+    $("#themeApply").disabled = !changed;
+    $("#thStatus").textContent = changed ? "미리보기 중 · 아직 친구들에게는 안 보여요" : "";
   }
+  function revertTheme() {
+    if (!themeOrig) return;
+    theme = themeOrig; themeOrig = null; themeDirty = false; applyTheme(theme);
+  }
+  async function saveTheme(t) {
+    const ok = await write(() => db.doc("config/theme").set(t));
+    if (ok) store("chowol.theme", JSON.stringify(t));
+    return ok;
+  }
+  function undoToast(prev) {
+    const box = $("#toasts"); box.replaceChildren();
+    const el = h("div", { class: "toast undo", role: "status" },
+      h("div", { class: "t" }, h("b", { text: "모두에게 적용했어요" })),
+      h("button", { type: "button", class: "undo-btn", text: "되돌리기", onclick: async () => {
+        el.remove(); theme = cleanTheme(prev); applyTheme(theme);
+        const ok = await saveTheme(theme); notice(ok ? "이전 테마로 되돌렸어요" : "되돌리지 못했어요. 다시 시도해 주세요.");
+      } }));
+    box.append(el);
+    setTimeout(() => { el.classList.add("bye"); setTimeout(() => el.remove(), 320); }, 5000);
+  }
+  $("#themeApply").addEventListener("click", async () => {
+    if (!themeOrig) return;
+    const prev = themeOrig, next = theme, btn = $("#themeApply");
+    btn.disabled = true; $("#thStatus").textContent = "적용하는 중…";
+    const ok = await saveTheme(next);
+    if (!ok) { btn.disabled = false; $("#thStatus").textContent = "저장하지 못했어요. 다시 눌러 주세요."; return; }
+    themeOrig = null; themeDirty = false; $("#themeModal").hidden = true;
+    undoToast(prev);
+  });
+  $("#themeCancel").addEventListener("click", () => closeModal("themeModal"));
   function chipRow(box, items, current, pick, isOff) {
     $(box).replaceChildren(...items.map(([val, label, dot]) => h("button", { type: "button", class: dot && !label ? "sw" : "chip-btn", "aria-pressed": String(val === current), "aria-label": label || val, style: dot && !label ? "background:" + dot : null, disabled: !!(isOff && isOff(val)), title: isOff && isOff(val) ? "지금 배경에서 잘 안 보이는 색이에요" : null, onclick: () => pick(val) },
       dot && label ? h("span", { class: "preset-dot", style: "background:" + dot }) : null, label || null)));
@@ -3220,7 +3249,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       h("span", { class: "txt", text: em }), h("button", { type: "button", class: "del", text: "빼기", onclick: () => write(() => db.doc("allow/" + em).delete()) }))) : [h("span", { class: "linkish", text: "아직 초대한 친구가 없어요." })]));
   }
   function openTheme() {
-    if (!isOwner) return; $("#themeModal").hidden = false; $("#thStatus").textContent = ""; fillTheme();
+    if (!isOwner) return; themeOrig = cleanTheme({ ...theme }); $("#themeModal").hidden = false; $("#thStatus").textContent = ""; $("#themeApply").disabled = true; fillTheme();
     if (!invUnsub && db) invUnsub = db.collection("allow").onSnapshot((s) => { invited = s.docs.map((d) => d.id).sort(); renderInv(); }, () => {});
     renderInv();
   }
