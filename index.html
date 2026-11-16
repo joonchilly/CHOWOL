@@ -137,7 +137,7 @@ svg.i.filled { fill: currentColor; }
 
 .app { height: 100%; height: var(--appH, 100dvh); max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; border-left: 1px solid var(--line); border-right: 1px solid var(--line); background: var(--bg); }
 .screen { min-height: 0; display: flex; flex-direction: column; }
-.topbar { display: flex; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 10px calc(16px + env(safe-area-inset-left, 0px)); min-height: 54px; border-bottom: 1px solid var(--line); }
+.topbar { display: flex; align-items: center; gap: 12px; padding: calc(5px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 5px calc(16px + env(safe-area-inset-left, 0px)); min-height: 54px; border-bottom: 1px solid var(--line); }
 .topbar .title { flex: 1; min-width: 0; font-weight: 600; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .logo { flex: 1; display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 24px; letter-spacing: .14em; color: var(--accent); line-height: 1; }
 .logo-mark { width: 30px; height: 38px; flex: none; }
@@ -148,6 +148,10 @@ body.no-stories .stories { display: none; }
 .icon-btn { position: relative; padding: 4px; border-radius: 8px; }
 .topbar .icon-btn { min-width: 44px; min-height: 44px; display: grid; place-items: center; padding: 0; }
 .topbar .icon-btn .dot { top: 4px; right: 2px; }
+/* 44px로 커져도 보이는 아이콘 위치·간격은 전과 비슷하게 */
+.topbar .icon-btn + .icon-btn { margin-left: -10px; }
+.topbar > .icon-btn:last-child { margin-right: -10px; }
+.topbar > .icon-btn:first-child { margin-left: -10px; }
 .dot { position: absolute; top: 0; right: -2px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--heart); color: #fff; font-size: 11px; font-weight: 600; display: grid; place-items: center; padding: 0 5px; border: 2px solid var(--bg); font-variant-numeric: tabular-nums; }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
