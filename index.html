@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0B0A09">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -57,11 +57,12 @@
   var root = document.documentElement, full = null;
   function editing() { var a = document.activeElement; return !!a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && !/^(button|checkbox|radio|range|color|file|submit)$/.test(a.type)) || a.isContentEditable); }
   function sync() {
-    var open = editing() && vv.height < window.innerHeight * 0.85 || editing() && vv.height < (screen.height * 0.75);
+    var vh = vv.height * (vv.scale || 1); // 확대 중이어도 실제 남은 화면 높이로 판단
+    var open = editing() && vh < window.innerHeight * 0.85 || editing() && vh < (screen.height * 0.75);
     if (open) {
       if (full === null) full = getComputedStyle(root).getPropertyValue("--appH");
       root.classList.add("kb");
-      root.style.setProperty("--appH", Math.round(vv.height) + "px");
+      root.style.setProperty("--appH", Math.round(vh) + "px");
       if (window.scrollY || vv.offsetTop) window.scrollTo(0, 0);
       var m = document.getElementById("msgs");
       if (m && m.scrollHeight - m.scrollTop - m.clientHeight < 160) m.scrollTop = m.scrollHeight;
@@ -161,7 +162,10 @@ html.kb .app { grid-template-rows: 1fr; }
 html.kb .dm-form { margin-bottom: var(--s-2); }
 html.kb .modal { bottom: auto; height: var(--appH); }
 button, a, label { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-button:active { transform: scale(.94); transition: transform var(--d-fast) var(--ease); }
+/* 눌림: 목록 줄·큰 버튼은 크기 그대로 + 살짝 진하게, 아이콘 버튼만 작아짐 */
+button { transition: transform var(--d-fast) var(--ease), box-shadow var(--d-fast) var(--ease), background-color var(--d-fast) var(--ease); }
+button:active { box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--ink) 8%, transparent); }
+.icon-btn:active, .actions button:active, .bottom button:active, #dmAttach:active, #dmSend:active, #threadBack:active, #replyX:active, .sw:active, .tap44:active { transform: scale(.92); box-shadow: none; }
 .media { touch-action: manipulation; }
 body { -webkit-user-select: none; user-select: none; }
 input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text; user-select: text; }
@@ -177,8 +181,31 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 @keyframes tOut { to { opacity: 0; transform: translateY(-12px); } }
 /* 알림 줄: 아바타 36 | 내용(15px, 최대 2줄, 첫 줄 끝에 시간) | 게시물 썸네일 44 */
 .act-row { display: flex; gap: var(--s-3); align-items: center; width: 100%; text-align: left; padding: var(--s-3) var(--s-4); }
-.act-row:active { transform: none; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.act-row:active { background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: none; }
 .act-row > .av { width: 36px; height: 36px; }
+.thread-row:active, .mm-list button:active { background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: none; }
+/* 스켈레톤 */
+.sk { display: block; background: var(--line); border-radius: var(--r-sm); animation: skPulse 1.2s var(--ease) infinite alternate; }
+@keyframes skPulse { from { opacity: .5; } to { opacity: 1; } }
+.sk-ring { width: 56px; height: 56px; border-radius: var(--r-full); margin: 4px; }
+.sk-av { width: 32px; height: 32px; border-radius: var(--r-full); flex: none; }
+.sk-bar { height: 12px; }
+.sk-card { padding: var(--s-3) 0; }
+.sk-head { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-4); }
+.sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.sk-tile { width: 100%; aspect-ratio: 1; border-radius: 0; margin-top: var(--s-2); }
+.sk-list { padding: var(--s-3) 0; display: flex; flex-direction: column; gap: var(--s-2); }
+/* 오프라인 띠 */
+.net-band { height: 28px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 13px; background: var(--surface); color: var(--muted); border-bottom: 1px solid var(--line); }
+.net-band.ok { color: var(--ink); }
+.net-band[hidden] { display: none; }
+/* 내 폰 글자 크기 */
+.field .lbl { font-size: var(--t-sm); color: var(--muted); }
+.field .lbl small { font-size: var(--t-xs); margin-left: 6px; }
+.seg-fs { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.seg-fs button { height: 44px; color: var(--ink); background: var(--raise); line-height: 1; }
+.seg-fs button + button { border-left: 1px solid var(--line); }
+.seg-fs button[aria-checked="true"] { background: var(--accent); color: var(--on-accent); }
 .act-row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 15px; line-height: 1.4; }
 .act-row .tx { margin: 0; color: var(--ink); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .act-row .t.has-sub .tx { -webkit-line-clamp: 1; }
@@ -253,7 +280,7 @@ body.no-stories .stories { display: none; }
 .post { padding: var(--s-3) 0; }
 .p-head { display: flex; align-items: center; gap: var(--s-2); padding: 0 var(--s-4) var(--s-1); }
 .p-head .who-btn { display: flex; align-items: center; gap: var(--s-3); min-height: 44px; min-width: 0; padding-right: var(--s-1); text-align: left; }
-.p-head .who-btn:active { transform: none; opacity: .6; }
+.p-head .who-btn:active { opacity: .6; box-shadow: none; }
 .p-head .nm { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .p-head .tm { color: var(--muted); font-size: var(--t-sm); }
 .p-head .grow { flex: 1; min-width: 0; display: flex; gap: var(--s-2); align-items: baseline; flex-wrap: wrap; }
@@ -282,12 +309,12 @@ body.no-stories .stories { display: none; }
 .p-body > :first-child { margin-top: 0; }
 .p-body > .cap + .more-c, .p-body > .cap + .cm, .p-body > .likes + .more-c, .p-body > .likes + .cm { margin-top: var(--s-2); }
 .likes { display: flex; align-items: center; gap: var(--s-2); min-height: 28px; text-align: left; color: var(--ink); font-size: var(--t-sm); }
-.likes:active { transform: none; opacity: .6; }
+.likes:active { opacity: .6; box-shadow: none; }
 .likes .faces { display: flex; padding-left: 6px; }
 .likes .faces .av { width: 20px; height: 20px; font-size: 10px; margin-left: -6px; border: 2px solid var(--bg); box-sizing: content-box; }
 .cap { font-size: var(--t-md); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 .nm-btn { color: var(--accent); margin-right: 6px; transition: opacity var(--d-fast) var(--ease); }
-.nm-btn:active { transform: none; opacity: .6; }
+.nm-btn:active { opacity: .6; box-shadow: none; }
 .more-c { color: var(--muted); text-align: left; font-size: var(--t-sm); line-height: 1.45; }
 .cm { display: flex; gap: var(--s-2); align-items: flex-start; word-break: break-word; font-size: var(--t-sm); line-height: 1.45; border-radius: var(--r-sm); transition: background var(--d-fast) var(--ease); -webkit-touch-callout: none; }
 .cm.held { background: color-mix(in srgb, var(--ink) 8%, transparent); }
@@ -299,7 +326,7 @@ body.no-stories .stories { display: none; }
 .c-form button { color: var(--accent); min-width: 44px; min-height: 44px; }
 .likers-list { display: flex; flex-direction: column; padding: var(--s-1) 0 var(--s-4); }
 .liker { display: flex; align-items: center; gap: var(--s-3); height: 52px; padding: 0 var(--s-4); text-align: left; }
-.liker:active { transform: none; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.liker:active { background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: none; }
 .liker .av { width: 36px; height: 36px; font-size: var(--t-sm); }
 .c-form button:disabled { color: var(--muted); }
 .menu { display: flex; gap: var(--s-2); align-items: center; }
@@ -403,7 +430,10 @@ body.no-stories .stories { display: none; }
 .nt-item { display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-3) 0; border-bottom: 1px solid var(--line); }
 .nt-item p { margin: 0; white-space: pre-wrap; word-break: break-word; color: var(--ink); }
 .nt-item small { color: var(--muted); display: flex; gap: var(--s-3); align-items: center; }
-html { touch-action: pan-x pan-y; }
+/* 두 손가락 확대 허용(더블탭 확대만 막음 — 사진 더블탭은 💪) */
+html { touch-action: manipulation; }
+/* 아이폰은 16px 미만 입력칸을 누르면 화면을 자동 확대 → 입력칸은 항상 16px 이상 */
+input, textarea, select { font-size: max(16px, 1em); }
 .lightbox { position: fixed; inset: 0; z-index: 45; background: rgba(0,0,0,.95); display: grid; place-items: center; overflow: hidden; touch-action: none; }
 .lightbox img { max-width: 100%; max-height: 100%; transform-origin: 0 0; will-change: transform; user-select: none; -webkit-user-drag: none; }
 .lb-close { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; width: 40px; height: 40px; border-radius: var(--r-full); background: rgba(255,255,255,.15); color: #fff; font-size: var(--t-lg); z-index: 2; }
@@ -484,7 +514,7 @@ html { touch-action: pan-x pan-y; }
 .color-in.on { outline: 2px solid var(--ink); outline-offset: 2px; }
 .color-warn { display: block; font-size: 13px; color: var(--danger); margin-top: var(--s-1); }
 .color-warn[hidden] { display: none; }
-.field input, .field textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); color: var(--ink); font-size: var(--t-md); resize: vertical; }
+.field input, .field textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); color: var(--ink); font-size: max(16px, var(--t-md)); resize: vertical; }
 .edit-av { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
 .edit-av .av { width: 86px; height: 86px; font-size: var(--t-2xl); }
 .logout-zone { margin-top: var(--s-8); padding-top: var(--s-4); border-top: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -827,6 +857,7 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
       </div>
       <div class="field"><label for="editNick">이름</label><input id="editNick" maxlength="20" placeholder="친구들한테 보일 이름" required></div>
       <div class="field"><label for="editBio">소개</label><textarea id="editBio" rows="3" maxlength="150" placeholder="한 줄 소개"></textarea></div>
+      <div class="field"><span class="lbl" id="fsLbl">글자 크기 <small>이 휴대폰에만 적용돼요</small></span><div class="seg-fs" id="fsSeg" role="radiogroup" aria-labelledby="fsLbl"></div></div>
       <div class="logout-zone"><button type="button" id="logoutBtn">로그아웃</button><small>이 휴대폰에서만 로그아웃돼요</small></div>
     </div>
   </form>
@@ -1118,7 +1149,7 @@ getRedirectResult(auth).catch(() => {});
 
 onAuthStateChanged(auth, async (u) => {
   if (started) { if (!u) location.reload(); return; }
-  if (!u) { gate.hidden = false; btn.hidden = false; out.hidden = true; window.__authDoneResolve(); return; }
+  if (!u) { gate.hidden = false; btn.hidden = false; out.hidden = true; window.__authDoneResolve("out"); return; }
   const email = (u.email || "").toLowerCase();
   const isOwner = email === OWNER_EMAIL;
   let allowed = isOwner;
@@ -1131,10 +1162,10 @@ onAuthStateChanged(auth, async (u) => {
     chip.append(b);
     const hint = document.createElement("span"); hint.className = "email-hint"; hint.textContent = "이 주소를 방장에게 보내 주세요";
     msg.replaceChildren("아직 초대받지 않은 계정이에요.", chip, hint);
-    window.__authDoneResolve();
+    window.__authDoneResolve("blocked");
     return;
   }
-  started = true; gate.hidden = true; window.__authDoneResolve();
+  started = true; gate.hidden = true; window.__authDoneResolve("in");
   try {
     const mref = doc(fs, "members/" + u.uid);
     const ms = await getDoc(mref);
@@ -1452,11 +1483,20 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     $("#homeActDot").hidden = !na || !$("#actModal").hidden; $("#homeActDot").textContent = na > 99 ? "99+" : String(na);
     $(".bottom").hidden = ui.screen === "dm" && !!ui.thread;
   }
+  // 데이터가 오기 전에는 스켈레톤. 진짜로 로그인이 안 된 경우에만 로그인 안내
+  function skeleton(kind) {
+    const bar = (w) => h("span", { class: "sk sk-bar", style: "width:" + w });
+    if (kind === "feed") return h("div", { class: "sk-card", "aria-label": "불러오는 중", role: "status" },
+      h("div", { class: "sk-head" }, h("span", { class: "sk sk-av" }), h("div", { class: "sk-lines" }, bar("38%"), bar("22%"))), h("span", { class: "sk sk-tile" }));
+    return h("div", { class: "sk-list", "aria-label": "불러오는 중", role: "status" }, ...[0, 1, 2].map(() =>
+      h("div", { class: "sk-head" }, h("span", { class: "sk sk-av" }), h("div", { class: "sk-lines" }, bar("44%"), bar("70%")))));
+  }
   function loadingOr(box, key) {
-    if (!db) { box.replaceChildren(h("p", { class: "empty", text: "로그인하면 볼 수 있어요." })); return true; }
-    if (!S.loaded[key]) { box.replaceChildren(h("p", { class: "empty", text: "불러오는 중…" })); return true; }
+    if (!db) { box.replaceChildren(S.signedOut ? h("p", { class: "empty", text: "로그인하면 볼 수 있어요." }) : skeleton(key === "posts" && box.id === "feed" ? "feed" : "list")); return true; }
+    if (!S.loaded[key]) { box.replaceChildren(skeleton(box.id === "feed" ? "feed" : "list")); return true; }
     return false;
   }
+  if (window.__authDone) window.__authDone.then((v) => { S.signedOut = v === "out" || v === "blocked"; if (S.signedOut) renderAll(); });
 
   // ---------- home ----------
   function renderHome() {
@@ -1470,6 +1510,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
         h("span", { class: "ring" + (seen ? " seen" : "") }, avatar(id)), h("span", { class: "story-nm", text: id === myId ? "내 프로필" : nameOf(id) }));
     }));
     $("#stories").hidden = !ids.length;
+    if (!S.loaded.members && !S.signedOut) { $("#stories").hidden = false; $("#stories").replaceChildren(...[0, 1, 2, 3, 4].map(() => h("span", { class: "story" }, h("span", { class: "sk sk-ring" }), h("span", { class: "sk sk-bar", style: "width:40px;height:10px" })))); }
     const feed = $("#feed");
     if (loadingOr(feed, "posts", "피드")) return;
     if (!S.posts.length) { feed.replaceChildren(h("p", { class: "empty", text: "아직 게시물이 없어요. 아래 + 버튼으로 첫 게시물을 올려보세요." })); return; }
@@ -1837,11 +1878,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     if (lb.s <= 1.02) zoomAt(0, 0, 1);
   }
   lbEl.addEventListener("pointerup", lbUp); lbEl.addEventListener("pointercancel", lbUp);
-  // stop the whole page from zooming (iPhone ignores the viewport setting)
-  document.addEventListener("gesturestart", (e) => e.preventDefault());
-  document.addEventListener("touchmove", (e) => { if (e.touches.length > 1 && !e.target.closest("#lightbox")) e.preventDefault(); }, { passive: false });
-  let lastTouchEnd = 0;
-  document.addEventListener("touchend", (e) => { const n = Date.now(); if (n - lastTouchEnd < 300 && !e.target.closest("#lightbox, .media")) e.preventDefault(); lastTouchEnd = n; }, { passive: false });
+  // 화면 확대는 허용(글자 보기 편하게). 사진 보기 화면 안에서만 자체 확대를 쓰고 페이지 확대는 막음
+  document.addEventListener("gesturestart", (e) => { if (e.target.closest && e.target.closest("#lightbox")) e.preventDefault(); });
   const attachMenu = $("#attachMenu");
   $("#dmAttach").addEventListener("click", () => { attachMenu.hidden = !attachMenu.hidden; $("#dmAttach").setAttribute("aria-expanded", String(!attachMenu.hidden)); });
   $("#amMedia").addEventListener("click", () => { attachMenu.hidden = true; $("#dmFile").click(); });
@@ -2075,8 +2113,14 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const m = S.members[myId] || {};
     $("#editNick").value = m.nick || (S.profiles[myId] && S.profiles[myId].name) || "";
     $("#editBio").value = m.bio || "";
-    ui.editFile = null; $("#editAv").replaceChildren(avatar(myId));
+    ui.editFile = null; $("#editAv").replaceChildren(avatar(myId)); fillFs();
     $("#editModal").hidden = false; $("#editNick").focus();
+  }
+  // 내 폰 글자 크기 4단계
+  function fillFs() {
+    const cur = localFs() || theme.fs;
+    $("#fsSeg").replaceChildren(...[[14, "작게"], [16, "보통"], [18, "크게"], [20, "아주 크게"]].map(([v, lb]) => h("button", { type: "button", role: "radio", "aria-checked": String(cur === v), style: "font-size:" + v + "px", text: lb,
+      onclick: () => { try { localStorage.setItem("chowol-fs", String(v)); } catch {} applyTheme(theme); fillFs(); } })));
   }
   $("#editCancel").addEventListener("click", () => { closeModal("editModal"); store("chowol.askedName", "1"); });
   $("#editPhoto").addEventListener("change", (e) => {
@@ -2926,12 +2970,30 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   // ---------- navigation ----------
   const SCREENS = ["home", "log", "dm", "profile"];
+  // 오프라인 띠: 보이는 화면의 상단바 바로 아래에 끼워 넣어 내용을 밀어 내림
+  const netBand = h("div", { class: "net-band", role: "status", "aria-live": "polite", hidden: true });
+  let netTimer = null;
+  function placeNet() {
+    const bars = [...document.querySelectorAll(".screen:not([hidden]) .topbar")].filter((b) => b.offsetParent !== null);
+    const bar = bars[bars.length - 1]; if (bar && netBand.previousElementSibling !== bar) bar.after(netBand);
+  }
+  function setNet(online) {
+    clearTimeout(netTimer); placeNet();
+    if (!online) { netBand.textContent = "오프라인이에요 · 연결되면 다시 불러올게요"; netBand.classList.remove("ok"); netBand.hidden = false; return; }
+    if (netBand.hidden) return;
+    netBand.textContent = "다시 연결됐어요"; netBand.classList.add("ok");
+    netTimer = setTimeout(() => { netBand.hidden = true; }, 1500);
+  }
+  window.addEventListener("offline", () => setNet(false));
+  window.addEventListener("online", () => setNet(true));
+  if (navigator.onLine === false) setTimeout(() => setNet(false), 0);
   function show(s) {
     if (!SCREENS.includes(s)) s = "home";
     ui.screen = s; ui.menu = null; closeTray();
     if (s === "profile") morePosts(100);
     SCREENS.forEach((x) => { $("#s-" + x).hidden = x !== s; });
     renderAll();
+    if (!netBand.hidden) placeNet();
   }
   function go(s, keepState) {
     if (!keepState) { if (s === "dm") ui.thread = null; if (s === "profile") ui.profileId = null; }
@@ -2976,6 +3038,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   // 포인트 색 위 글자: 흰색/검정 중 대비가 더 높은 쪽
   function onColor(hex) { return contrast(hex, "#FFFFFF") >= contrast(hex, "#15130F") ? "#FFFFFF" : "#15130F"; }
   let theme = (() => { try { return cleanTheme(JSON.parse(store("chowol.theme") || "{}")); } catch { return cleanTheme({}); } })();
+  function localFs() { try { const v = Number(localStorage.getItem("chowol-fs")); return [14, 16, 18, 20].includes(v) ? v : 0; } catch { return 0; } }
   function applyTheme(t) {
     const P = PRESETS[t.preset], s = document.documentElement.style;
     ["bg", "surface", "raise", "ink", "muted", "line", "danger", "badge"].forEach((k) => s.setProperty("--" + k, P[k]));
@@ -2991,7 +3054,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     s.setProperty("--logo", logo);
     const bc = t.bubble === "logo" ? logo : t.accent;
     s.setProperty("--bubble", bc); s.setProperty("--on-bubble", onColor(bc));
-    s.setProperty("--fs", t.fs + "px"); s.setProperty("--r", t.radius + "px"); s.setProperty("--ratio", t.ratio);
+    // 글자 크기: 이 기기에서 고른 값(프로필 편집)이 있으면 그것, 없으면 방장이 정한 기본값
+    s.setProperty("--fs", (localFs() || t.fs) + "px"); s.setProperty("--r", t.radius + "px"); s.setProperty("--ratio", t.ratio);
     const nm = document.querySelector(".logo span"); if (nm) nm.textContent = t.name;
     document.body.classList.toggle("no-stories", !t.stories);
     const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = P.bg;
