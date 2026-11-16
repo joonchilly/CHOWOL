@@ -19,6 +19,9 @@
     if (pref === "off" || (pref === "daily" && localStorage.getItem("chowol.introDay") === today)) document.documentElement.classList.add("no-intro");
     else localStorage.setItem("chowol.introDay", today);
     if (localStorage.getItem("chowol-motion") === "1") document.documentElement.classList.add("reduce-motion");
+    // 시작 장면이 끝날 때까지 앱 화면을 숨김 (혹시 막혀도 6초 뒤엔 무조건 보이게)
+    document.documentElement.classList.add("booting");
+    setTimeout(function () { document.documentElement.classList.remove("booting"); }, 6000);
   } catch (e) {}
 })();
 </script>
@@ -269,7 +272,8 @@ svg.i.filled { fill: currentColor; }
 .logo-mark { width: 30px; height: 38px; flex: none; }
 .logo span { color: var(--logo); }
 .logo-mark path { fill: var(--logo); }
-.splash-logo path { fill: var(--logo); }
+.splash-logo path { fill: #5B8FD0; transition: fill var(--d-slow) var(--ease); }
+.intro.flip .splash-logo path { fill: var(--logo); }
 body.no-stories .stories { display: none; }
 .icon-btn { position: relative; padding: var(--s-1); border-radius: var(--r-sm); }
 .topbar .icon-btn { min-width: 44px; min-height: 44px; display: grid; place-items: center; padding: 0; }
@@ -598,21 +602,34 @@ input, textarea, select { font-size: max(16px, 1em); }
 /* intro */
 .intro { position: fixed; inset: 0; z-index: 40; background: #000; display: grid; place-items: center; transition: opacity .9s ease; }
 .intro video { width: 100%; height: 100%; object-fit: contain; transition: opacity .7s ease; }
-.splash { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity var(--d-slow) var(--ease); }
+.splash { position: absolute; inset: 0; display: grid; place-items: center; background: transparent; opacity: 0; pointer-events: none; }
+/* (2) 착지 순간 원형으로 퍼지며 배경이 var(--bg)로 물듦 */
+.splash::before { content: ""; position: absolute; inset: 0; background: var(--bg); clip-path: circle(0% at 50% 50%); }
+.intro.splashing .splash::before { animation: fillIn 500ms var(--ease) 400ms forwards; }
+@keyframes fillIn { to { clip-path: circle(150% at 50% 50%); } }
+.splash-logo, .ripple { z-index: 1; }
+/* (3)~(4) 로고가 상단바 자리로 날아간 뒤 앱이 나타남 */
+html.booting .app, html.booting .gate { opacity: 0; }
+.app, .gate { transition: opacity var(--d-base) var(--ease); }
+.intro.flip { background: transparent !important; }
+.intro.flip .splash::before { animation: none; clip-path: none; background: transparent; }
+.intro.flip .ripple { display: none; }
 .splash-logo { width: min(38vw, 180px); aspect-ratio: 420 / 533; opacity: 0; transform: translateY(-40px) scale(.86); }
 .splash-logo svg { width: 100%; height: 100%; display: block; }
 .ripple { position: absolute; left: 50%; top: calc(50% + min(19vw, 90px) * 1.27 + 10px); width: min(44vw, 210px); height: min(9vw, 42px); margin-left: calc(min(44vw, 210px) / -2); border: 3px solid var(--logo); border-radius: 50%; opacity: 0; transform: scale(.2); }
 .intro.splashing video { opacity: 0; }
 .intro.splashing .splash { opacity: 1; }
-.intro.splashing .splash-logo { animation: dropIn .6s cubic-bezier(.3,1.4,.5,1) .1s forwards; }
+.intro.splashing .splash-logo { animation: dropIn 400ms var(--ease) forwards; }
 /* 물결 1개: 로고가 착지하는 순간(0.1s 지연 + 낙하 0.6s의 60% ≈ .46s)에 시작 */
-.intro.splashing .ripple { animation: ripple 800ms var(--ease) .46s forwards; }
+.intro.splashing .ripple { animation: ripple 800ms var(--ease) 400ms forwards; }
 .ripple.r2 { display: none; }
-@keyframes dropIn { 0% { opacity: 0; transform: translateY(-40px) scale(.86); } 60% { opacity: 1; transform: translateY(4px) scale(1.02); } 100% { opacity: 1; transform: none; } }
+@keyframes dropIn { 0% { opacity: 0; transform: translateY(-46vh) scale(.86); } 70% { opacity: 1; transform: translateY(6px) scale(1.02); } 100% { opacity: 1; transform: none; } }
 @keyframes ripple { 0% { opacity: .6; transform: scale(1); } 100% { opacity: 0; transform: scale(2.4); } }
 .intro.out { opacity: 0; pointer-events: none; transition: opacity var(--d-base) var(--ease); }
 /* 영상 없는 날: 검은 영상 화면 없이 바로 테마 배경의 스플래시 */
-html.no-intro .intro { background: var(--bg); }
+/* 영상 없는 날의 무대: 배경색을 잉크로 어둡게 섞은 색 → 물이 퍼지며 배경색으로 */
+html.no-intro .intro { background: color-mix(in srgb, var(--bg) 18%, var(--ink)); }
+html.no-intro .intro .splash { opacity: 1; }
 html.no-intro .intro video, html.no-intro .intro-skip, html.no-intro .intro-play { display: none; }
 /* 밝은 배경인데 상태바가 아직 흰 글자일 때(테마를 막 바꾼 경우 등) 상태바 뒤에 어두운 띠 */
 html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: color-mix(in srgb, var(--ink) 90%, transparent); z-index: 100; pointer-events: none; }
@@ -3390,21 +3407,42 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   // ---------- intro: film, then waves ----------
   (function intro() {
     const ov = $("#intro"), v = $("#introVideo");
-    if (!ov) return;
+    if (!ov) { document.documentElement.classList.remove("booting"); return; }
     // 오늘 이미 본 날은 영상 없이 바로 스플래시
     const skipFilm = document.documentElement.classList.contains("no-intro");
     let stage = "film";
     const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     function leave(delay) {
       if (stage === "gone") return; stage = "gone";
-      setTimeout(() => { ov.classList.add("out"); setTimeout(() => ov.remove(), 260); }, delay);
+      setTimeout(() => { ov.classList.add("out"); document.documentElement.classList.remove("booting"); setTimeout(() => ov.remove(), 260); }, delay);
     }
-    // 스플래시: 최소 0.8초 + 로그인·초대 확인이 끝날 때까지(최대 4초) 보여 준 뒤 200ms로 사라짐
+    // 한 장면: (1) 로고 낙하 400ms → (2) 물결 + 배경 물들기 500ms(로그인 확인이 늦으면 여기서 대기)
+    //        → (3) 로고가 상단바 로고 자리로 FLIP 400ms → (4) 앱 opacity 0→1 200ms
+    const root = document.documentElement;
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    function reveal() { root.classList.remove("booting"); }
     function waves() {
       if (stage !== "film") return; stage = "splash"; $("#introPlay").hidden = true;
+      const auth = window.__authDone || Promise.resolve(), cap = wait(4000);
+      const reduceNow = reduce || root.classList.contains("reduce-motion");
+      if (reduceNow) { stage = "gone"; Promise.race([auth, cap]).then(() => { ov.remove(); reveal(); }); return; }
       ov.classList.add("splashing");
-      const minShow = new Promise((r) => setTimeout(r, 800)), maxWait = new Promise((r) => setTimeout(r, 4000));
-      Promise.race([Promise.all([minShow, window.__authDone || Promise.resolve()]), maxWait]).then(() => leave(0));
+      Promise.race([Promise.all([wait(900), auth]), cap]).then(flip);
+    }
+    function flip() {
+      if (stage === "gone") return; stage = "gone";
+      const logo = ov.querySelector(".splash-logo"), gate = $("#gate");
+      const target = !gate.hidden ? gate.querySelector(":scope > svg") : document.querySelector("#s-home:not([hidden]) .logo svg");
+      const a = logo.getBoundingClientRect(), b = target && target.getBoundingClientRect();
+      ov.classList.add("flip");
+      if (!target || !b.width) { ov.classList.add("out"); reveal(); setTimeout(() => ov.remove(), 260); return; }
+      target.style.visibility = "hidden";
+      logo.style.animation = "none"; logo.style.opacity = "1"; logo.style.transform = "none"; void logo.offsetWidth;
+      const dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + b.height / 2) - (a.top + a.height / 2), sc = b.width / a.width;
+      logo.style.transition = "transform 400ms var(--ease)";
+      logo.style.transform = "translate(" + dx + "px," + dy + "px) scale(" + sc + ")";
+      setTimeout(() => { reveal(); }, 400);
+      setTimeout(() => { target.style.visibility = ""; ov.remove(); }, 600);
     }
     if (skipFilm) { v.removeAttribute("src"); v.load(); waves(); return; }
     v.addEventListener("ended", waves);
@@ -3413,7 +3451,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     v.muted = false; v.volume = 1;
     $("#introPlay").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.hidden = true; v.muted = false; v.currentTime = 0; v.play().catch(waves); });
     // 영상이 나오는 중에 화면을 누르면 바로 로고 → 홈
-    ov.addEventListener("click", (e) => { if (stage === "film" && $("#introPlay").hidden) { v.pause(); waves(); } else if (stage === "splash") leave(0); });
+    ov.addEventListener("click", (e) => { if (stage === "film" && $("#introPlay").hidden) { v.pause(); waves(); } else if (stage === "splash") flip(); });
     const p = v.play(); if (p && p.catch) p.catch(() => { v.pause(); $("#introPlay").hidden = false; });
   })();
 
