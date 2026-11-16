@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>초월 디자인 시스템 v1</title>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+<style>
+/* index.html의 :root 토큰을 그대로 옮김 (참고용 페이지 — 앱과 연결되지 않음) */
+:root {
+  /* ===== 색 역할 (값은 앱 꾸미기 PRESETS → applyTheme()가 덮어씀. 여기는 기본 앰버) =====
+     글자 = --ink / --muted · 누르는 것·선택된 것 = --accent · 로고·앱 이름 = --logo
+     위험(삭제·로그아웃·초기화) = --danger · 안 읽음·알림 숫자 = --badge */
+  --bg: #F2A541;          /* 배경 */
+  --surface: #F6B862;     /* 카드·시트 */
+  --raise: #F9CB86;       /* 살짝 띄운 면(입력칸·아바타 바탕) */
+  --ink: #1F1408;         /* 본문 글자 */
+  --muted: #5A380E;       /* 보조 글자 */
+  --line: #D98B2B;        /* 구분선 */
+  --accent: #13263D;      /* 포인트 */
+  --on-accent: #FFFFFF;   /* 포인트 위 글자 */
+  --logo: #5B8FD0;        /* 로고 전용 */
+  --danger: #8E2A1C;      /* 위험 */
+  --badge: #C8243A;       /* 빨간 배지 */
+  --on-badge: #FFFFFF;
+  --scrim: rgba(0,0,0,.7); /* 시트 뒤 어둡게 */
+  --heart: var(--badge);  /* (예전 이름) */
+  --water: #3E86A8;
+  --bubble: var(--accent);
+  --on-bubble: var(--on-accent);
+  --ratio: auto;
+  /* 앱 꾸미기 값: 글자 크기(13~21) · 모서리(0~28) */
+  --fs: 16px;
+  --r: 14px;
+
+  /* ===== 토큰 1. 글자 크기 — 모두 --fs(기본 16)에서 계산 ===== */
+  --t-xs: calc(var(--fs) * .75);    /* 12 */
+  --t-sm: calc(var(--fs) * .875);   /* 14 */
+  --t-md: var(--fs);                /* 16 */
+  --t-lg: calc(var(--fs) * 1.25);   /* 20 */
+  --t-xl: calc(var(--fs) * 1.5);    /* 24 */
+  --t-2xl: calc(var(--fs) * 2);     /* 32 */
+  /* ===== 토큰 2. 두께·자간 — 폰트가 1종이라 두께는 400만. 자간은 0 / .04em / .12em ===== */
+  --ls-0: 0; --ls-1: .04em; --ls-2: .12em;
+  /* ===== 토큰 3. 간격 — 4의 배수. 화면 좌우 여백은 --s-4 ===== */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px;
+  /* ===== 토큰 4. 모서리 — 앱 꾸미기 '모서리'를 따름 ===== */
+  --r-sm: calc(var(--r) * .5);
+  --r-md: var(--r);
+  --r-lg: calc(var(--r) * 1.5);
+  --r-pill: 999px;
+  --r-full: 50%;
+  /* ===== 토큰 5. 그림자 — 색은 applyTheme()가 배경 밝기에 맞춰 계산 ===== */
+  --shadow-a: rgba(31,20,8,.10); --shadow-b: rgba(31,20,8,.12); --shadow-c: rgba(31,20,8,.22);
+  --e1: 0 1px 2px var(--shadow-a), 0 2px 8px var(--shadow-b);   /* 살짝 뜬 것 */
+  --e2: 0 8px 24px var(--shadow-c);                              /* 시트·토스트·메뉴 */
+  /* ===== 토큰 6. 모션 ===== */
+  --d-fast: 120ms; --d-base: 200ms; --d-slow: 320ms;
+  --ease: cubic-bezier(.2,0,0,1);
+  --ease-pop: cubic-bezier(.34,1.56,.64,1);   /* 축하·반응 팝 전용 */
+  --font-display: "Do Hyeon", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-body: "Do Hyeon", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; font-weight: 400 !important; }
+body { margin: 0; font-family: var(--font-body); font-size: var(--t-md); background: #EDE6D8; color: #1F1408; line-height: 1.5; }
+main { max-width: 760px; margin: 0 auto; padding: var(--s-8) var(--s-4); display: flex; flex-direction: column; gap: var(--s-8); }
+h1 { font-size: var(--t-2xl); margin: 0; letter-spacing: var(--ls-1); } h1 small { font-size: var(--t-sm); color: #6B5432; display: block; }
+h2 { font-size: var(--t-xl); margin: 0 0 var(--s-3); } h2 small { font-size: var(--t-sm); opacity: .7; margin-left: var(--s-2); }
+h3 { font-size: var(--t-lg); margin: 0 0 var(--s-3); }
+code { font-family: ui-monospace, Menlo, monospace; font-size: var(--t-xs); }
+.box { background: #FFFDF7; border-radius: var(--r-md); padding: var(--s-6); box-shadow: var(--e1); }
+.ty { display: flex; align-items: baseline; gap: var(--s-4); padding: var(--s-1) 0; border-bottom: 1px solid #E6DCC6; } .ty code { width: 70px; flex: none; }
+.spc { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-1) 0; } .spc code { width: 50px; } .spc i { height: 16px; background: #13263D; display: block; }
+.rads { display: flex; gap: var(--s-4); flex-wrap: wrap; } .rad { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); } .rad i { width: 64px; height: 64px; background: #13263D; display: block; }
+.shs { display: flex; gap: var(--s-6); } .shs div { width: 140px; height: 80px; background: #fff; border-radius: var(--r-md); display: grid; place-items: center; }
+.mo { display: grid; grid-template-columns: auto 1fr; gap: var(--s-1) var(--s-4); }
+.pre { background: var(--bg); color: var(--ink); border-radius: var(--r-lg); padding: var(--s-6); }
+.pre h2 small { color: var(--muted); opacity: 1; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s-2); }
+.sw { display: grid; grid-template-columns: 36px 1fr; grid-template-rows: auto auto; column-gap: var(--s-2); align-items: center; }
+.sw span { grid-row: span 2; width: 36px; height: 36px; border-radius: var(--r-sm); border: 1px solid var(--line); }
+.sw b { font-size: var(--t-sm); } .sw small { font-size: var(--t-xs); color: var(--muted); }
+.row { display: flex; gap: var(--s-4); margin-top: var(--s-6); flex-wrap: wrap; }
+.card { width: 260px; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; background: var(--bg); }
+.ph { display: flex; gap: var(--s-2); align-items: center; padding: var(--s-3) var(--s-4); } .ph small { color: var(--muted); font-size: var(--t-xs); }
+.av { width: 28px; height: 28px; border-radius: var(--r-full); background: var(--raise); color: var(--accent); display: grid; place-items: center; font-size: var(--t-sm); }
+.tile { aspect-ratio: 4/5; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; text-align: center; font-size: var(--t-lg); padding: var(--s-6); }
+.pb { padding: var(--s-3) var(--s-4); display: flex; flex-direction: column; } .pb small { color: var(--muted); font-size: var(--t-xs); }
+.col { display: flex; flex-direction: column; gap: var(--s-3); align-items: flex-start; flex: 1; min-width: 200px; }
+button { font: inherit; border: 0; cursor: pointer; min-height: 44px; padding: 0 var(--s-4); border-radius: var(--r-sm); transition: transform var(--d-fast) var(--ease); }
+button:active { transform: scale(.96); }
+.b1 { background: var(--accent); color: var(--on-accent); } .b2 { background: var(--raise); color: var(--ink); } .b3 { background: none; color: var(--danger); }
+.badge { min-width: 24px; height: 24px; padding: 0 var(--s-1); border-radius: var(--r-pill); background: var(--badge); color: #fff; font-size: var(--t-xs); display: grid; place-items: center; border: 2px solid var(--bg); }
+.bub { padding: var(--s-2) var(--s-4); border-radius: var(--r-lg); max-width: 220px; }
+.you { background: var(--raise); } .me { background: var(--accent); color: var(--on-accent); align-self: flex-end; }
+</style></head>
+<body><main>
+<h1>초월 디자인 시스템 v1<small>index.html의 토큰과 PRESETS를 옮긴 참고용 페이지 · 기본값 기준(글자 16px · 모서리 14px)</small></h1>
+<div class="box"><h3>글자 6단계 <small>— 모두 --fs에서 계산</small></h3><div class="ty"><code>--t-xs</code><span style="font-size:var(--t-xs)">초월 12px</span></div><div class="ty"><code>--t-sm</code><span style="font-size:var(--t-sm)">초월 14px</span></div><div class="ty"><code>--t-md</code><span style="font-size:var(--t-md)">초월 16px</span></div><div class="ty"><code>--t-lg</code><span style="font-size:var(--t-lg)">초월 20px</span></div><div class="ty"><code>--t-xl</code><span style="font-size:var(--t-xl)">초월 24px</span></div><div class="ty"><code>--t-2xl</code><span style="font-size:var(--t-2xl)">초월 32px</span></div><p style="margin:var(--s-3) 0 0;font-size:var(--t-sm)">두께는 400 한 가지 · 자간은 <code>--ls-0 0</code> / <code>--ls-1 .04em</code> / <code>--ls-2 .12em</code></p></div>
+<div class="box"><h3>간격 — 4의 배수, 화면 좌우 여백은 --s-4</h3><div class="spc"><code>--s-1</code><i style="width:var(--s-1)"></i><small>4px</small></div><div class="spc"><code>--s-2</code><i style="width:var(--s-2)"></i><small>8px</small></div><div class="spc"><code>--s-3</code><i style="width:var(--s-3)"></i><small>12px</small></div><div class="spc"><code>--s-4</code><i style="width:var(--s-4)"></i><small>16px</small></div><div class="spc"><code>--s-6</code><i style="width:var(--s-6)"></i><small>24px</small></div><div class="spc"><code>--s-8</code><i style="width:var(--s-8)"></i><small>32px</small></div></div>
+<div class="box"><h3>모서리 — 앱 꾸미기 '모서리'를 따름</h3><div class="rads"><div class="rad"><i style="border-radius:var(--r-sm)"></i><code>--r-sm</code><small>--r × .5</small></div><div class="rad"><i style="border-radius:var(--r-md)"></i><code>--r-md</code><small>--r</small></div><div class="rad"><i style="border-radius:var(--r-lg)"></i><code>--r-lg</code><small>--r × 1.5</small></div><div class="rad"><i style="border-radius:var(--r-pill)"></i><code>--r-pill</code><small>999px</small></div><div class="rad"><i style="border-radius:var(--r-full)"></i><code>--r-full</code><small>50%</small></div></div></div>
+<div class="box"><h3>그림자</h3><div class="shs"><div style="box-shadow:var(--e1)"><code>--e1 살짝 뜬 것</code></div><div style="box-shadow:var(--e2)"><code>--e2 시트·토스트·메뉴</code></div></div><p style="font-size:var(--t-sm);margin:var(--s-3) 0 0">피드 카드처럼 평평한 카드는 그림자 없이 1px <code>--line</code> 선만. 그림자 색은 밝은 배경 #1F1408, 어두운 배경 #000 기반.</p></div>
+<div class="box"><h3>모션</h3><div class="mo"><code>--d-fast</code><span>120ms · 누름·작은 변화</span><code>--d-base</code><span>200ms · 기본 전환</span><code>--d-slow</code><span>320ms · 시트·토스트</span><code>--ease</code><span>cubic-bezier(.2,0,0,1)</span><code>--ease-pop</code><span>cubic-bezier(.34,1.56,.64,1) · 축하·반응 팝 전용</span></div><p style="font-size:var(--t-sm);margin:var(--s-3) 0 0">움직임 줄이기 설정에서는 시간이 모두 1ms.</p></div>
+<h2>배경 프리셋별 색 역할</h2>
+<section class="pre" style="--bg:#F2A541;--surface:#F6B862;--raise:#F9CB86;--ink:#1F1408;--muted:#5A380E;--line:#D98B2B;--accent:#13263D;--on-accent:#FFFFFF;--logo:#2F64B3;--danger:#8E2A1C;--badge:#C8243A;--shadow-a:rgba(31,20,8,0.10);--shadow-b:rgba(31,20,8,0.12);--shadow-c:rgba(31,20,8,0.22)">
+  <h2>앰버 <small>amber · 밝은 배경</small></h2>
+  <div class="grid"><div class="sw"><span style="background:var(--bg)"></span><b>--bg</b><small>배경 · #F2A541</small></div><div class="sw"><span style="background:var(--surface)"></span><b>--surface</b><small>카드·시트 · #F6B862</small></div><div class="sw"><span style="background:var(--raise)"></span><b>--raise</b><small>살짝 띄운 면 · #F9CB86</small></div><div class="sw"><span style="background:var(--ink)"></span><b>--ink</b><small>본문 글자 · #1F1408</small></div><div class="sw"><span style="background:var(--muted)"></span><b>--muted</b><small>보조 글자 · #5A380E</small></div><div class="sw"><span style="background:var(--line)"></span><b>--line</b><small>구분선 · #D98B2B</small></div><div class="sw"><span style="background:var(--accent)"></span><b>--accent</b><small>포인트 · #13263D</small></div><div class="sw"><span style="background:var(--on-accent)"></span><b>--on-accent</b><small>포인트 위 글자 · #FFFFFF</small></div><div class="sw"><span style="background:var(--logo)"></span><b>--logo</b><small>로고 · #2F64B3</small></div><div class="sw"><span style="background:var(--danger)"></span><b>--danger</b><small>위험 · #8E2A1C</small></div><div class="sw"><span style="background:var(--badge)"></span><b>--badge</b><small>빨간 배지 · #C8243A</small></div></div>
+  <div class="row">
+    <div class="card">
+      <div class="ph"><span class="av">민</span><b>민수</b><small>· 2시간 전</small></div>
+      <div class="tile">오늘 냉탕 세 번 성공했다<br>초월 그 자체</div>
+      <div class="pb"><b>💪 준철님이 힘을 보냈어요</b><small>2시간 전</small></div>
+    </div>
+    <div class="col">
+      <button class="b1">사우나 인증하기</button>
+      <button class="b2">프로필 편집</button>
+      <button class="b3">기본값으로 되돌리기</button>
+      <span class="badge">7</span>
+      <div class="bub you">오늘 사우나 갈 사람?</div>
+      <div class="bub me">나! 7시에 보자</div>
+    </div>
+  </div>
+</section><section class="pre" style="--bg:#0B0A09;--surface:#161411;--raise:#201D19;--ink:#EFE9DD;--muted:#9A9183;--line:#2A2722;--accent:#F2C94C;--on-accent:#15130F;--logo:#2F64B3;--danger:#E57A62;--badge:#C8243A;--shadow-a:rgba(0,0,0,0.26);--shadow-b:rgba(0,0,0,0.31);--shadow-c:rgba(0,0,0,0.57)">
+  <h2>먹색 <small>ink · 어두운 배경</small></h2>
+  <div class="grid"><div class="sw"><span style="background:var(--bg)"></span><b>--bg</b><small>배경 · #0B0A09</small></div><div class="sw"><span style="background:var(--surface)"></span><b>--surface</b><small>카드·시트 · #161411</small></div><div class="sw"><span style="background:var(--raise)"></span><b>--raise</b><small>살짝 띄운 면 · #201D19</small></div><div class="sw"><span style="background:var(--ink)"></span><b>--ink</b><small>본문 글자 · #EFE9DD</small></div><div class="sw"><span style="background:var(--muted)"></span><b>--muted</b><small>보조 글자 · #9A9183</small></div><div class="sw"><span style="background:var(--line)"></span><b>--line</b><small>구분선 · #2A2722</small></div><div class="sw"><span style="background:var(--accent)"></span><b>--accent</b><small>포인트 · #F2C94C</small></div><div class="sw"><span style="background:var(--on-accent)"></span><b>--on-accent</b><small>포인트 위 글자 · #15130F</small></div><div class="sw"><span style="background:var(--logo)"></span><b>--logo</b><small>로고 · #2F64B3</small></div><div class="sw"><span style="background:var(--danger)"></span><b>--danger</b><small>위험 · #E57A62</small></div><div class="sw"><span style="background:var(--badge)"></span><b>--badge</b><small>빨간 배지 · #C8243A</small></div></div>
+  <div class="row">
+    <div class="card">
+      <div class="ph"><span class="av">민</span><b>민수</b><small>· 2시간 전</small></div>
+      <div class="tile">오늘 냉탕 세 번 성공했다<br>초월 그 자체</div>
+      <div class="pb"><b>💪 준철님이 힘을 보냈어요</b><small>2시간 전</small></div>
+    </div>
+    <div class="col">
+      <button class="b1">사우나 인증하기</button>
+      <button class="b2">프로필 편집</button>
+      <button class="b3">기본값으로 되돌리기</button>
+      <span class="badge">7</span>
+      <div class="bub you">오늘 사우나 갈 사람?</div>
+      <div class="bub me">나! 7시에 보자</div>
+    </div>
+  </div>
+</section><section class="pre" style="--bg:#06121A;--surface:#0D1D27;--raise:#152A37;--ink:#E6F0F5;--muted:#8DA5B3;--line:#1F3644;--accent:#5B8FD0;--on-accent:#15130F;--logo:#2F64B3;--danger:#E57A62;--badge:#C8243A;--shadow-a:rgba(0,0,0,0.26);--shadow-b:rgba(0,0,0,0.31);--shadow-c:rgba(0,0,0,0.57)">
+  <h2>깊은 바다 <small>sea · 어두운 배경</small></h2>
+  <div class="grid"><div class="sw"><span style="background:var(--bg)"></span><b>--bg</b><small>배경 · #06121A</small></div><div class="sw"><span style="background:var(--surface)"></span><b>--surface</b><small>카드·시트 · #0D1D27</small></div><div class="sw"><span style="background:var(--raise)"></span><b>--raise</b><small>살짝 띄운 면 · #152A37</small></div><div class="sw"><span style="background:var(--ink)"></span><b>--ink</b><small>본문 글자 · #E6F0F5</small></div><div class="sw"><span style="background:var(--muted)"></span><b>--muted</b><small>보조 글자 · #8DA5B3</small></div><div class="sw"><span style="background:var(--line)"></span><b>--line</b><small>구분선 · #1F3644</small></div><div class="sw"><span style="background:var(--accent)"></span><b>--accent</b><small>포인트 · #5B8FD0</small></div><div class="sw"><span style="background:var(--on-accent)"></span><b>--on-accent</b><small>포인트 위 글자 · #15130F</small></div><div class="sw"><span style="background:var(--logo)"></span><b>--logo</b><small>로고 · #2F64B3</small></div><div class="sw"><span style="background:var(--danger)"></span><b>--danger</b><small>위험 · #E57A62</small></div><div class="sw"><span style="background:var(--badge)"></span><b>--badge</b><small>빨간 배지 · #C8243A</small></div></div>
+  <div class="row">
+    <div class="card">
+      <div class="ph"><span class="av">민</span><b>민수</b><small>· 2시간 전</small></div>
+      <div class="tile">오늘 냉탕 세 번 성공했다<br>초월 그 자체</div>
+      <div class="pb"><b>💪 준철님이 힘을 보냈어요</b><small>2시간 전</small></div>
+    </div>
+    <div class="col">
+      <button class="b1">사우나 인증하기</button>
+      <button class="b2">프로필 편집</button>
+      <button class="b3">기본값으로 되돌리기</button>
+      <span class="badge">7</span>
+      <div class="bub you">오늘 사우나 갈 사람?</div>
+      <div class="bub me">나! 7시에 보자</div>
+    </div>
+  </div>
+</section><section class="pre" style="--bg:#140F0B;--surface:#1F1812;--raise:#2B2119;--ink:#F2E8DA;--muted:#A8977F;--line:#3A2D22;--accent:#F2C94C;--on-accent:#15130F;--logo:#2F64B3;--danger:#E57A62;--badge:#C8243A;--shadow-a:rgba(0,0,0,0.26);--shadow-b:rgba(0,0,0,0.31);--shadow-c:rgba(0,0,0,0.57)">
+  <h2>밤 나무 <small>wood · 어두운 배경</small></h2>
+  <div class="grid"><div class="sw"><span style="background:var(--bg)"></span><b>--bg</b><small>배경 · #140F0B</small></div><div class="sw"><span style="background:var(--surface)"></span><b>--surface</b><small>카드·시트 · #1F1812</small></div><div class="sw"><span style="background:var(--raise)"></span><b>--raise</b><small>살짝 띄운 면 · #2B2119</small></div><div class="sw"><span style="background:var(--ink)"></span><b>--ink</b><small>본문 글자 · #F2E8DA</small></div><div class="sw"><span style="background:var(--muted)"></span><b>--muted</b><small>보조 글자 · #A8977F</small></div><div class="sw"><span style="background:var(--line)"></span><b>--line</b><small>구분선 · #3A2D22</small></div><div class="sw"><span style="background:var(--accent)"></span><b>--accent</b><small>포인트 · #F2C94C</small></div><div class="sw"><span style="background:var(--on-accent)"></span><b>--on-accent</b><small>포인트 위 글자 · #15130F</small></div><div class="sw"><span style="background:var(--logo)"></span><b>--logo</b><small>로고 · #2F64B3</small></div><div class="sw"><span style="background:var(--danger)"></span><b>--danger</b><small>위험 · #E57A62</small></div><div class="sw"><span style="background:var(--badge)"></span><b>--badge</b><small>빨간 배지 · #C8243A</small></div></div>
+  <div class="row">
+    <div class="card">
+      <div class="ph"><span class="av">민</span><b>민수</b><small>· 2시간 전</small></div>
+      <div class="tile">오늘 냉탕 세 번 성공했다<br>초월 그 자체</div>
+      <div class="pb"><b>💪 준철님이 힘을 보냈어요</b><small>2시간 전</small></div>
+    </div>
+    <div class="col">
+      <button class="b1">사우나 인증하기</button>
+      <button class="b2">프로필 편집</button>
+      <button class="b3">기본값으로 되돌리기</button>
+      <span class="badge">7</span>
+      <div class="bub you">오늘 사우나 갈 사람?</div>
+      <div class="bub me">나! 7시에 보자</div>
+    </div>
+  </div>
+</section><section class="pre" style="--bg:#F4F1EA;--surface:#FFFFFF;--raise:#ECE7DD;--ink:#1C1A16;--muted:#6B6458;--line:#DDD6C8;--accent:#13263D;--on-accent:#FFFFFF;--logo:#2F64B3;--danger:#8E2A1C;--badge:#C8243A;--shadow-a:rgba(31,20,8,0.10);--shadow-b:rgba(31,20,8,0.12);--shadow-c:rgba(31,20,8,0.22)">
+  <h2>밝은 종이 <small>paper · 밝은 배경</small></h2>
+  <div class="grid"><div class="sw"><span style="background:var(--bg)"></span><b>--bg</b><small>배경 · #F4F1EA</small></div><div class="sw"><span style="background:var(--surface)"></span><b>--surface</b><small>카드·시트 · #FFFFFF</small></div><div class="sw"><span style="background:var(--raise)"></span><b>--raise</b><small>살짝 띄운 면 · #ECE7DD</small></div><div class="sw"><span style="background:var(--ink)"></span><b>--ink</b><small>본문 글자 · #1C1A16</small></div><div class="sw"><span style="background:var(--muted)"></span><b>--muted</b><small>보조 글자 · #6B6458</small></div><div class="sw"><span style="background:var(--line)"></span><b>--line</b><small>구분선 · #DDD6C8</small></div><div class="sw"><span style="background:var(--accent)"></span><b>--accent</b><small>포인트 · #13263D</small></div><div class="sw"><span style="background:var(--on-accent)"></span><b>--on-accent</b><small>포인트 위 글자 · #FFFFFF</small></div><div class="sw"><span style="background:var(--logo)"></span><b>--logo</b><small>로고 · #2F64B3</small></div><div class="sw"><span style="background:var(--danger)"></span><b>--danger</b><small>위험 · #8E2A1C</small></div><div class="sw"><span style="background:var(--badge)"></span><b>--badge</b><small>빨간 배지 · #C8243A</small></div></div>
+  <div class="row">
+    <div class="card">
+      <div class="ph"><span class="av">민</span><b>민수</b><small>· 2시간 전</small></div>
+      <div class="tile">오늘 냉탕 세 번 성공했다<br>초월 그 자체</div>
+      <div class="pb"><b>💪 준철님이 힘을 보냈어요</b><small>2시간 전</small></div>
+    </div>
+    <div class="col">
+      <button class="b1">사우나 인증하기</button>
+      <button class="b2">프로필 편집</button>
+      <button class="b3">기본값으로 되돌리기</button>
+      <span class="badge">7</span>
+      <div class="bub you">오늘 사우나 갈 사람?</div>
+      <div class="bub me">나! 7시에 보자</div>
+    </div>
+  </div>
+</section>
+</main></body></html>
