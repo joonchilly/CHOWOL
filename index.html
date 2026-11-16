@@ -471,8 +471,35 @@ input, textarea, select { font-size: max(16px, 1em); }
 .btn { flex: 1; background: var(--raise); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); font-size: var(--t-sm); text-align: center; }
 .btn-primary { background: var(--accent); color: var(--on-accent); }
 .sw:disabled { opacity: .35; cursor: not-allowed; }
-.grid-tabs { display: flex; justify-content: center; border-top: 1px solid var(--line); color: var(--ink); }
-.grid-tabs span { border-top: 1px solid var(--ink); margin-top: -1px; padding: var(--s-3) var(--s-6); }
+.grid-tabs { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.grid-tabs button { flex: 1; height: 44px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.grid-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+/* 기록 탭 */
+.cert-log { padding: var(--s-4) var(--s-4) var(--s-6); display: flex; flex-direction: column; gap: var(--s-3); }
+.cal-h { display: flex; align-items: baseline; gap: var(--s-2); }
+.cal-h b { font-size: var(--t-lg); color: var(--ink); }
+.cal-h > span { font-size: var(--t-sm); color: var(--muted); }
+.cal-key { margin-left: auto; display: flex; gap: var(--s-2); font-size: var(--t-xs); color: var(--muted); }
+.cal-key { align-items: center; gap: 6px; }
+.cal-w, .cal-g { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; }
+.cal-w span { font-size: var(--t-xs); color: var(--muted); padding: var(--s-1) 0; }
+.cal-g { gap: 4px 0; }
+.cal-d { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0 6px; border-radius: var(--r-sm); }
+.cal-d b { font-size: var(--t-sm); color: var(--muted); line-height: 1.4; }
+.cal-d.has b { color: var(--ink); }
+.cal-d.today { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.cal-d.empty { visibility: hidden; }
+.cdots.sm { gap: 2px; } .cdots.sm i { width: 5px; height: 5px; }
+.rec-h { font-size: 13px; color: var(--muted); letter-spacing: var(--ls-1); margin-top: var(--s-3); }
+.rec-list { display: flex; flex-direction: column; }
+.rec-row { display: flex; align-items: center; gap: var(--s-3); height: 52px; text-align: left; border-bottom: 1px solid var(--line); color: var(--ink); }
+.rec-row:disabled { opacity: 1; cursor: default; }
+.rec-when { width: 40px; flex: none; font-size: var(--t-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.rec-ic { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: var(--r-full); background: var(--raise); color: var(--ink); }
+.rec-ic svg.i { width: 20px; height: 20px; }
+.rec-t { flex: 1; min-width: 0; display: flex; gap: var(--s-2); align-items: baseline; }
+.rec-t b { flex: none; }
+.rec-t span { color: var(--muted); font-size: var(--t-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
 .tile { aspect-ratio: 1; background: var(--surface); overflow: hidden; position: relative; display: block; width: 100%; }
 .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1993,7 +2020,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   // ---------- profile ----------
   // 프로필로 들어오기 직전 화면을 기억했다가 '뒤로'에서 그대로 돌아감
-  function openProfile(id) { if (ui.screen !== "profile") ui.prevScreen = ui.screen; morePosts(100); ui.profileId = id; if (ui.openPost) closeModal("postModal"); go("profile", true); $("#profBody").scrollTop = 0; }
+  function openProfile(id) { if ((ui.profileId || myId) !== id) ui.profTab = "posts"; if (ui.screen !== "profile") ui.prevScreen = ui.screen; morePosts(100); ui.profileId = id; if (ui.openPost) closeModal("postModal"); go("profile", true); $("#profBody").scrollTop = 0; }
   function renderProfile() {
     const id = ui.profileId || myId;
     const body = $("#profBody");
@@ -2005,7 +2032,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const posts = S.posts.filter((p) => p.data().author === id);
     const likes = posts.reduce((n, p) => n + heartsOf(p.data()).length, 0);
     // '친구 수'는 모두 같아서 대신 이번 달 사우나·러닝·운동 인증 횟수
-    const ms0 = monthStart(), monthCerts = posts.filter((p) => { const d = p.data(); return d.ts >= ms0 && (d.sauna || d.run || d.gym); }).length;
+    const ms0 = monthStart(), monthCerts = certRecords(id).filter((r) => r.ts >= ms0).length;
     const m = S.members[id] || {};
     const btns = h("div", { class: "prof-btns" });
     $("#profTheme").hidden = !(mine && isOwner); // 앱 꾸미기는 방장만, 상단바 톱니로
@@ -2029,8 +2056,60 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
             h("div", {}, h("b", { text: String(monthCerts) }), h("span", { text: (new Date().getMonth() + 1) + "월 인증" })))),
         ...(m.bio ? [h("p", { class: "prof-bio", text: m.bio })] : (mine ? [h("p", { class: "prof-bio", style: "color:var(--muted)", text: "소개를 적어보세요." })] : [])),
         btns),
-      h("div", { class: "grid-tabs" }, h("span", { "aria-label": "게시물" }, icon("grid"))),
-      posts.length ? grid : h("p", { class: "empty", text: mine ? "첫 게시물을 올려보세요." : "아직 게시물이 없어요." }));
+      h("div", { class: "grid-tabs", role: "tablist" }, ...[["posts", "게시물"], ["log", "기록"]].map(([k, lb]) => h("button", { type: "button", role: "tab", "aria-selected": String((ui.profTab || "posts") === k), text: lb, onclick: () => { ui.profTab = k; renderProfile(); } }))),
+      ui.profTab === "log" ? certLog(id, mine) : posts.length ? grid : h("p", { class: "empty", text: mine ? "첫 게시물을 올려보세요." : "아직 게시물이 없어요." }));
+  }
+  // ----- 프로필 '기록' 탭: 이번 달 달력 + 최근 인증 목록 -----
+  const CERT_IC = {
+    g: '<svg class="i" viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
+    r: '<svg class="i" viewBox="0 0 24 24"><path d="M3 15.5h4.5l2-4 3.5 1.5 1.5-3 3 1.2c1.6.6 2.5 1.9 2.5 3.3V17H3z"/><path d="M3 19.5h18"/></svg>',
+    s: '<svg class="i" viewBox="0 0 24 24"><path d="M8 3.5c-1.2 1.5 1.2 2.5 0 4M12 3.5c-1.2 1.5 1.2 2.5 0 4M16 3.5c-1.2 1.5 1.2 2.5 0 4"/><path d="M4 11h16v6.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/></svg>'
+  };
+  const CERT_NAME = { g: "운동", r: "러닝", s: "사우나" };
+  function certRecords(uid) {
+    const out = new Map();
+    const put = (id, k, d) => { const cur = out.get(id); out.set(id, cur ? { ...cur, ...d, k } : { id, k, ...d }); };
+    (S.workouts || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "g", { ts: d.ts, rpm: d.rpm, parts: d.parts }); });
+    (S.runs || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "r", { ts: d.ts, km: d.km }); });
+    (S.sauna || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "s", { ts: d.ts, place: d.place, minutes: d.minutes, temp: d.temp, sets: d.sets }); });
+    S.posts.forEach((p) => { const d = p.data(); if (d.author !== uid) return;
+      if (d.gym) put(p.id, "g", { ts: d.ts, rpm: d.gym.rpm, parts: d.gym.parts, fuel: d.gym.fuel, post: true });
+      if (d.run) put(p.id, "r", { ts: d.ts, km: d.run.km, cond: d.run.cond, post: true });
+      if (d.sauna) put(p.id, "s", { ts: d.ts, ...d.sauna, post: true }); });
+    return [...out.values()].sort((a, b) => b.ts - a.ts);
+  }
+  function certText(r) {
+    if (r.k === "g") return ["RPM " + (r.rpm || "-"), (r.parts || []).map((k) => PART_NAME[k]).filter(Boolean).join("·"), r.fuel ? "연료: " + r.fuel : null].filter(Boolean).join(" · ");
+    if (r.k === "r") return [r.km ? r.km + "km" : "거리 미기록", r.cond || null].filter(Boolean).join(" · ");
+    return saunaLine(r);
+  }
+  function certLog(uid, mine) {
+    const recs = certRecords(uid), now = new Date(Date.now() + 9 * 3600000);
+    const y = now.getUTCFullYear(), mo = now.getUTCMonth(), today = kstDay(Date.now());
+    const days = {}; recs.forEach((r) => { const k = kstDay(r.ts); (days[k] = days[k] || {})[r.k] = true; });
+    const first = new Date(Date.UTC(y, mo, 1)).getUTCDay(), last = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+    const cells = [];
+    for (let i = 0; i < first; i++) cells.push(h("span", { class: "cal-d empty" }));
+    for (let d = 1; d <= last; d++) {
+      const key = y + "-" + String(mo + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0"), c = days[key];
+      const lab = (mo + 1) + "월 " + d + "일" + (c ? " · " + ["g", "r", "s"].filter((k) => c[k]).map((k) => CERT_NAME[k]).join("·") : "");
+      cells.push(h("span", { class: "cal-d" + (key === today ? " today" : "") + (c ? " has" : ""), "aria-label": lab }, h("b", { text: String(d) }), certDots(c, "cdots sm")));
+    }
+    const monthN = recs.filter((r) => kstDay(r.ts).startsWith(y + "-" + String(mo + 1).padStart(2, "0"))).length;
+    const cal = h("div", { class: "cal" },
+      h("div", { class: "cal-h" }, h("b", { text: (mo + 1) + "월" }), h("span", { text: "인증 " + monthN + "번" }),
+        h("span", { class: "cal-key" }, certDots({ g: 1, r: 1, s: 1 }, "cdots sm"), "운동·러닝·사우나 순")),
+      h("div", { class: "cal-w" }, ...["일", "월", "화", "수", "목", "금", "토"].map((w) => h("span", { text: w }))),
+      h("div", { class: "cal-g" }, ...cells));
+    const list = recs.slice(0, 30).map((r) => {
+      const dt = new Date(r.ts + 9 * 3600000), when = (dt.getUTCMonth() + 1) + "/" + dt.getUTCDate();
+      const ic = document.createElement("template"); ic.innerHTML = CERT_IC[r.k];
+      return h("button", { type: "button", class: "rec-row", disabled: !r.post, "aria-label": when + " " + CERT_NAME[r.k] + " " + certText(r), onclick: () => r.post && openPost(r.id) },
+        h("span", { class: "rec-when", text: when }), h("span", { class: "rec-ic" }, ic.content.firstChild), h("span", { class: "rec-t" }, h("b", { text: CERT_NAME[r.k] }), h("span", { text: certText(r) })));
+    });
+    return h("div", { class: "cert-log" }, cal,
+      h("div", { class: "rec-h", text: "최근 기록" }),
+      list.length ? h("div", { class: "rec-list" }, ...list) : h("p", { class: "empty", text: mine ? "아직 인증 기록이 없어요. 기록 탭에서 첫 인증을 남겨보세요." : "아직 인증 기록이 없어요." }));
   }
   $("#profBack").addEventListener("click", () => {
     const back = ui.prevScreen && ui.prevScreen !== "profile" ? ui.prevScreen : "home";
@@ -3251,7 +3330,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     listen("chat", db.collection("chat").orderBy("ts", "desc").limit(300), (s) => { S.chat = s.docs; });
     listen("sauna", db.collection("sauna").where("ts", ">=", monthStart()).limit(500), (s) => { S.sauna = s.docs; });
     listen("runs", db.collection("runs").limit(3000), (s) => { S.runs = s.docs; });
-    listen("workouts", db.collection("workouts").where("ts", ">=", weekStart() - 86400000).limit(400), (s) => { S.workouts = s.docs; });
+    listen("workouts", db.collection("workouts").where("ts", ">=", Math.min(monthStart(), weekStart()) - 86400000).limit(600), (s) => { S.workouts = s.docs; });
     listen("eats", db.collection("eats").orderBy("ts", "desc").limit(300), (s) => { S.eats = s.docs; });
     listen("notices", db.collection("notices").orderBy("ts", "desc").limit(20), (s) => { S.notices = s.docs; if (!$("#noticeModal").hidden) renderNoticeList(); });
     if (myId) listen("dm", db.collection("dm").where("members", "array-contains", myId).limit(500), (s) => { S.dm = s.docs; });
