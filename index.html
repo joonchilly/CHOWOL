@@ -187,7 +187,7 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 /* 스켈레톤 */
 .sk { display: block; background: var(--line); border-radius: var(--r-sm); animation: skPulse 1.2s var(--ease) infinite alternate; }
 @keyframes skPulse { from { opacity: .5; } to { opacity: 1; } }
-.sk-ring { width: 56px; height: 56px; border-radius: var(--r-full); margin: 4px; }
+.sk-ring { width: 52px; height: 52px; border-radius: var(--r-full); }
 .sk-av { width: 32px; height: 32px; border-radius: var(--r-full); flex: none; }
 .sk-bar { height: 12px; }
 .sk-card { padding: var(--s-3) 0; }
@@ -267,13 +267,18 @@ body.no-stories .stories { display: none; }
 .av-guide { background: var(--accent); color: var(--on-accent); font-family: var(--font-display); }
 
 /* stories row */
-.stories { display: flex; gap: var(--s-4); padding: var(--s-3) var(--s-4); overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
-.story { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); width: 68px; flex: none; }
-.ring { display: grid; place-items: center; width: 64px; height: 64px; padding: 3px; border-radius: var(--r-full); flex: none; overflow: hidden; background: conic-gradient(from 200deg, var(--accent), var(--water), var(--accent)); }
+/* 오늘 줄: 가로 스크롤 없이 한 줄 균등 배치 */
+.stories { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: var(--s-1); padding: var(--s-3) var(--s-3); border-bottom: 1px solid var(--line); }
+.story { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; min-height: 44px; }
+.ring { position: relative; display: grid; place-items: center; width: 52px; height: 52px; padding: 3px; border-radius: var(--r-full); flex: none; background: conic-gradient(from 200deg, var(--accent), var(--water), var(--accent)); }
+.ring .trophy { position: absolute; right: -4px; bottom: -4px; font-size: 18px; line-height: 1; filter: drop-shadow(0 1px 1px var(--shadow-b)); }
+.cdots { display: flex; gap: 4px; }
+.cdots i { width: 6px; height: 6px; border-radius: var(--r-full); background: var(--line); }
+.cdots i.on { background: var(--accent); }
 .ring.seen { background: var(--line); }
-.ring .av { width: 58px; height: 58px; max-width: none; border: 3px solid var(--bg); font-size: var(--t-lg); display: grid; }
+.ring .av { width: 46px; height: 46px; max-width: none; border: 2px solid var(--bg); font-size: var(--t-md); display: grid; }
 .av img { display: block; }
-.story .story-nm { font-size: var(--t-xs); max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.story .story-nm { font-size: 12px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 
 /* post */
 /* 게시물 사이는 선 없이 여백(위 12 + 아래 12) */
@@ -1499,15 +1504,34 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   if (window.__authDone) window.__authDone.then((v) => { S.signedOut = v === "out" || v === "blocked"; if (S.signedOut) renderAll(); });
 
   // ---------- home ----------
+  // 한국 시간 기준 날짜 키 (오늘 줄·기록 달력 공용)
+  const kstDay = (ts) => new Date(ts + 9 * 3600000).toISOString().slice(0, 10);
+  // 사람별로 그날 한 인증: { "uid|2026-11-16": {g, r, s} }
+  function certDays() {
+    const m = {}, mark = (a, ts, k) => { if (!a || !ts) return; const key = a + "|" + kstDay(ts); (m[key] = m[key] || {})[k] = true; };
+    (S.workouts || []).forEach((x) => { const d = x.data(); mark(d.author, d.ts, "g"); });
+    (S.runs || []).forEach((x) => { const d = x.data(); mark(d.author, d.ts, "r"); });
+    (S.sauna || []).forEach((x) => { const d = x.data(); mark(d.author, d.ts, "s"); });
+    S.posts.forEach((p) => { const d = p.data(); if (d.gym) mark(d.author, d.ts, "g"); if (d.run) mark(d.author, d.ts, "r"); if (d.sauna) mark(d.author, d.ts, "s"); });
+    return m;
+  }
+  const certDots = (c, cls) => h("span", { class: cls || "cdots", "aria-hidden": "true" }, ...["g", "r", "s"].map((k) => h("i", { class: c && c[k] ? "on" : "" })));
   function renderHome() {
     const ids = memberIds();
     if (myId && !ids.includes(myId)) ids.unshift(myId);
     else if (myId) { ids.splice(ids.indexOf(myId), 1); ids.unshift(myId); }
+    // 오늘 줄: 한 줄에 균등 배치, 원 아래 오늘 인증 점 3개(운동·러닝·사우나), 셋 다 하면 🏆
+    const today = kstDay(Date.now()), cd = certDays();
+    $("#stories").style.setProperty("--n", Math.max(ids.length, 1));
     $("#stories").replaceChildren(...ids.map((id) => {
       const latest = S.posts.find((p) => p.data().author === id);
       const seen = !latest || Number(store("chowol.story." + id) || 0) >= latest.data().ts;
-      return h("button", { class: "story", type: "button", onclick: () => { if (latest) store("chowol.story." + id, String(latest.data().ts)); openProfile(id); } },
-        h("span", { class: "ring" + (seen ? " seen" : "") }, avatar(id)), h("span", { class: "story-nm", text: id === myId ? "내 프로필" : nameOf(id) }));
+      const c = cd[id + "|" + today] || {}, all = c.g && c.r && c.s;
+      const done = ["운동", "러닝", "사우나"].filter((_, i) => c["grs"[i]]);
+      return h("button", { class: "story", type: "button", "aria-label": (id === myId ? "내 프로필" : nameOf(id)) + " · 오늘 " + (done.length ? done.join("·") + " 인증" : "인증 없음"),
+        onclick: () => { if (latest) store("chowol.story." + id, String(latest.data().ts)); openProfile(id); } },
+        h("span", { class: "ring" + (seen ? " seen" : "") }, avatar(id), all ? h("span", { class: "trophy", text: "🏆" }) : null),
+        certDots(c), h("span", { class: "story-nm", text: id === myId ? "나" : nameOf(id) }));
     }));
     $("#stories").hidden = !ids.length;
     if (!S.loaded.members && !S.signedOut) { $("#stories").hidden = false; $("#stories").replaceChildren(...[0, 1, 2, 3, 4].map(() => h("span", { class: "story" }, h("span", { class: "sk sk-ring" }), h("span", { class: "sk sk-bar", style: "width:40px;height:10px" })))); }
