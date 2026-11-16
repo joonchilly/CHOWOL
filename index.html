@@ -15,8 +15,10 @@
 (function () {
   try {
     var d = new Date(), today = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-    if (localStorage.getItem("chowol.introDay") === today) document.documentElement.classList.add("no-intro");
+    var pref = localStorage.getItem("chowol-intro") || "daily"; // 설정 > 인트로 영상
+    if (pref === "off" || (pref === "daily" && localStorage.getItem("chowol.introDay") === today)) document.documentElement.classList.add("no-intro");
     else localStorage.setItem("chowol.introDay", today);
+    if (localStorage.getItem("chowol-motion") === "1") document.documentElement.classList.add("reduce-motion");
   } catch (e) {}
 })();
 </script>
@@ -197,6 +199,36 @@ input, textarea, .cap, .cm .txt, .bubble, .prof-bio { -webkit-user-select: text;
 .sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .sk-tile { width: 100%; aspect-ratio: 1; border-radius: 0; margin-top: var(--s-2); }
 .sk-list { padding: var(--s-3) 0; display: flex; flex-direction: column; gap: var(--s-2); }
+/* 설정 화면 */
+.panel { position: fixed; inset: 0; z-index: 16; background: var(--bg); display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+html.standalone .panel { bottom: auto; height: var(--appH, 100%); }
+.panel[hidden] { display: none; }
+.panel > .topbar .title { font-size: var(--t-lg); }
+.panel-b { flex: 1; min-height: 0; overflow-y: auto; padding: 0 0 calc(var(--s-8) + env(safe-area-inset-bottom, 0px)); }
+.set-h { padding: var(--s-6) var(--s-4) var(--s-2); font-size: 13px; color: var(--muted); letter-spacing: var(--ls-1); }
+.set-h small { font-size: 12px; letter-spacing: 0; margin-left: 6px; opacity: .85; }
+.set-g { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface); }
+.set-row { display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 52px; padding: 0 var(--s-4); text-align: left; color: var(--ink); }
+.set-row + .set-row { border-top: 1px solid var(--line); }
+.set-row .st { flex: 1; min-width: 0; }
+.set-row .sv { color: var(--muted); font-size: var(--t-sm); }
+.set-row .chev { color: var(--muted); font-size: 22px; line-height: 1; margin-right: -4px; }
+.set-row .check { color: var(--accent); width: 20px; text-align: center; }
+.set-note { padding: var(--s-2) var(--s-4); margin: 0; font-size: 13px; color: var(--muted); }
+.switch { position: relative; flex: none; width: 51px; height: 31px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--muted) 60%, transparent); transition: background var(--d-base) var(--ease); }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: var(--r-full); background: var(--raise); box-shadow: var(--e1); transition: transform var(--d-base) var(--ease); }
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch[aria-checked="true"]::after { transform: translateX(20px); background: var(--on-accent); }
+.switch:active { box-shadow: none; }
+.switch::before { content: ""; position: absolute; inset: -7px -2px; } /* 터치 영역 44px */
+.mem-form { padding: 0 var(--s-4); }
+.mem-form .c-form { background: var(--surface) !important; }
+.mem-em { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mem-del { min-height: 44px; padding: 0 var(--s-2); color: var(--danger); font-size: var(--t-sm); }
+#invList .linkish { display: block; padding: var(--s-4); }
+/* 설정 > 움직임 줄이기 */
+html.reduce-motion { --d-fast: 1ms; --d-base: 1ms; --d-slow: 1ms; }
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 /* 오프라인 띠 */
 .net-band { height: 28px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 13px; background: var(--surface); color: var(--muted); border-bottom: 1px solid var(--line); }
 .net-band.ok { color: var(--ink); }
@@ -845,7 +877,7 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
       <header class="topbar">
         <button class="icon-btn" type="button" id="profBack" aria-label="뒤로" hidden><span data-icon="back"></span></button>
         <div class="title" id="profTitle">프로필</div>
-        <button class="icon-btn tap44" type="button" id="profTheme" aria-label="앱 꾸미기" hidden><svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+        <button class="icon-btn tap44" type="button" id="profTheme" aria-label="설정" hidden><svg class="i" viewBox="0 0 24 24" style="width:24px;height:24px" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </header>
       <div class="scroll" id="profBody"></div>
     </section>
@@ -891,13 +923,48 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
       </div>
       <div class="field"><label for="editNick">이름</label><input id="editNick" maxlength="20" placeholder="친구들한테 보일 이름" required></div>
       <div class="field"><label for="editBio">소개</label><textarea id="editBio" rows="3" maxlength="150" placeholder="한 줄 소개"></textarea></div>
-      <div class="field"><span class="lbl" id="fsLbl">글자 크기 <small>이 휴대폰에만 적용돼요</small></span><div class="seg-fs" id="fsSeg" role="radiogroup" aria-labelledby="fsLbl"></div></div>
       <div class="logout-zone"><button type="button" id="logoutBtn">로그아웃</button><small>이 휴대폰에서만 로그아웃돼요</small></div>
     </div>
   </form>
 </div>
 
 <!-- theme -->
+<!-- 설정 -->
+<div class="panel" id="setPanel" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <header class="topbar"><button class="icon-btn" type="button" data-panel-back aria-label="뒤로"><span data-icon="back"></span></button><div class="title" id="setTitle">설정</div></header>
+  <div class="panel-b">
+    <div class="set-h">나에게만 <small>이 휴대폰에만 저장돼요</small></div>
+    <div class="set-g">
+      <button type="button" class="set-row" id="setFs"><span class="st">글자 크기</span><span class="sv" id="setFsV"></span><span class="chev" aria-hidden="true">›</span></button>
+      <button type="button" class="set-row" id="setIntro"><span class="st">인트로 영상</span><span class="sv" id="setIntroV"></span><span class="chev" aria-hidden="true">›</span></button>
+      <div class="set-row"><span class="st" id="mvL">움직임 줄이기</span><button type="button" class="switch" role="switch" id="setMotion" aria-labelledby="mvL"></button></div>
+    </div>
+    <div class="set-h">앱 안 알림 <small>화면 위에 잠깐 뜨는 알림</small></div>
+    <div class="set-g" id="setNotif"></div>
+    <div class="set-own" id="setOwn" hidden>
+      <div class="set-h">모두에게 <small>방장만 보여요</small></div>
+      <div class="set-g">
+        <button type="button" class="set-row" id="setTheme"><span class="st">앱 꾸미기</span><span class="chev" aria-hidden="true">›</span></button>
+        <button type="button" class="set-row" id="setMembers"><span class="st">멤버 관리</span><span class="sv" id="setMembersV"></span><span class="chev" aria-hidden="true">›</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="panel" id="choicePanel" hidden role="dialog" aria-modal="true" aria-labelledby="choiceTitle">
+  <header class="topbar"><button class="icon-btn" type="button" data-panel-back aria-label="뒤로"><span data-icon="back"></span></button><div class="title" id="choiceTitle"></div></header>
+  <div class="panel-b"><div class="set-g" id="choiceList" role="radiogroup"></div><p class="set-note" id="choiceNote"></p></div>
+</div>
+<div class="panel" id="memPanel" hidden role="dialog" aria-modal="true" aria-labelledby="memTitle">
+  <header class="topbar"><button class="icon-btn" type="button" data-panel-back aria-label="뒤로"><span data-icon="back"></span></button><div class="title" id="memTitle">멤버 관리</div></header>
+  <div class="panel-b">
+    <div class="set-h">초대하기 <small>구글 이메일을 넣으면 그 계정으로 들어올 수 있어요</small></div>
+    <div class="mem-form"><form class="c-form" id="invForm" style="border:1px solid var(--line);border-radius:calc(var(--r) * .6);padding:4px 6px 4px 12px;background:var(--bg)"><label for="invEmail" hidden>이메일</label><input id="invEmail" type="email" placeholder="friend@gmail.com" autocomplete="off"><button type="submit">추가</button></form></div>
+    <p class="set-note" id="invStatus"></p>
+    <div class="set-h">들어올 수 있는 친구</div>
+    <div class="set-g" id="invList"></div>
+  </div>
+</div>
+
 <div class="modal" id="themeModal" hidden role="dialog" aria-modal="true" aria-labelledby="themeTitle">
   <div class="sheet">
     <div class="sheet-h"><button type="button" class="cancel" id="themeCancel">취소</button><div class="title" id="themeTitle">앱 꾸미기</div><button type="button" class="act" id="themeApply">적용</button></div>
@@ -918,11 +985,6 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
       <div class="theme-sec"><span>친구 줄 (홈 위쪽 동그라미)</span><div class="chips" id="thStories"></div></div>
       <div class="field"><label for="thName">상단바 앱 이름</label><input id="thName" maxlength="12"></div>
       <p style="margin:0;color:var(--muted);font-size:var(--t-sm)" id="thStatus"></p>
-      <div class="theme-sec" style="border-top:1px solid var(--line);padding-top:14px">
-        <span>들어올 수 있는 친구 (구글 이메일)</span>
-        <form class="c-form" id="invForm" style="border:1px solid var(--line);border-radius:calc(var(--r) * .6);padding:4px 6px 4px 12px;background:var(--bg)"><label for="invEmail" hidden>이메일</label><input id="invEmail" type="email" placeholder="friend@gmail.com" autocomplete="off"><button type="submit">추가</button></form>
-        <div id="invList" style="display:flex;flex-direction:column;gap:6px"></div>
-      </div>
       <button type="button" class="th-reset" id="themeReset">기본값으로 되돌리기</button>
     </div>
   </div>
@@ -1378,6 +1440,10 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
         text: ls.length > 1 ? "님 외 " + (ls.length - 1) + "명이 힘을 보냈어요" : "님이 내 게시물에 💪를 보냈어요", go: () => openPost(p.id) });
       for (const [sid, v] of Object.entries(d.stickers || {})) if (v && v.by && v.by !== myId && STICKERS[v.s]) out.push({ k: "s" + p.id + sid, ts: v.t || 0, who: v.by, postId: p.id, text: "님이 내 " + (d.gym ? "운동 인증" : "러닝") + "에 스티커를 붙였어요 " + STICKERS[v.s][0], sub: STICKERS[v.s][1], go: () => openPost(p.id) });
     });
+    // 친구의 새 게시물 · 새 멤버
+    S.posts.forEach((p) => { const d = p.data(); if (d.author && d.author !== myId && d.author !== "guide") out.push({ k: "p" + p.id, ts: d.ts, who: d.author, postId: p.id,
+      text: d.sauna ? "님이 사우나 인증을 올렸어요" : d.run ? "님이 러닝 인증을 올렸어요" : d.gym ? "님이 오운완을 올렸어요" : "님이 새 게시물을 올렸어요", go: () => openPost(p.id) }); });
+    Object.entries(S.members || {}).forEach(([id, m]) => { if (id !== myId && m && m.joined) out.push({ k: "m" + id, ts: m.joined, who: id, text: "님이 초월에 들어왔어요", go: () => openProfile(id) }); });
     S.comments.forEach((c) => { const d = c.data(); if (d.author === myId) { const t = myCommentAt.get(d.postId); if (!t || d.ts < t) myCommentAt.set(d.postId, d.ts); } });
     S.comments.forEach((c) => {
       const d = c.data(); if (d.author === myId) return;
@@ -1408,7 +1474,9 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       if (toasted.has(i.k)) continue; toasted.add(i.k);
       if (i.ts < Date.now() - 3 * 60000) continue;
       const viewing = i.thread && ui.screen === "dm" && ui.thread === i.thread && !document.hidden;
-      if (!viewing) toast(i);
+      // 설정 > 앱 안 알림에서 끈 종류는 토스트를 띄우지 않음
+      const cat = { p: "posts", l: "react", s: "react", c: "react", d: "msg", g: "msg", v: "msg", n: "msg", m: "members" }[i.k[0]];
+      if (!viewing && (!cat || notifOn(cat))) toast(i);
       sysNotify(i);
     }
   }
@@ -2037,7 +2105,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const ms0 = monthStart(), monthCerts = certRecords(id).filter((r) => r.ts >= ms0).length;
     const m = S.members[id] || {};
     const btns = h("div", { class: "prof-btns" });
-    $("#profTheme").hidden = !(mine && isOwner); // 앱 꾸미기는 방장만, 상단바 톱니로
+    $("#profTheme").hidden = !mine; // 내 프로필 톱니 → 설정
     if (mine) btns.append(h("button", { type: "button", class: "btn prof-edit", text: "프로필 편집", disabled: readOnly, onclick: openEdit }));
     else if (id !== "guide") btns.append(h("button", { type: "button", class: "btn btn-primary", text: "메시지 보내기", onclick: () => openThread(id) }));
     const grid = h("div", { class: "grid" }, ...posts.map((p) => {
@@ -2218,15 +2286,41 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const m = S.members[myId] || {};
     $("#editNick").value = m.nick || (S.profiles[myId] && S.profiles[myId].name) || "";
     $("#editBio").value = m.bio || "";
-    ui.editFile = null; $("#editAv").replaceChildren(avatar(myId)); fillFs();
+    ui.editFile = null; $("#editAv").replaceChildren(avatar(myId));
     $("#editModal").hidden = false; $("#editNick").focus();
   }
-  // 내 폰 글자 크기 4단계
-  function fillFs() {
-    const cur = localFs() || theme.fs;
-    $("#fsSeg").replaceChildren(...[[14, "작게"], [16, "보통"], [18, "크게"], [20, "아주 크게"]].map(([v, lb]) => h("button", { type: "button", role: "radio", "aria-checked": String(cur === v), style: "font-size:" + v + "px", text: lb,
-      onclick: () => { try { localStorage.setItem("chowol-fs", String(v)); } catch {} applyTheme(theme); fillFs(); } })));
+  // ---------- 설정 (나에게만: 이 기기 localStorage / 모두에게: 방장) ----------
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+  const FS_OPT = [["14", "작게"], ["16", "보통"], ["18", "크게"], ["20", "아주 크게"]];
+  const INTRO_OPT = [["daily", "매일 첫 실행"], ["always", "항상"], ["off", "끄기"]];
+  const NOTIF = [["posts", "새 게시물"], ["react", "댓글·💪"], ["msg", "메시지"], ["members", "새 멤버"]];
+  const notifOn = (k) => lsGet("chowol-notif-" + k, "1") === "1";
+  function openPanel(id) { $("#" + id).hidden = false; }
+  document.querySelectorAll("[data-panel-back]").forEach((b) => b.addEventListener("click", () => { b.closest(".panel").hidden = true; if (b.closest("#setPanel")) renderAll(); }));
+  function sw(btn, on) { btn.setAttribute("aria-checked", String(on)); }
+  function fillSettings() {
+    const fs = String(localFs() || theme.fs);
+    $("#setFsV").textContent = (FS_OPT.find(([v]) => v === fs) || [0, fs + "px"])[1] + (localFs() ? "" : " (기본)");
+    $("#setIntroV").textContent = INTRO_OPT.find(([v]) => v === lsGet("chowol-intro", "daily"))[1];
+    sw($("#setMotion"), lsGet("chowol-motion", "0") === "1");
+    $("#setNotif").replaceChildren(...NOTIF.map(([k, lb]) => { const b = h("button", { type: "button", class: "switch", role: "switch", "aria-label": lb });
+      sw(b, notifOn(k)); b.addEventListener("click", () => { lsSet("chowol-notif-" + k, notifOn(k) ? "0" : "1"); fillSettings(); });
+      return h("div", { class: "set-row" }, h("span", { class: "st", text: lb }), b); }));
+    $("#setOwn").hidden = !isOwner;
   }
+  function openSettings() { fillSettings(); if (isOwner) { watchInv(); renderInv(); } openPanel("setPanel"); }
+  function openChoice(title, opts, cur, pick, note) {
+    $("#choiceTitle").textContent = title; $("#choiceNote").textContent = note || "";
+    $("#choiceList").replaceChildren(...opts.map(([v, lb]) => h("button", { type: "button", class: "set-row", role: "radio", "aria-checked": String(v === cur),
+      onclick: () => { pick(v); fillSettings(); $("#choicePanel").hidden = true; } }, h("span", { class: "st", text: lb, style: title === "글자 크기" ? "font-size:" + v + "px" : null }), h("span", { class: "check", "aria-hidden": "true", text: v === cur ? "✓" : "" }))));
+    openPanel("choicePanel");
+  }
+  $("#setFs").addEventListener("click", () => openChoice("글자 크기", FS_OPT, String(localFs() || theme.fs), (v) => { lsSet("chowol-fs", v); applyTheme(theme); }, "이 휴대폰에서만 바뀌어요. 다른 친구들 화면은 그대로예요."));
+  $("#setIntro").addEventListener("click", () => openChoice("인트로 영상", INTRO_OPT, lsGet("chowol-intro", "daily"), (v) => lsSet("chowol-intro", v), "다음에 앱을 켤 때부터 적용돼요."));
+  $("#setMotion").addEventListener("click", () => { const on = lsGet("chowol-motion", "0") !== "1"; lsSet("chowol-motion", on ? "1" : "0"); document.documentElement.classList.toggle("reduce-motion", on); fillSettings(); });
+  $("#setTheme").addEventListener("click", () => openTheme());
+  $("#setMembers").addEventListener("click", () => { watchInv(); renderInv(); openPanel("memPanel"); });
   $("#editCancel").addEventListener("click", () => { closeModal("editModal"); store("chowol.askedName", "1"); });
   $("#editPhoto").addEventListener("change", (e) => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
@@ -3245,19 +3339,20 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
   let invUnsub = null, invited = [];
   function renderInv() {
-    $("#invList").replaceChildren(...(invited.length ? invited.map((em) => h("div", { class: "cm", style: "align-items:center" },
-      h("span", { class: "txt", text: em }), h("button", { type: "button", class: "del", text: "빼기", onclick: () => write(() => db.doc("allow/" + em).delete()) }))) : [h("span", { class: "linkish", text: "아직 초대한 친구가 없어요." })]));
+    if ($("#setMembersV")) $("#setMembersV").textContent = invited.length ? invited.length + "명 초대됨" : "";
+    $("#invList").replaceChildren(...(invited.length ? invited.map((em) => { let armed = false; return h("div", { class: "set-row" },
+      h("span", { class: "st mem-em", text: em }), h("button", { type: "button", class: "mem-del", text: "빼기", onclick: (e) => {
+        if (!armed) { armed = true; e.currentTarget.textContent = "정말 뺄까요?"; return; } write(() => db.doc("allow/" + em).delete()); } })); }) : [h("span", { class: "linkish", text: "아직 초대한 친구가 없어요." })]));
   }
   function openTheme() {
     if (!isOwner) return; themeOrig = cleanTheme({ ...theme }); $("#themeModal").hidden = false; $("#thStatus").textContent = ""; $("#themeApply").disabled = true; fillTheme();
-    if (!invUnsub && db) invUnsub = db.collection("allow").onSnapshot((s) => { invited = s.docs.map((d) => d.id).sort(); renderInv(); }, () => {});
-    renderInv();
   }
+  function watchInv() { if (!invUnsub && db && isOwner) invUnsub = db.collection("allow").onSnapshot((s) => { invited = s.docs.map((d) => d.id).sort(); renderInv(); }, () => {}); }
   $("#invForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const em = $("#invEmail").value.trim().toLowerCase();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { $("#thStatus").textContent = "이메일 주소를 확인해 주세요."; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { $("#invStatus").textContent = "이메일 주소를 확인해 주세요."; return; }
     const ok = await write(() => db.doc("allow/" + em).set({ ts: Date.now() }));
-    if (ok) { $("#invEmail").value = ""; $("#thStatus").textContent = em + " 님을 초대했어요. 이제 이 구글 계정으로 들어올 수 있어요."; }
+    if (ok) { $("#invEmail").value = ""; $("#invStatus").textContent = em + " 님을 초대했어요. 이제 이 구글 계정으로 들어올 수 있어요."; }
   });
   // 실수 방지: 3초 안에 한 번 더 눌러야 로그아웃
   let logoutArm = null;
@@ -3270,7 +3365,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   $("#thFs").addEventListener("input", (e) => { $("#thFsOut").textContent = e.target.value + "px"; setTheme({ fs: Number(e.target.value) }); });
   $("#thR").addEventListener("input", (e) => { $("#thROut").textContent = e.target.value + "px"; setTheme({ radius: Number(e.target.value) }); });
   $("#thName").addEventListener("input", (e) => setTheme({ name: e.target.value }));
-  $("#profTheme").addEventListener("click", () => openTheme());
+  $("#profTheme").addEventListener("click", () => openSettings());
   // 실수 방지: 3초 안에 한 번 더 눌러야 6명 전체 테마가 기본값으로 돌아감
   let resetArm = null;
   $("#themeReset").addEventListener("click", () => {
