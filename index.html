@@ -247,6 +247,12 @@ html:not(.sauna-only) #saunaHome { display: none; }
 .sauna-home { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-4) var(--s-4) var(--s-8); }
 .sh-card, .sh-tip, .sh-recent { display: flex; flex-direction: column; gap: var(--s-3); }
 .sh-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-4); }
+/* 홈 바탕: 사우나 사진이 위쪽에 깔리고 아래로 갈수록 배경색으로 녹아듦 (어떤 테마에서도 글자 대비 유지) */
+.sauna-home { background:
+    linear-gradient(to bottom, transparent 0, transparent 190px, color-mix(in srgb, var(--bg) 35%, transparent) 340px, color-mix(in srgb, var(--bg) 88%, transparent) 500px, var(--bg) 640px),
+    url("img/home-bg.jpg") center -170px / 100% auto no-repeat, var(--bg); }
+.sh-hero { height: 170px; margin-bottom: calc(var(--s-4) * -1); flex: none; }
+.sauna-home .sh-card { background: color-mix(in srgb, var(--surface) 80%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); border-color: color-mix(in srgb, var(--line) 70%, transparent); box-shadow: var(--e2); }
 .sh-h { display: flex; align-items: baseline; gap: var(--s-2); }
 .sh-h b { font-size: var(--t-lg); color: var(--ink); flex: 1; }
 .sh-n { color: var(--muted); font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
@@ -2352,7 +2358,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
           d.imageData ? keptImg("rc:" + p.id, d.imageData, "") : h("span", { class: "rc-ph", text: "🧖" }),
           h("span", { class: "rc-nm", text: nameOf(d.author) + " · " + ago(d.ts) })); }))
         : h("p", { class: "empty", text: "아직 인증이 없어요. 이번 주 첫 테이프를 끊어 보세요!" }));
-    box.replaceChildren(week, tip, strip);
+    box.replaceChildren(h("div", { class: "sh-hero", "aria-hidden": "true" }), week, tip, strip);
   }
   // 지식 전체 보기(+ 방장은 새 지식 추가)
   function openTips() {
