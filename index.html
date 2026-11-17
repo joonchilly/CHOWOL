@@ -29,15 +29,15 @@
 <script>
 // 상태바(시간·배터리) 글자색: 밝은 배경(앰버·밝은 종이)이면 검은 글자, 어두운 배경이면 흰 글자
 (function () {
-  var BG = { amber: "#F2A541", ink: "#0B0A09", sea: "#06121A", wood: "#140F0B", paper: "#F4F1EA" }, preset = "amber";
-  try { var t = JSON.parse(localStorage.getItem("chowol.theme") || "{}"); if (t && BG[t.preset]) preset = t.preset; } catch (e) {}
-  var light = preset === "amber" || preset === "paper", root = document.documentElement;
+  var BG = { hinoki: "#EADBC1", amber: "#F2A541", ink: "#0B0A09", sea: "#06121A", wood: "#140F0B", paper: "#F4F1EA" }, preset = "hinoki";
+  try { var t = JSON.parse(localStorage.getItem("chowol.theme") || "{}"); if (t && t.rev === 2 && BG[t.preset]) preset = t.preset; } catch (e) {}
+  var light = preset === "amber" || preset === "paper" || preset === "hinoki", root = document.documentElement;
   root.classList.toggle("sb-light", light);
   var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]'); if (sb) sb.setAttribute("content", light ? "default" : "black-translucent");
   var tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", BG[preset]);
   // 스플래시가 테마 적용 전에도 같은 배경·로고 색으로 뜨게
   root.style.setProperty("--bg", BG[preset]);
-  var LOGO = { amber: "#24509A", paper: "#24509A", ink: "#5B8FD0", sea: "#5B8FD0", wood: "#5B8FD0" };
+  var LOGO = { hinoki: "#8C5527", amber: "#24509A", paper: "#24509A", ink: "#5B8FD0", sea: "#5B8FD0", wood: "#5B8FD0" };
   root.style.setProperty("--logo", LOGO[preset]);
 })();
 </script>
@@ -3692,18 +3692,22 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   // ---------- theme (owner edits live, everyone sees it) ----------
   const PRESETS = {
+    hinoki: { label: "편백", bg: "#EADBC1", surface: "#F4EAD8", raise: "#DFCBA9", ink: "#2B1E12", muted: "#6B5236", line: "#CDB48C", accent: "#7A4E2A", logo: "#8C5527", scheme: "light", danger: "#9A3412", badge: "#C8243A" },
     amber: { label: "앰버", bg: "#F2A541", surface: "#F6B862", raise: "#F9CB86", ink: "#1F1408", muted: "#5A380E", line: "#D98B2B", accent: "#13263D", logo: "#24509A", scheme: "light", danger: "#8E2A1C", badge: "#C8243A" },
     ink: { label: "먹색", bg: "#0B0A09", surface: "#161411", raise: "#201D19", ink: "#EFE9DD", muted: "#9A9183", line: "#2A2722", accent: "#F2C94C", logo: "#5B8FD0", scheme: "dark", danger: "#E57A62", badge: "#C8243A" },
     sea: { label: "깊은 바다", bg: "#06121A", surface: "#0D1D27", raise: "#152A37", ink: "#E6F0F5", muted: "#8DA5B3", line: "#1F3644", accent: "#5B8FD0", logo: "#5B8FD0", scheme: "dark", danger: "#E57A62", badge: "#C8243A" },
     wood: { label: "밤 나무", bg: "#140F0B", surface: "#1F1812", raise: "#2B2119", ink: "#F2E8DA", muted: "#A8977F", line: "#3A2D22", accent: "#F2C94C", logo: "#5B8FD0", scheme: "dark", danger: "#E57A62", badge: "#C8243A" },
     paper: { label: "밝은 종이", bg: "#F4F1EA", surface: "#FFFFFF", raise: "#ECE7DD", ink: "#1C1A16", muted: "#6B6458", line: "#DDD6C8", accent: "#13263D", logo: "#24509A", scheme: "light", danger: "#8E2A1C", badge: "#C8243A" }
   };
-  const ACCENTS = ["#13263D", "#24509A", "#2F64B3", "#8E2A1C", "#2F5D3A", "#5A2A6E", "#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
+  const ACCENTS = ["#7A4E2A", "#13263D", "#24509A", "#2F64B3", "#8E2A1C", "#2F5D3A", "#5A2A6E", "#F2C94C", "#5B8FD0", "#ED4956", "#7BC8A4", "#F28C38", "#B58CF0", "#EFE9DD"];
   const RATIOS = { auto: "원본", "1 / 1": "정사각형", "4 / 5": "세로 4:5" };
-  const THEME_DEFAULT = { preset: "amber", accent: "#13263D", logo: "#24509A", bubble: "accent", fs: 16, radius: 14, ratio: "auto", name: "초월", stories: true };
+  const THEME_REV = 2; // 2: 사우나 크루 전환 때 기본 테마를 편백으로. 이전에 저장된 테마는 한 번 편백으로 바뀜
+  const THEME_DEFAULT = { preset: "hinoki", accent: "#7A4E2A", logo: "#8C5527", bubble: "accent", fs: 16, radius: 14, ratio: "auto", name: "초월", stories: true };
   const HEX = /^#[0-9a-fA-F]{6}$/;
   function cleanTheme(t) {
-    t = t || {}; const d = THEME_DEFAULT; const num = (v, lo, hi, df) => (typeof v === "number" && isFinite(v)) ? Math.min(hi, Math.max(lo, Math.round(v))) : df;
+    t = t || {}; const d = THEME_DEFAULT;
+    if (t.rev !== THEME_REV) t = { ...t, preset: d.preset, accent: d.accent, logo: d.logo, bubble: d.bubble };
+    const num = (v, lo, hi, df) => (typeof v === "number" && isFinite(v)) ? Math.min(hi, Math.max(lo, Math.round(v))) : df;
     return {
       preset: PRESETS[t.preset] ? t.preset : d.preset,
       accent: HEX.test(t.accent) ? t.accent : d.accent,
@@ -3712,7 +3716,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       fs: num(t.fs, 13, 21, d.fs), radius: num(t.radius, 0, 28, d.radius),
       ratio: RATIOS[t.ratio] ? t.ratio : d.ratio,
       name: (typeof t.name === "string" && t.name.trim()) ? t.name.trim().slice(0, 12) : d.name,
-      stories: t.stories !== false
+      stories: t.stories !== false,
+      rev: THEME_REV
     };
   }
   function lum(hex) {
