@@ -53,9 +53,17 @@
     // 상태바 아래까지 화면이 깔리는 경우(흰 글자 모드)만 화면 전체 높이, 아니면(검은 글자 모드) 실제 보이는 높이
     var pr = document.createElement("div"); pr.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top,0px);visibility:hidden";
     root.appendChild(pr); var under = pr.offsetHeight > 0; root.removeChild(pr);
+    // 앱을 막 켰을 때는 아이폰이 상태바 높이를 0으로 알려줄 때가 있어 아래가 빔 → 상태바 스타일(흰 글자 모드)로도 판단
+    var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!under && window.navigator.standalone === true && sb && sb.getAttribute("content") === "black-translucent") under = true;
+    if (root.classList.contains("kb")) return; // 키보드가 떠 있을 때는 키보드 처리 쪽이 높이를 정함
     root.style.setProperty("--appH", (under ? Math.max(window.innerHeight, full) : window.innerHeight) + "px");
   }
   fit(); window.addEventListener("resize", fit); window.addEventListener("orientationchange", function () { setTimeout(fit, 300); });
+  // 화면 정보가 늦게 들어오는 경우를 대비해 몇 번 더 맞춘다
+  window.addEventListener("load", fit); window.addEventListener("pageshow", fit);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) setTimeout(fit, 120); });
+  setTimeout(fit, 400); setTimeout(fit, 1500);
 })();
 // 키보드가 올라와도 화면 전체가 위로 밀리지 않게: 앱 높이를 '키보드 위 남은 공간'에 맞추고 페이지 스크롤은 0에 고정
 (function () {
@@ -732,6 +740,69 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
 .stepper { display: flex; align-items: center; gap: var(--s-3); }
 .stepper button { width: 38px; height: 38px; border-radius: var(--r-full); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: var(--t-xl); }
 .stepper output { min-width: 60px; text-align: center; color: var(--ink); }
+/* 사우나 인증: 단골·크루 태그·세트 타임라인·온도 다이얼·개운함 */
+.st-hint, .st-visit { color: var(--muted); font-size: var(--t-sm); }
+.st-visit { color: var(--accent); min-height: 1.2em; }
+.st-fav { margin-bottom: var(--s-1); }
+.st-fav .chip-btn { min-height: 44px; }
+.st-fav-n { color: var(--muted); font-size: var(--t-xs); }
+.st-with { display: flex; gap: var(--s-3); overflow-x: auto; padding: var(--s-1) 0; scrollbar-width: none; }
+.st-mate { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); min-width: 60px; background: none; border: 0; color: var(--muted); padding: 0; }
+.st-mate-av { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: var(--r-full); border: 2px solid var(--line); transition: border-color var(--d-fast) var(--ease), transform var(--d-fast) var(--ease-pop); }
+.st-mate-av .av, .st-mate-av img { width: 44px; height: 44px; }
+.st-mate[aria-pressed="true"] { color: var(--ink); }
+.st-mate[aria-pressed="true"] .st-mate-av { border-color: var(--accent); transform: scale(1.04); }
+.st-mate-ck { position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: var(--r-full); background: var(--accent); color: var(--on-accent); font-size: 13px; display: grid; place-items: center; border: 2px solid var(--surface); }
+.st-mate-n { font-size: var(--t-xs); max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-add { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: var(--s-2); }
+.st-add button { min-height: 52px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--bg); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: var(--t-sm); line-height: 1.15; padding: var(--s-1); }
+.st-add .st-addset { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.st-add .st-addset small { opacity: .8; font-size: var(--t-xs); }
+.st-tl { display: flex; gap: 6px; overflow-x: auto; padding: var(--s-2) 0 var(--s-1); scrollbar-width: none; align-items: stretch; }
+.st-tl:empty { display: none; }
+.st-blk { flex: none; min-width: 52px; min-height: 56px; border-radius: var(--r-sm); border: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink); font-size: var(--t-sm); animation: blkIn var(--d-base) var(--ease-pop); }
+.st-blk.k-h { background: color-mix(in srgb, var(--danger) 28%, var(--surface)); box-shadow: inset 0 -3px 0 var(--danger); }
+.st-blk.k-c { background: color-mix(in srgb, var(--logo) 28%, var(--surface)); box-shadow: inset 0 -3px 0 var(--logo); }
+.st-blk.k-r { background: var(--raise); box-shadow: inset 0 -3px 0 var(--muted); }
+.st-blk-e { font-size: var(--t-lg); line-height: 1; }
+.st-undo { flex: none; min-width: 64px; min-height: 56px; border-radius: var(--r-sm); border: 1px dashed var(--line); background: none; color: var(--muted); font-size: var(--t-sm); }
+@keyframes blkIn { from { transform: translateY(6px) scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+.dial { --heat: 50%; --heat-c: color-mix(in srgb, var(--danger) var(--heat), var(--logo)); display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
+.dial-face { position: relative; width: min(100%, 300px); }
+.dial-svg { display: block; width: 100%; height: auto; touch-action: none; cursor: grab; overflow: visible; }
+.dial-svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--r-md); }
+.dial-track { fill: none; stroke: var(--line); stroke-width: 16; stroke-linecap: round; }
+.dial-val { fill: none; stroke: var(--heat-c); stroke-width: 16; stroke-linecap: round; transition: stroke-dasharray var(--d-fast) var(--ease); }
+.dial-ticks line { stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
+.dial-knob { fill: var(--ink); stroke: var(--heat-c); stroke-width: 5; transition: opacity var(--d-fast); }
+.dial-mid { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.dial-num { font-size: calc(var(--t-2xl) * 1.5); line-height: 1; color: var(--heat-c); transition: color var(--d-fast); }
+.dial.none .dial-num { color: var(--muted); }
+.dial-sub { color: var(--muted); font-size: var(--t-sm); margin-top: 2px; }
+.dial-haze { position: absolute; left: 22%; right: 22%; top: 14%; height: 46%; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--danger) 30%, transparent), transparent); filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity var(--d-slow) var(--ease); }
+.dial.hot .dial-haze { opacity: 1; animation: haze 2.4s ease-in-out infinite; }
+@keyframes haze { 0%, 100% { transform: translateY(0) scaleY(1) skewX(0deg); } 33% { transform: translateY(-6px) scaleY(1.08) skewX(3deg); } 66% { transform: translateY(-2px) scaleY(.96) skewX(-3deg); } }
+.dial-ctl { display: flex; align-items: center; gap: var(--s-3); }
+.dial-btn { width: 44px; height: 44px; border-radius: var(--r-full); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: var(--t-xl); }
+.dial-off { min-height: 44px; }
+.st-feel { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--s-2); }
+.st-fe { min-height: 68px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--bg); color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: transform var(--d-fast) var(--ease-pop), border-color var(--d-fast); }
+.st-fe-e { font-size: calc(var(--t-xl) * 1.1); line-height: 1; filter: grayscale(.6); transition: filter var(--d-fast); }
+.st-fe small { font-size: var(--t-xs); }
+.st-fe[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--bg)); color: var(--ink); transform: translateY(-2px); }
+.st-fe[aria-pressed="true"] .st-fe-e { filter: none; }
+/* 프로필: 사우나 도장판 */
+.stamp-board { display: flex; flex-direction: column; gap: var(--s-2); margin-bottom: var(--s-4); }
+.feel-stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+.feel-stats > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s-2) var(--s-3); display: flex; flex-direction: column; min-width: 0; }
+.feel-stats small { color: var(--muted); font-size: var(--t-xs); }
+.feel-stats b { font-size: var(--t-lg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--s-2); padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
+.sb-pl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-dots { display: grid; grid-template-columns: repeat(10, 10px); gap: 3px; }
+.sb-d { width: 10px; height: 10px; border-radius: var(--r-full); border: 1.5px solid var(--line); }
+.sb-d.on { background: var(--accent); border-color: var(--accent); }
+.sb-n { color: var(--muted); font-size: var(--t-sm); min-width: 40px; text-align: right; }
 
 /* 러닝 */
 .crew-now { color: var(--ink); font-size: var(--t-md); }
@@ -1060,11 +1131,13 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
     <div class="sheet-b">
       <canvas id="stampCv" class="stamp-cv" width="1080" height="1350" role="img" aria-label="인증샷 미리보기"></canvas>
       <div class="st-row"><label class="btn" for="stPhoto" style="flex:1">📷 인증샷 찍기·고르기<input type="file" id="stPhoto" accept="image/*" hidden></label><button type="button" class="btn" id="stSave" style="flex:none">이미지 저장</button></div>
-      <div class="theme-sec"><span>스탬프 모양</span><div class="chips" id="stStyles"></div></div>
-      <div class="field"><label for="stPlace">방문한 사우나</label><input id="stPlace" list="stPlaces" maxlength="30" placeholder="예: 성수 ○○사우나" autocomplete="off"><datalist id="stPlaces"></datalist></div>
+      <div class="theme-sec"><span>인증 템플릿</span><div class="chips" id="stStyles"></div></div>
+      <div class="field"><label for="stPlace">방문한 사우나</label><div class="chips st-fav" id="stFav"></div><input id="stPlace" list="stPlaces" maxlength="30" placeholder="예: 성수 ○○사우나" autocomplete="off"><datalist id="stPlaces"></datalist><small class="st-visit" id="stVisit"></small></div>
+      <div class="theme-sec"><span>같이 간 크루 (선택)</span><div class="st-with" id="stWith"></div><small class="st-hint">태그한 친구도 이번 주 사우나 출석에 ✓가 붙어요.</small></div>
+      <div class="theme-sec"><span>세트 기록 (선택)</span><div class="st-add" id="stAdd"></div><div class="st-tl" id="stTl"></div><small class="st-hint" id="stTlHint"></small></div>
       <div class="theme-sec"><label for="stMin">총 체류 시간</label><div class="chips" id="stTimes"></div><div class="range-row"><input type="range" id="stMin" min="10" max="300" step="10"><output id="stMinOut"></output></div></div>
-      <div class="theme-sec"><label for="stTemp">최고 온도 (선택)</label><div class="chips" id="stTemps"></div><div class="field"><input id="stTemp" type="number" inputmode="numeric" min="40" max="130" placeholder="직접 입력 °C"></div></div>
-      <div class="theme-sec"><span>온·냉 세트 (선택)</span><div class="stepper"><button type="button" id="stMinus" aria-label="세트 줄이기">−</button><output id="stSets"></output><button type="button" id="stPlus" aria-label="세트 늘리기">+</button></div></div>
+      <div class="theme-sec"><span id="stDialL">최고 온도 (선택)</span><div class="dial" id="stDial"></div></div>
+      <div class="theme-sec"><span>오늘의 개운함</span><div class="st-feel" id="stFeel"></div></div>
       <div class="field"><label for="stNote">한마디 (선택)</label><input id="stNote" maxlength="100" placeholder="예: 냉탕 3번 성공"></div>
     </div>
   </form>
@@ -2241,8 +2314,9 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   function saunaWeek() {
     const ws = weekStart(), went = {};
-    (S.sauna || []).forEach((x) => { const d = x.data(); if (d.ts >= ws) went[d.author] = (went[d.author] || 0) + 1; });
-    S.posts.forEach((p) => { const d = p.data(); if (d.sauna && d.ts >= ws && !went[d.author]) went[d.author] = 1; });
+    const tag = (d) => (d.with || []).forEach((u) => { if (!went[u]) went[u] = 1; });
+    (S.sauna || []).forEach((x) => { const d = x.data(); if (d.ts >= ws) { went[d.author] = (went[d.author] || 0) + 1; tag(d); } });
+    S.posts.forEach((p) => { const d = p.data(); if (d.sauna && d.ts >= ws) { if (!went[d.author]) went[d.author] = 1; tag(d.sauna); } });
     return went;
   }
   function shareRecruit() {
@@ -2317,7 +2391,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const put = (id, k, d) => { const cur = out.get(id); out.set(id, cur ? { ...cur, ...d, k } : { id, k, ...d }); };
     (S.workouts || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "g", { ts: d.ts, rpm: d.rpm, parts: d.parts }); });
     (S.runs || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "r", { ts: d.ts, km: d.km }); });
-    (S.sauna || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "s", { ts: d.ts, place: d.place, minutes: d.minutes, temp: d.temp, sets: d.sets }); });
+    (S.sauna || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "s", { ts: d.ts, place: d.place, minutes: d.minutes, temp: d.temp, sets: d.sets, feel: d.feel }); });
     S.posts.forEach((p) => { const d = p.data(); if (d.author !== uid) return;
       if (d.gym) put(p.id, "g", { ts: d.ts, rpm: d.gym.rpm, parts: d.gym.parts, fuel: d.gym.fuel, post: true });
       if (d.run) put(p.id, "r", { ts: d.ts, km: d.run.km, cond: d.run.cond, post: true });
@@ -2353,7 +2427,21 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       return h("button", { type: "button", class: "rec-row", disabled: !r.post, "aria-label": when + " " + CERT_NAME[r.k] + " " + certText(r), onclick: () => r.post && openPost(r.id) },
         h("span", { class: "rec-when", text: when }), h("span", { class: "rec-ic" }, ic.content.firstChild), h("span", { class: "rec-t" }, h("b", { text: CERT_NAME[r.k] }), h("span", { text: certText(r) })));
     });
-    return h("div", { class: "cert-log" }, cal,
+    // 사우나 도장판 + 개운함 기록
+    const sr = recs.filter((r) => r.k === "s"), byPlace = {};
+    sr.forEach((r) => { if (!r.place) return; const b = byPlace[r.place] || (byPlace[r.place] = { n: 0, feel: 0, fn: 0 }); b.n++; if (r.feel) { b.feel += r.feel; b.fn++; } });
+    const felt = sr.filter((r) => r.feel), avg = felt.length ? felt.reduce((a, r) => a + r.feel, 0) / felt.length : 0;
+    const bestPl = Object.entries(byPlace).filter(([, b]) => b.fn).sort((a, b) => b[1].feel / b[1].fn - a[1].feel / a[1].fn || b[1].n - a[1].n)[0];
+    const top = Object.entries(byPlace).sort((a, b) => b[1].n - a[1].n).slice(0, 5);
+    const stamps = top.length ? h("div", { class: "stamp-board" },
+      h("div", { class: "rec-h", text: "🏷️ 사우나 도장판" }),
+      felt.length ? h("div", { class: "feel-stats" },
+        h("div", {}, h("small", { text: "평균 개운함" }), h("b", { text: feelOf(Math.round(avg))[1] + " " + avg.toFixed(1) })),
+        bestPl ? h("div", {}, h("small", { text: "제일 개운했던 곳" }), h("b", { text: bestPl[0] })) : null) : null,
+      ...top.map(([pl, b]) => h("div", { class: "sb-row" }, h("span", { class: "sb-pl", text: pl }),
+        h("span", { class: "sb-dots", "aria-label": "도장 " + b.n + "개" }, ...Array.from({ length: 10 }, (_, i) => h("span", { class: "sb-d" + (i < b.n % 10 || (b.n >= 10 && b.n % 10 === 0) ? " on" : "") }))),
+        h("b", { class: "sb-n", text: b.n + "회" + (b.n >= 10 ? " · 🎖×" + Math.floor(b.n / 10) : "") })))) : null;
+    return h("div", { class: "cert-log" }, stamps, cal,
       h("div", { class: "rec-h", text: "최근 기록" }),
       list.length ? h("div", { class: "rec-list" }, ...list) : h("p", { class: "empty", text: mine ? "아직 인증 기록이 없어요. 기록 탭에서 첫 인증을 남겨보세요." : "아직 인증 기록이 없어요." }));
   }
@@ -2525,7 +2613,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   const fmtMin = (m) => (m >= 60 ? Math.floor(m / 60) + "시간" + (m % 60 ? " " + (m % 60) + "분" : "") : m + "분");
   const monthStart = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); };
   const saunaLine = (s) => [s.place, fmtMin(s.minutes || 0), s.temp ? s.temp + "°C" : null, s.sets ? s.sets + "세트" : null].filter(Boolean).join(" · ");
-  const sv = { place: "", minutes: 90, temp: null, sets: 0, note: "", style: "band", photo: null };
+  const sv = { place: "", minutes: 90, temp: null, sets: 0, note: "", style: "band", photo: null, rounds: [], with: [], feel: 0 };
 
   function renderLog() {
     if (SAUNA_ONLY) logUi.kind = "sauna";
@@ -2611,9 +2699,25 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
 
   // ----- sauna form + stamp -----
-  const STYLES = [["band", "바닥 띠"], ["sticker", "스티커"], ["ticket", "티켓"]];
+  const STYLES = [["band", "바닥 띠"], ["sticker", "스티커"], ["ticket", "티켓"], ["locker", "락커 키"], ["receipt", "영수증"]];
   const TIME_CHIPS = [30, 60, 90, 120, 150];
-  const TEMP_CHIPS = [80, 85, 90, 95, 100];
+  // 세트 블록: h=사우나, c=냉탕, r=휴식. 블록을 누르면 opts 안에서 시간이 바뀜
+  const ROUND = {
+    h: { e: "🔥", n: "사우나", d: 12, opts: [5, 6, 8, 10, 12, 15, 20], col: "#E2553B" },
+    c: { e: "🧊", n: "냉탕", d: 1, opts: [1, 2, 3, 5], col: "#4FA3E0" },
+    r: { e: "🪑", n: "휴식", d: 8, opts: [3, 5, 8, 10, 15, 20], col: "#8E8A84" }
+  };
+  const FEELS = [[1, "😐", "그냥"], [2, "🙂", "괜찮"], [3, "😌", "개운"], [4, "🫠", "녹았다"], [5, "✨", "초월"]];
+  const feelOf = (n) => FEELS.find((f) => f[0] === n);
+  const TEMP_MIN = 60, TEMP_MAX = 120;
+  const roundSets = (rs) => (rs || []).filter((r) => r.k === "h").length;
+  const roundSum = (rs, k) => (rs || []).filter((r) => r.k === k).reduce((a, r) => a + r.m, 0);
+  function myPlaceCounts() {
+    const c = {};
+    certRecordsAll(myId).forEach((r) => { if (r.k === "s" && r.place) c[r.place] = (c[r.place] || 0) + 1; });
+    return c;
+  }
+  const visitNo = (place) => (place ? (myPlaceCounts()[place] || 0) + 1 : 0);
   function placesKnown() {
     const set = new Set(); S.sauna.forEach((s) => { const p = s.data().place; if (p) set.add(p); });
     try { JSON.parse(store("chowol.places") || "[]").forEach((p) => set.add(p)); } catch {}
@@ -2622,28 +2726,112 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   function chipRowT(box, items, cur, pick) {
     $(box).replaceChildren(...items.map(([v, l]) => h("button", { type: "button", class: "chip-btn", "aria-pressed": String(v === cur), text: l, onclick: () => pick(v) })));
   }
+  function setPlace(p) { sv.place = p; $("#stPlace").value = p; fillSauna(); drawStamp(); }
   function fillSauna() {
     chipRowT("#stStyles", STYLES, sv.style, (v) => { sv.style = v; fillSauna(); drawStamp(); });
     chipRowT("#stTimes", TIME_CHIPS.map((m) => [m, fmtMin(m)]), sv.minutes, (v) => { sv.minutes = v; fillSauna(); drawStamp(); });
-    chipRowT("#stTemps", TEMP_CHIPS.map((t) => [t, t + "°"]), sv.temp, (v) => { sv.temp = sv.temp === v ? null : v; fillSauna(); drawStamp(); });
     $("#stMin").value = sv.minutes; $("#stMinOut").textContent = fmtMin(sv.minutes);
-    if (document.activeElement !== $("#stTemp")) $("#stTemp").value = sv.temp || "";
-    $("#stSets").textContent = sv.sets ? sv.sets + "세트" : "안 셈";
     $("#stPlaces").replaceChildren(...placesKnown().map((p) => h("option", { value: p })));
+    // 단골 사우나: 내가 자주 간 순서대로
+    const pc = myPlaceCounts(), fav = Object.entries(pc).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    $("#stFav").hidden = !fav.length;
+    $("#stFav").replaceChildren(...fav.map(([p, n]) => h("button", { type: "button", class: "chip-btn", "aria-pressed": String(p === sv.place), onclick: () => setPlace(p) },
+      h("span", { text: p }), h("small", { class: "st-fav-n", text: "🏷️" + n }))));
+    const vn = visitNo(sv.place);
+    $("#stVisit").textContent = !sv.place ? "" : vn > 1 ? "이곳은 " + vn + "번째 방문이에요 · 도장 " + vn + "개째" : "이곳은 첫 방문이에요 · 첫 도장!";
+    // 같이 간 크루
+    const others = memberIds().filter((id) => id !== myId);
+    $("#stWith").replaceChildren(...(others.length ? others.map((id) => {
+      const on = sv.with.includes(id);
+      return h("button", { type: "button", class: "st-mate", "aria-pressed": String(on), "aria-label": nameOf(id) + (on ? " 같이 감" : ""), onclick: () => {
+        sv.with = on ? sv.with.filter((x) => x !== id) : [...sv.with, id]; fillSauna(); drawStamp();
+      } }, h("span", { class: "st-mate-av" }, avatar(id), on ? h("span", { class: "st-mate-ck", text: "✓" }) : null), h("span", { class: "st-mate-n", text: nameOf(id) }));
+    }) : [h("small", { class: "st-hint", text: "아직 다른 크루가 없어요." })]));
+    // 세트 타임라인
+    $("#stAdd").replaceChildren(
+      h("button", { type: "button", class: "st-addset", onclick: () => addRounds(["h", "c", "r"]) }, h("span", { text: "🔁" }), h("span", { text: "한 세트 추가" }), h("small", { text: "사우나→냉탕→휴식" })),
+      ...Object.entries(ROUND).map(([k, R]) => h("button", { type: "button", class: "st-addone k-" + k, "aria-label": R.n + " 블록 추가", onclick: () => addRounds([k]) }, h("span", { text: "+ " + R.e }), h("span", { text: R.n }))));
+    const rs = sv.rounds;
+    $("#stTl").replaceChildren(...rs.map((r, i) => {
+      const R = ROUND[r.k];
+      return h("button", { type: "button", class: "st-blk k-" + r.k, "aria-label": (i + 1) + "번째 " + R.n + " " + r.m + "분, 눌러서 시간 바꾸기", onclick: () => {
+        const o = R.opts, j = o.indexOf(r.m); r.m = o[(j + 1) % o.length]; fillSauna(); drawStamp();
+      } }, h("span", { class: "st-blk-e", text: R.e }), h("b", { text: r.m + "분" }));
+    }), ...(rs.length ? [h("button", { type: "button", class: "st-undo", "aria-label": "마지막 블록 지우기", onclick: () => { sv.rounds.pop(); fillSauna(); drawStamp(); } }, "↩ 지우기")] : []));
+    $("#stTlHint").textContent = rs.length
+      ? roundSets(rs) + "세트 · 사우나 " + roundSum(rs, "h") + "분 · 냉탕 " + roundSum(rs, "c") + "분 · 휴식 " + roundSum(rs, "r") + "분  (블록을 누르면 시간이 바뀌어요)"
+      : "한 세트 추가를 누르거나 블록을 하나씩 쌓아 보세요.";
+    fillDial();
+    $("#stFeel").replaceChildren(...FEELS.map(([n, e, l]) => h("button", { type: "button", class: "st-fe", "aria-pressed": String(sv.feel === n), "aria-label": "개운함 " + n + "점 " + l, onclick: () => { sv.feel = sv.feel === n ? 0 : n; fillSauna(); drawStamp(); } },
+      h("span", { class: "st-fe-e", text: e }), h("small", { text: l }))));
+  }
+  function addRounds(ks) {
+    if (sv.rounds.length + ks.length > 30) { notice("블록은 30개까지 쌓을 수 있어요."); return; }
+    ks.forEach((k) => { const last = [...sv.rounds].reverse().find((r) => r.k === k); sv.rounds.push({ k, m: last ? last.m : ROUND[k].d }); });
+    fillSauna(); drawStamp();
+    const tl = $("#stTl"); tl.scrollLeft = tl.scrollWidth;
+  }
+  // 온도 다이얼: 반원 게이지를 끌어서 60~120°C
+  function heatPct(t) { return t ? Math.max(0, Math.min(1, (t - TEMP_MIN) / (TEMP_MAX - TEMP_MIN))) : 0; }
+  function buildDial() {
+    const box = $("#stDial"), NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", "0 0 240 136"); svg.setAttribute("class", "dial-svg");
+    svg.setAttribute("role", "slider"); svg.setAttribute("tabindex", "0"); svg.setAttribute("aria-labelledby", "stDialL");
+    svg.setAttribute("aria-valuemin", TEMP_MIN); svg.setAttribute("aria-valuemax", TEMP_MAX);
+    const arc = (cls) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", "M 24 120 A 96 96 0 0 1 216 120"); p.setAttribute("class", cls); p.setAttribute("pathLength", "100"); return p; };
+    const track = arc("dial-track"), val = arc("dial-val");
+    const ticks = document.createElementNS(NS, "g"); ticks.setAttribute("class", "dial-ticks");
+    for (let t = TEMP_MIN; t <= TEMP_MAX; t += 10) {
+      const a = Math.PI * (1 - heatPct(t)), c = Math.cos(a), s = Math.sin(a);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", 120 + c * 78); l.setAttribute("y1", 120 - s * 78); l.setAttribute("x2", 120 + c * 84); l.setAttribute("y2", 120 - s * 84); ticks.append(l);
+    }
+    const knob = document.createElementNS(NS, "circle"); knob.setAttribute("r", "12"); knob.setAttribute("class", "dial-knob");
+    svg.append(track, ticks, val, knob);
+    const mid = h("div", { class: "dial-mid" }, h("b", { class: "dial-num" }), h("small", { class: "dial-sub" }));
+    const minus = h("button", { type: "button", class: "dial-btn", "aria-label": "온도 1도 내리기", text: "−", onclick: () => nudge(-1) });
+    const plus = h("button", { type: "button", class: "dial-btn", "aria-label": "온도 1도 올리기", text: "+", onclick: () => nudge(1) });
+    const off = h("button", { type: "button", class: "chip-btn dial-off", onclick: () => { sv.temp = sv.temp ? null : 90; fillDial(); drawStamp(); } });
+    box.replaceChildren(h("div", { class: "dial-face" }, h("div", { class: "dial-haze", "aria-hidden": "true" }), svg, mid), h("div", { class: "dial-ctl" }, minus, off, plus));
+    function nudge(d) { sv.temp = Math.max(TEMP_MIN, Math.min(TEMP_MAX, (sv.temp || 90) + d)); fillDial(); drawStamp(); }
+    function fromPoint(e) {
+      const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 240, y = (e.clientY - r.top) / r.height * 136;
+      let a = Math.atan2(120 - y, x - 120); if (a < 0) a = x < 120 ? Math.PI : 0;
+      sv.temp = Math.round(TEMP_MIN + (1 - a / Math.PI) * (TEMP_MAX - TEMP_MIN)); fillDial(); drawStamp();
+    }
+    let drag = false;
+    svg.addEventListener("pointerdown", (e) => { drag = true; svg.setPointerCapture(e.pointerId); fromPoint(e); });
+    svg.addEventListener("pointermove", (e) => { if (drag) fromPoint(e); });
+    ["pointerup", "pointercancel"].forEach((n) => svg.addEventListener(n, () => { drag = false; }));
+    svg.addEventListener("keydown", (e) => {
+      const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key]; if (d) { e.preventDefault(); nudge(d); }
+    });
+    box._parts = { svg, val, knob, off };
+  }
+  function fillDial() {
+    const box = $("#stDial"); if (!box._parts) buildDial();
+    const { svg, val, knob, off } = box._parts, t = sv.temp, p = heatPct(t), a = Math.PI * (1 - p);
+    val.style.strokeDasharray = (t ? p * 100 : 0) + " 100";
+    knob.setAttribute("cx", 120 + Math.cos(a) * 96); knob.setAttribute("cy", 120 - Math.sin(a) * 96); knob.style.opacity = t ? 1 : 0.35;
+    box.style.setProperty("--heat", Math.round(p * 100) + "%");
+    box.classList.toggle("hot", !!t && t >= 90); box.classList.toggle("none", !t);
+    box.querySelector(".dial-num").textContent = t ? t + "°" : "--";
+    box.querySelector(".dial-sub").textContent = !t ? "다이얼을 돌려 기록" : t >= 100 ? "핀란드급 🔥" : t >= 90 ? "뜨끈뜨끈" : t >= 80 ? "정석 온도" : "순한 맛";
+    off.textContent = t ? "온도 안 셈" : "온도 기록하기"; off.setAttribute("aria-pressed", String(!t));
+    svg.setAttribute("aria-valuenow", t || TEMP_MIN); svg.setAttribute("aria-valuetext", t ? t + "도" : "기록 안 함");
   }
   function openSauna() {
     if (readOnly || !myId) return;
-    Object.assign(sv, { place: store("chowol.lastPlace") || "", minutes: 90, temp: null, sets: 0, note: "", photo: null });
+    Object.assign(sv, { place: store("chowol.lastPlace") || "", minutes: 90, temp: null, sets: 0, note: "", photo: null, rounds: [], with: [], feel: 0 });
     $("#stPlace").value = sv.place; $("#stNote").value = ""; $("#stPhoto").value = "";
     $("#saunaModal").hidden = false; fillSauna(); drawStamp();
   }
   $("#saunaNew").addEventListener("click", openSauna);
-  $("#stPlace").addEventListener("input", (e) => { sv.place = e.target.value.trim(); drawStamp(); });
+  $("#stPlace").addEventListener("input", (e) => { sv.place = e.target.value.trim(); const vn = visitNo(sv.place);
+    $("#stVisit").textContent = !sv.place ? "" : vn > 1 ? "이곳은 " + vn + "번째 방문이에요 · 도장 " + vn + "개째" : "이곳은 첫 방문이에요 · 첫 도장!";
+    $("#stFav").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.firstChild.textContent === sv.place))); drawStamp(); });
   $("#stNote").addEventListener("input", (e) => { sv.note = e.target.value; });
   $("#stMin").addEventListener("input", (e) => { sv.minutes = Number(e.target.value); fillSauna(); drawStamp(); });
-  $("#stTemp").addEventListener("input", (e) => { const v = parseInt(e.target.value, 10); sv.temp = v > 0 && v < 200 ? v : null; fillSauna(); drawStamp(); });
-  $("#stMinus").addEventListener("click", () => { sv.sets = Math.max(0, sv.sets - 1); fillSauna(); drawStamp(); });
-  $("#stPlus").addEventListener("click", () => { sv.sets = Math.min(15, sv.sets + 1); fillSauna(); drawStamp(); });
   $("#stPhoto").addEventListener("change", async (e) => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try { sv.photo = await loadBitmap(f); drawStamp(); } catch { notice("사진을 열지 못했어요. 다른 사진으로 해 주세요."); }
@@ -2656,6 +2844,13 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
   function rr(ctx, x, y, w, hh, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + hh, r); ctx.arcTo(x + w, y + hh, x, y + hh, r); ctx.arcTo(x, y + hh, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   function fitText(ctx, text, max, size, family) { let s = size; do { ctx.font = s + 'px ' + family; s -= 2; } while (ctx.measureText(text).width > max && s > 20); return ctx.font; }
+  // 세트 흐름 막대: 시간 비율대로 빨강(사우나)·파랑(냉탕)·회색(휴식)
+  function drawBar(ctx, x, y, w, hh, rounds) {
+    const tot = rounds.reduce((a, r) => a + r.m, 0); if (!tot) return;
+    const gap = Math.min(6, w / rounds.length / 4), free = w - gap * (rounds.length - 1); let cx = x;
+    rounds.forEach((r) => { const ww = Math.max(4, free * r.m / tot); rr(ctx, cx, y, ww, hh, Math.min(hh / 2, ww / 2)); ctx.fillStyle = ROUND[r.k].col; ctx.fill(); cx += ww + gap; });
+  }
+  const roundsText = (rs) => ["h", "c", "r"].filter((k) => roundSum(rs, k)).map((k) => ROUND[k].e + roundSum(rs, k) + "분").join(" ");
   let drawTok = 0;
   async function drawStamp() {
     const tok = ++drawTok;
@@ -2665,7 +2860,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const FF = '"Do Hyeon", "Apple SD Gothic Neo", sans-serif';
     const logo = getComputedStyle(document.documentElement).getPropertyValue("--logo").trim() || "#5B8FD0";
     const gold = "#F2C94C";
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, W, H); ctx.textAlign = "left";
     if (sv.photo) {
       const iw = sv.photo.width, ih = sv.photo.height, sc = Math.max(W / iw, H / ih);
       ctx.drawImage(sv.photo, (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
@@ -2674,43 +2869,133 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       ctx.globalAlpha = .12; drawLogo(ctx, W / 2 - 260, 170, 660, logo); ctx.globalAlpha = 1;
     }
-    const place = sv.place || "어느 사우나", time = fmtMin(sv.minutes);
+    const place = sv.place || "어느 사우나", time = fmtMin(sv.minutes), rs = sv.rounds, sets = roundSets(rs);
     const d = new Date(), date = d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
-    const stats = ["⏱ " + time, sv.temp ? "🌡 " + sv.temp + "°C" : null, sv.sets ? "🔁 " + sv.sets + "세트" : null].filter(Boolean).join("    ");
+    const vn = visitNo(sv.place), visit = sv.place ? (vn > 1 ? vn + "번째 방문" : "첫 방문") : "";
+    const fe = feelOf(sv.feel), withNames = sv.with.map(nameOf).join("·");
+    const stats = ["⏱ " + time, sv.temp ? "🌡 " + sv.temp + "°C" : null, sets ? "🔁 " + sets + "세트" : null, fe ? fe[1] + " " + fe[2] : null].filter(Boolean).join("   ");
     ctx.textBaseline = "alphabetic";
     if (sv.style === "band") {
-      const g = ctx.createLinearGradient(0, H * .5, 0, H); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.88)");
-      ctx.fillStyle = g; ctx.fillRect(0, H * .5, W, H * .5);
+      const g = ctx.createLinearGradient(0, H * .42, 0, H); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.9)");
+      ctx.fillStyle = g; ctx.fillRect(0, H * .42, W, H * .58);
       drawLogo(ctx, W - 64 - 95, 56, 120, logo);
-      ctx.fillStyle = "#fff"; ctx.font = fitText(ctx, place, W - 128, 96, FF); ctx.fillText(place, 64, H - 210);
-      ctx.fillStyle = gold; ctx.font = fitText(ctx, stats, W - 128, 52, FF); ctx.fillText(stats, 64, H - 128);
-      ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.font = "36px " + FF; ctx.fillText("CHOWOL SAUNA CLUB · " + date, 64, H - 64);
+      const sub = [visit, withNames ? "with " + withNames : null].filter(Boolean).join("  ·  ");
+      if (sub) { ctx.fillStyle = "rgba(255,255,255,.82)"; ctx.font = fitText(ctx, sub, W - 128, 40, FF); ctx.fillText(sub, 64, H - 335); }
+      ctx.fillStyle = "#fff"; ctx.font = fitText(ctx, place, W - 128, 96, FF); ctx.fillText(place, 64, H - 238);
+      ctx.fillStyle = gold; ctx.font = fitText(ctx, stats, W - 128, 50, FF); ctx.fillText(stats, 64, H - 160);
+      if (rs.length) drawBar(ctx, 64, H - 128, W - 128, 18, rs);
+      ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.font = "34px " + FF; ctx.fillText("CHOWOL SAUNA CLUB · " + date, 64, H - 56);
     } else if (sv.style === "sticker") {
-      ctx.save(); ctx.translate(90, H - 560); ctx.rotate(-0.07);
+      ctx.save(); ctx.translate(90, H - 580); ctx.rotate(-0.07);
       ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
-      rr(ctx, 0, 0, 600, 440, 48); ctx.fillStyle = "#F6F1E6"; ctx.fill(); ctx.shadowColor = "transparent";
+      rr(ctx, 0, 0, 620, 470, 48); ctx.fillStyle = "#F6F1E6"; ctx.fill(); ctx.shadowColor = "transparent";
       ctx.lineWidth = 12; ctx.strokeStyle = logo; ctx.stroke();
       ctx.fillStyle = logo; ctx.font = "46px " + FF; ctx.fillText("SAUNA DONE ✓", 48, 84);
+      if (fe) { ctx.font = "84px " + FF; ctx.fillText(fe[1], 510, 100); }
       ctx.fillStyle = "#15130F";
-      if (sv.temp) { ctx.font = "190px " + FF; ctx.fillText(sv.temp + "°", 40, 270); ctx.font = "54px " + FF; ctx.fillText(time + (sv.sets ? " · " + sv.sets + "세트" : ""), 48, 350); }
-      else { ctx.font = fitText(ctx, time, 520, 140, FF); ctx.fillText(time, 44, 250); ctx.font = "54px " + FF; ctx.fillText(sv.sets ? sv.sets + "세트" : "", 48, 340); }
-      ctx.fillStyle = "#6B6458"; ctx.font = fitText(ctx, place + " · " + date, 520, 38, FF); ctx.fillText(place + " · " + date, 48, 405);
+      const sub2 = [time, sets ? sets + "세트" : null].filter(Boolean).join(" · ");
+      if (sv.temp) { ctx.font = "190px " + FF; ctx.fillText(sv.temp + "°", 40, 270); ctx.font = "54px " + FF; ctx.fillText(sub2, 48, 345); }
+      else { ctx.font = fitText(ctx, time, 520, 140, FF); ctx.fillText(time, 44, 250); ctx.font = "54px " + FF; ctx.fillText(sets ? sets + "세트" : "", 48, 335); }
+      if (rs.length) drawBar(ctx, 48, 370, 524, 16, rs);
+      const foot = [place, visit, date].filter(Boolean).join(" · ");
+      ctx.fillStyle = "#6B6458"; ctx.font = fitText(ctx, foot, 524, 36, FF); ctx.fillText(foot, 48, 432);
       ctx.restore();
       drawLogo(ctx, W - 64 - 95, 56, 120, logo);
+    } else if (sv.style === "locker") {
+      drawKeyTag(ctx, W, H, FF, logo, { place, time, sets, date, vn, fe, withNames });
+    } else if (sv.style === "receipt") {
+      drawReceipt(ctx, W, H, FF, logo, { place, time, sets, date, vn, fe, withNames, rs });
     } else {
-      const x = 70, y = H - 560, w = W - 140, hh = 490;
+      const rows = [["장소", place], ["체류", time], ["최고 온도", sv.temp ? sv.temp + "°C" : "-"], ["세트", sets ? sets + "세트  " + roundsText(rs) : "-"]];
+      if (fe) rows.push(["개운함", fe[1] + " " + fe[2]]);
+      if (withNames) rows.push(["함께", withNames]);
+      rows.push(["날짜", date]);
+      const x = 70, w = W - 140, hh = 250 + rows.length * 58 + (rs.length ? 50 : 0), y = H - 70 - hh;
       ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 30;
       rr(ctx, x, y, w, hh, 32); ctx.fillStyle = "#FBF8F1"; ctx.fill(); ctx.shadowColor = "transparent";
       drawLogo(ctx, x + 44, y + 36, 92, logo);
       ctx.fillStyle = logo; ctx.font = "50px " + FF; ctx.fillText("CHOWOL SAUNA CLUB", x + 130, y + 94);
+      if (visit) { ctx.font = "34px " + FF; ctx.fillStyle = "#8A8273"; ctx.textAlign = "right"; ctx.fillText(visit, x + w - 44, y + 92); ctx.textAlign = "left"; }
       ctx.strokeStyle = "#CFC7B6"; ctx.setLineDash([16, 12]); ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x + 36, y + 160); ctx.lineTo(x + w - 36, y + 160); ctx.stroke(); ctx.setLineDash([]);
-      const rows = [["장소", place], ["체류", time], ["최고 온도", sv.temp ? sv.temp + "°C" : "-"], ["세트", sv.sets ? sv.sets + "세트" : "-"], ["날짜", date]];
       rows.forEach(([k, v], i) => {
-        const yy = y + 222 + i * 56;
+        const yy = y + 222 + i * 58;
         ctx.fillStyle = "#8A8273"; ctx.font = "40px " + FF; ctx.fillText(k, x + 50, yy);
-        ctx.fillStyle = "#15130F"; ctx.font = fitText(ctx, v, w - 340, 44, FF); const tw = ctx.measureText(v).width; ctx.fillText(v, x + w - 50 - tw, yy);
+        ctx.fillStyle = "#15130F"; ctx.font = fitText(ctx, v, w - 300, 44, FF); const tw = ctx.measureText(v).width; ctx.fillText(v, x + w - 50 - tw, yy);
       });
+      if (rs.length) drawBar(ctx, x + 50, y + 222 + rows.length * 58 - 14, w - 100, 18, rs);
     }
+  }
+  // 락커 키 태그: 목욕탕 열쇠고리 모양, 번호 자리에 온도(없으면 방문 번호)
+  function drawKeyTag(ctx, W, H, FF, logo, o) {
+    const tag = "#E8743B", tagD = "#B9521F";
+    ctx.save(); ctx.translate(150, H - 900); ctx.rotate(-0.12);
+    // 고무줄 고리
+    ctx.lineWidth = 22; ctx.strokeStyle = tag; ctx.lineCap = "round";
+    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(250 + i * 14, -80 - i * 70, 120, 46, -0.2, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.strokeStyle = tagD; ctx.lineWidth = 6;
+    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(250 + i * 14, -80 - i * 70, 120, 46, -0.2, 0.1, 1.4); ctx.stroke(); }
+    // 태그 몸통
+    ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 36; ctx.shadowOffsetY = 16;
+    ctx.beginPath(); ctx.moveTo(150, 0); ctx.lineTo(350, 0); ctx.quadraticCurveTo(500, 0, 500, 150); ctx.lineTo(500, 700); ctx.quadraticCurveTo(500, 760, 440, 760);
+    ctx.lineTo(60, 760); ctx.quadraticCurveTo(0, 760, 0, 700); ctx.lineTo(0, 150); ctx.quadraticCurveTo(0, 0, 150, 0); ctx.closePath();
+    const g = ctx.createLinearGradient(0, 0, 500, 760); g.addColorStop(0, "#F08A50"); g.addColorStop(1, "#D9612A"); ctx.fillStyle = g; ctx.fill();
+    ctx.shadowColor = "transparent"; ctx.lineWidth = 6; ctx.strokeStyle = tagD; ctx.stroke();
+    // 구멍
+    ctx.beginPath(); ctx.arc(250, 110, 46, 0, Math.PI * 2); ctx.fillStyle = "#1A1410"; ctx.fill(); ctx.lineWidth = 10; ctx.strokeStyle = "#C9C2B6"; ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = "40px " + FF; ctx.fillText("CHOWOL LOCKER", 250, 222);
+    // 번호판
+    rr(ctx, 50, 250, 400, 250, 26); ctx.fillStyle = "#FBF6EC"; ctx.fill();
+    ctx.fillStyle = "#1F1408";
+    const big = sv.temp ? sv.temp + "°" : String(o.vn || 1);
+    ctx.font = fitText(ctx, big, 360, 200, FF); ctx.fillText(big, 250, 450);
+    ctx.fillStyle = "#8A8273"; ctx.font = "30px " + FF; ctx.fillText(sv.temp ? "최고 온도" : "방문 번호", 250, 290);
+    ctx.fillStyle = "#fff"; ctx.font = fitText(ctx, o.place, 420, 52, FF); ctx.fillText(o.place, 250, 570);
+    const line = [o.time, o.sets ? o.sets + "세트" : null, o.fe ? o.fe[1] : null].filter(Boolean).join(" · ");
+    ctx.font = fitText(ctx, line, 420, 42, FF); ctx.fillText(line, 250, 630);
+    ctx.fillStyle = "rgba(255,255,255,.8)"; const foot = [o.date, o.vn > 1 ? o.vn + "번째 방문" : "첫 방문"].join(" · ");
+    ctx.font = fitText(ctx, foot, 420, 32, FF); ctx.fillText(foot, 250, 690);
+    ctx.textAlign = "left"; ctx.restore();
+    drawLogo(ctx, W - 64 - 95, 56, 120, logo);
+    if (o.withNames) {
+      const t = "with " + o.withNames; ctx.font = fitText(ctx, t, W - 128, 40, FF);
+      const tw = ctx.measureText(t).width; rr(ctx, W - 64 - tw - 48, H - 128, tw + 48, 68, 34); ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.fillText(t, W - 64 - tw - 24, H - 80);
+    }
+  }
+  // 목욕탕 영수증
+  function drawReceipt(ctx, W, H, FF, logo, o) {
+    const items = [];
+    if (o.rs.length) ["h", "c", "r"].forEach((k) => { const n = o.rs.filter((r) => r.k === k).length; if (n) items.push([ROUND[k].e + " " + ROUND[k].n + " ×" + n, roundSum(o.rs, k) + "분"]); });
+    else items.push(["♨ 사우나 이용", o.time]);
+    if (sv.temp) items.push(["🌡 최고 온도", sv.temp + "°C"]);
+    const tail = [];
+    if (o.fe) tail.push(["개운함", o.fe[1] + " " + o.fe[2]]);
+    if (o.withNames) tail.push(["함께", o.withNames]);
+    const pw = 600, lh = 54, hh = 330 + items.length * lh + 120 + tail.length * lh + 190;
+    const x = W - pw - 70, y = Math.max(40, H - 60 - hh);
+    ctx.save(); ctx.translate(x + pw / 2, y + hh / 2); ctx.rotate(0.035); ctx.translate(-pw / 2, -hh / 2);
+    ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(pw, 0); ctx.lineTo(pw, hh);
+    const z = 24; for (let i = pw; i > 0; i -= z) { ctx.lineTo(i - z / 2, hh - 16); ctx.lineTo(i - z, hh); }
+    ctx.closePath(); ctx.fillStyle = "#FFFEFA"; ctx.fill(); ctx.shadowColor = "transparent";
+    const L = 44, R = pw - 44; let yy = 92;
+    ctx.textAlign = "center"; ctx.fillStyle = logo; ctx.font = "56px " + FF; ctx.fillText("♨ CHOWOL SAUNA", pw / 2, yy);
+    ctx.fillStyle = "#15130F"; yy += 60; ctx.font = fitText(ctx, o.place, pw - 88, 42, FF); ctx.fillText(o.place, pw / 2, yy);
+    ctx.fillStyle = "#8A8273"; yy += 46; ctx.font = "32px " + FF; ctx.fillText(o.date + "  " + new Date().toTimeString().slice(0, 5), pw / 2, yy);
+    const dash = (yv) => { ctx.strokeStyle = "#BDB5A6"; ctx.setLineDash([10, 8]); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(L, yv); ctx.lineTo(R, yv); ctx.stroke(); ctx.setLineDash([]); };
+    const row = (k, v, yv, size, col) => { ctx.fillStyle = col || "#15130F"; ctx.textAlign = "left"; ctx.font = size + "px " + FF; ctx.fillText(k, L, yv); ctx.textAlign = "right"; ctx.font = fitText(ctx, v, pw - 300, size, FF); ctx.fillText(v, R, yv); };
+    yy += 34; dash(yy); yy += 20;
+    items.forEach(([k, v]) => { yy += lh; row(k, v, yy, 38); });
+    yy += 30; dash(yy); yy += 70; row("총 체류", o.time, yy, 52);
+    tail.forEach(([k, v]) => { yy += lh; row(k, v, yy, 36, "#4A443B"); });
+    yy += 34; dash(yy);
+    // 바코드
+    yy += 24; let bx = L + 40; const seed = (o.place + o.date).split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    ctx.fillStyle = "#15130F"; for (let i = 0; bx < R - 40; i++) { const wv = 2 + ((seed >> (i % 24)) & 3) * 2; if (i % 2 === 0) ctx.fillRect(bx, yy, wv, 64); bx += wv + 2; }
+    yy += 106; ctx.textAlign = "center"; ctx.fillStyle = "#8A8273"; ctx.font = "32px " + FF;
+    ctx.fillText((o.vn > 1 ? o.vn + "번째 방문 · " : "첫 방문 · ") + "또 오세요 🧖", pw / 2, yy);
+    ctx.textAlign = "left"; ctx.restore();
+    drawLogo(ctx, 64, 56, 120, logo);
   }
   async function stampDataUrl() {
     const cv = $("#stampCv"); let q = 0.85, url = "";
@@ -2733,8 +3018,14 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     try {
       await drawStamp();
       const imageData = await stampDataUrl(), ts = Date.now();
-      const info = { place: sv.place, minutes: sv.minutes, temp: sv.temp || null, sets: sv.sets || 0 };
-      const text = "🧖 " + saunaLine(info) + (sv.note.trim() ? "\n" + sv.note.trim() : "");
+      const info = { place: sv.place, minutes: sv.minutes, temp: sv.temp || null, sets: roundSets(sv.rounds) };
+      if (sv.rounds.length) info.rounds = sv.rounds.map((r) => ({ k: r.k, m: r.m }));
+      if (sv.feel) info.feel = sv.feel;
+      if (sv.with.length) info.with = [...sv.with];
+      info.visit = visitNo(sv.place);
+      const fe = feelOf(sv.feel);
+      const text = "🧖 " + saunaLine(info) + (fe ? " · " + fe[1] + " " + fe[2] : "") + (sv.rounds.length ? "\n" + roundsText(sv.rounds) : "")
+        + (sv.with.length ? "\n함께: " + sv.with.map(nameOf).join(", ") : "") + (sv.note.trim() ? "\n" + sv.note.trim() : "");
       const ref = db.collection("posts").doc();
       let ok = await write(() => ref.set({ author: myId, text, imageData, ts, reactions: {}, sauna: info }));
       if (ok) ok = await write(() => db.doc("sauna/" + ref.id).set({ author: myId, ...info, ts }));
@@ -2742,7 +3033,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
         store("chowol.lastPlace", sv.place);
         try { const pl = JSON.parse(store("chowol.places") || "[]").filter((p) => p !== sv.place); pl.unshift(sv.place); store("chowol.places", JSON.stringify(pl.slice(0, 20))); } catch {}
         closeModal("saunaModal"); logUi.seg = "feed"; renderAll();
-        notice("사우나 인증 완료! 홈 피드에도 올라갔어요 🧖");
+        notice(sv.with.length ? "사우나 인증 완료! 같이 간 크루도 이번 주 출석 ✓" : "사우나 인증 완료! 🧖");
       }
     } catch { notice("올리지 못했어요. 잠시 후 다시 시도해 주세요."); }
     btn.disabled = false; btn.textContent = "올리기";
