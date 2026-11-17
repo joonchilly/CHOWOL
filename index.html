@@ -2851,6 +2851,11 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     rounds.forEach((r) => { const ww = Math.max(4, free * r.m / tot); rr(ctx, cx, y, ww, hh, Math.min(hh / 2, ww / 2)); ctx.fillStyle = ROUND[r.k].col; ctx.fill(); cx += ww + gap; });
   }
   const roundsText = (rs) => ["h", "c", "r"].filter((k) => roundSum(rs, k)).map((k) => ROUND[k].e + roundSum(rs, k) + "분").join(" ");
+  let bgP = null;
+  function saunaBg() {
+    if (!bgP) bgP = new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => { bgP = null; res(null); }; im.src = "img/sauna-bg.jpg"; });
+    return bgP;
+  }
   let drawTok = 0;
   async function drawStamp() {
     const tok = ++drawTok;
@@ -2865,9 +2870,16 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       const iw = sv.photo.width, ih = sv.photo.height, sc = Math.max(W / iw, H / ih);
       ctx.drawImage(sv.photo, (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
     } else {
-      const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#1D2B33"); g.addColorStop(1, "#0B0A09");
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      ctx.globalAlpha = .12; drawLogo(ctx, W / 2 - 260, 170, 660, logo); ctx.globalAlpha = 1;
+      // 사진을 안 고르면 기본 배경: 사우나 사진(img/sauna-bg.jpg), 못 불러오면 어두운 그라데이션
+      const bg = await saunaBg(); if (tok !== drawTok) return;
+      if (bg) {
+        const iw = bg.naturalWidth, ih = bg.naturalHeight, sc = Math.max(W / iw, H / ih);
+        ctx.drawImage(bg, (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
+      } else {
+        const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#1D2B33"); g.addColorStop(1, "#0B0A09");
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = .12; drawLogo(ctx, W / 2 - 260, 170, 660, logo); ctx.globalAlpha = 1;
+      }
     }
     const place = sv.place || "어느 사우나", time = fmtMin(sv.minutes), rs = sv.rounds, sets = roundSets(rs);
     const d = new Date(), date = d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
