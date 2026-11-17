@@ -650,7 +650,7 @@ input, textarea, select { font-size: max(16px, 1em); }
 
 /* intro */
 .intro { position: fixed; inset: 0; z-index: 40; background: #000; display: grid; place-items: center; transition: opacity .9s ease; }
-.intro video { width: 100%; height: 100%; object-fit: contain; transition: opacity .7s ease; }
+.intro video { width: 100%; height: 100%; object-fit: cover; transition: opacity .7s ease; }
 .splash { position: absolute; inset: 0; display: grid; place-items: center; background: transparent; opacity: 0; pointer-events: none; }
 /* (2) 착지 순간 원형으로 퍼지며 배경이 var(--bg)로 물듦 */
 .splash::before { content: ""; position: absolute; inset: 0; background: var(--bg); clip-path: circle(0% at 50% 50%); }
@@ -913,7 +913,7 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
 </head>
 <body>
 <div class="intro" id="intro" aria-label="인트로 영상">
-  <video id="introVideo" src="intro.mp4" playsinline preload="metadata"></video>
+  <video id="introVideo" src="intro-sauna.mp4" playsinline muted preload="metadata"></video>
   <script>if (!document.documentElement.classList.contains("no-intro")) document.getElementById("introVideo").preload = "auto";</script>
   <span class="intro-skip" aria-hidden="true">화면을 누르면 건너뛰어요</span>
   <div class="splash" aria-hidden="true">
@@ -3911,9 +3911,9 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     if (skipFilm) { v.removeAttribute("src"); v.load(); waves(); return; }
     v.addEventListener("ended", waves);
     v.addEventListener("error", waves);
-    // always with sound: try to start unmuted; if the browser refuses, wait for one tap
-    v.muted = false; v.volume = 1;
-    $("#introPlay").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.hidden = true; v.muted = false; v.currentTime = 0; v.play().catch(waves); });
+    // 사우나 영상은 소리가 없어서 음소거로 바로 재생 (아이폰도 탭 없이 자동 재생)
+    v.muted = true;
+    $("#introPlay").addEventListener("click", (e) => { e.stopPropagation(); e.currentTarget.hidden = true; v.currentTime = 0; v.play().catch(waves); });
     // 영상이 나오는 중에 화면을 누르면 바로 로고 → 홈
     ov.addEventListener("click", (e) => { if (stage === "film" && $("#introPlay").hidden) { v.pause(); waves(); } else if (stage === "splash") flip(); });
     const p = v.play(); if (p && p.catch) p.catch(() => { v.pause(); $("#introPlay").hidden = false; });
