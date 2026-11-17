@@ -19,6 +19,7 @@
     if (pref === "off" || (pref === "daily" && localStorage.getItem("chowol.introDay") === today)) document.documentElement.classList.add("no-intro");
     else localStorage.setItem("chowol.introDay", today);
     if (localStorage.getItem("chowol-motion") === "1") document.documentElement.classList.add("reduce-motion");
+    document.documentElement.classList.add("sauna-only"); // 사우나 크루 모드(피드·DM·러닝·운동 숨김)
     // 시작 장면이 끝날 때까지 앱 화면을 숨김 (혹시 막혀도 6초 뒤엔 무조건 보이게)
     document.documentElement.classList.add("booting");
     setTimeout(function () { document.documentElement.classList.remove("booting"); }, 6000);
@@ -232,6 +233,46 @@ html.standalone .panel { bottom: auto; height: var(--appH, 100%); }
 /* 설정 > 움직임 줄이기 */
 html.reduce-motion { --d-fast: 1ms; --d-base: 1ms; --d-slow: 1ms; }
 html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+/* ===== 사우나 크루 모드 ===== */
+html.sauna-only #stories, html.sauna-only #feed, html.sauna-only #homeDm, html.sauna-only .bottom [data-go="dm"], html.sauna-only .log-tabs, html.sauna-only #s-dm { display: none !important; }
+html:not(.sauna-only) #saunaHome { display: none; }
+.sauna-home { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-4) var(--s-4) var(--s-8); }
+.sh-card, .sh-tip, .sh-recent { display: flex; flex-direction: column; gap: var(--s-3); }
+.sh-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-4); }
+.sh-h { display: flex; align-items: baseline; gap: var(--s-2); }
+.sh-h b { font-size: var(--t-lg); color: var(--ink); flex: 1; }
+.sh-n { color: var(--muted); font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
+.sh-more { color: var(--muted); font-size: var(--t-sm); min-height: 44px; margin: -12px 0; }
+.sh-sub { margin: 0; color: var(--ink); font-size: var(--t-sm); }
+.sh-btns { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+.sh-btns .btn { height: 44px; border-radius: var(--r-md); }
+.crew-row { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: var(--s-1); }
+.crew-p { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; min-height: 44px; }
+.crew-av { position: relative; display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-full); padding: 3px; box-shadow: inset 0 0 0 2px var(--line); }
+.crew-p .av { width: 42px; height: 42px; font-size: var(--t-md); opacity: .55; }
+.crew-p.on .crew-av { box-shadow: inset 0 0 0 3px var(--accent); }
+.crew-p.on .av { opacity: 1; }
+.crew-ck { position: absolute; right: -3px; bottom: -3px; width: 20px; height: 20px; border-radius: var(--r-full); background: var(--accent); color: var(--on-accent); font-size: 12px; display: grid; place-items: center; border: 2px solid var(--surface); }
+.crew-nm { font-size: 12px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-p.on .crew-nm { color: var(--ink); }
+.tip-card { display: flex; flex-direction: column; gap: var(--s-2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s-4); }
+.tip-card.big { background: var(--accent); color: var(--on-accent); border: 0; border-radius: var(--r-lg); padding: var(--s-6) var(--s-4); }
+.tip-cat { align-self: flex-start; font-size: var(--t-xs); letter-spacing: var(--ls-1); padding: 2px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, currentColor 14%, transparent); }
+.tip-t { margin: 0; font-size: var(--t-lg); line-height: 1.3; }
+.tip-card.big .tip-t { font-size: var(--t-xl); }
+.tip-b { margin: 0; font-size: var(--t-md); line-height: 1.6; }
+.tip-card:not(.big) .tip-b { font-size: var(--t-sm); color: var(--ink); }
+.tip-src { font-size: var(--t-xs); opacity: .75; color: inherit; text-decoration: underline; text-underline-offset: 3px; min-height: 24px; align-self: flex-start; }
+.tips-list { display: flex; flex-direction: column; gap: var(--s-3); padding: 0 var(--s-4) var(--s-8); }
+.tips-list .set-h { padding: var(--s-4) 0 0; }
+.tip-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.tip-wrap .tip-card { align-self: stretch; }
+.tip-form { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-4); padding: var(--s-4); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
+.tip-form input, .tip-form textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); color: var(--ink); font-family: inherit; }
+.rc-row { display: flex; gap: var(--s-2); overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--s-4) * -1); padding: 0 var(--s-4); }
+.rc { flex: none; width: 120px; display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.rc img, .rc .rc-ph { width: 120px; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--r-md); background: var(--raise); display: grid; place-items: center; font-size: 32px; }
+.rc-nm { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 오프라인 띠 */
 .net-band { height: 28px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 13px; background: var(--surface); color: var(--muted); border-bottom: 1px solid var(--line); }
 .net-band.ok { color: var(--ink); }
@@ -825,6 +866,7 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
       <div class="scroll" id="homeScroll">
         <div class="stories" id="stories"></div>
         <div id="feed"></div>
+        <div id="saunaHome" class="sauna-home"></div>
       </div>
     </section>
 
@@ -966,6 +1008,10 @@ html.sb-scrim body::before { content: ""; position: fixed; top: 0; left: 0; righ
       </div>
     </div>
   </div>
+</div>
+<div class="panel" id="tipsPanel" hidden role="dialog" aria-modal="true" aria-labelledby="tipsTitle">
+  <header class="topbar"><button class="icon-btn" type="button" data-panel-back aria-label="뒤로"><span data-icon="back"></span></button><div class="title" id="tipsTitle">사우나 지식</div></header>
+  <div class="panel-b"><div id="tipsList" class="tips-list"></div></div>
 </div>
 <div class="panel" id="choicePanel" hidden role="dialog" aria-modal="true" aria-labelledby="choiceTitle">
   <header class="topbar"><button class="icon-btn" type="button" data-panel-back aria-label="뒤로"><span data-icon="back"></span></button><div class="title" id="choiceTitle"></div></header>
@@ -1349,6 +1395,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   document.querySelectorAll("[data-icon]").forEach((el) => el.replaceWith(icon(el.dataset.icon)));
 
   let db = null, user = null, assets = null, myId = null, isOwner = false, readOnly = false;
+  const SAUNA_ONLY = true; // 사우나 크루 모드. false로 바꾸면 피드·DM·러닝·운동이 다시 보임 (head의 sauna-only 클래스도 같이 빼기)
   const S = { posts: [], comments: [], chat: [], dm: [], notices: [], workouts: [], members: {}, profiles: {}, loaded: {} };
   const ui = { screen: "home", thread: null, profileId: null, openPost: null, expanded: new Set(), drafts: {}, menu: null, confirmDel: null, createFile: null, editFile: null };
 
@@ -1535,6 +1582,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
   function renderActivity() {
     const seen = actSeen(), items = listed(), box = $("#actList");
+    if (SAUNA_ONLY) for (let i = items.length - 1; i >= 0; i--) if ("dgvn".includes(items[i].k[0])) items.splice(i, 1);
     const top = pushOn() ? [] : [pushCard()];
     if (!items.length) { box.replaceChildren(...top, h("p", { class: "empty", text: "아직 새 소식이 없어요." })); return; }
     const out = []; let head = null;
@@ -1631,6 +1679,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   }
   const certDots = (c, cls) => h("span", { class: cls || "cdots", "aria-hidden": "true" }, ...["g", "r", "s"].map((k) => h("i", { class: c && c[k] ? "on" : "" })));
   function renderHome() {
+    if (SAUNA_ONLY) { renderSaunaHome(); return; }
     const ids = memberIds();
     if (myId && !ids.includes(myId)) ids.unshift(myId);
     else if (myId) { ids.splice(ids.indexOf(myId), 1); ids.unshift(myId); }
@@ -2124,7 +2173,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     const btns = h("div", { class: "prof-btns" });
     $("#profTheme").hidden = !mine; // 내 프로필 톱니 → 설정
     if (mine) btns.append(h("button", { type: "button", class: "btn prof-edit", text: "프로필 편집", disabled: readOnly, onclick: openEdit }));
-    else if (id !== "guide") btns.append(h("button", { type: "button", class: "btn btn-primary", text: "메시지 보내기", onclick: () => openThread(id) }));
+    else if (id !== "guide" && !SAUNA_ONLY) btns.append(h("button", { type: "button", class: "btn btn-primary", text: "메시지 보내기", onclick: () => openThread(id) }));
     const grid = h("div", { class: "grid" }, ...posts.map((p) => {
       const d = p.data();
       const src = d.image ? "/_blob/" + d.image : (typeof d.imageData === "string" && d.imageData.startsWith("data:image/") ? d.imageData : null);
@@ -2146,6 +2195,115 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
       h("div", { class: "grid-tabs", role: "tablist" }, ...[["posts", "게시물"], ["log", "기록"]].map(([k, lb]) => h("button", { type: "button", role: "tab", "aria-selected": String((ui.profTab || "posts") === k), text: lb, onclick: () => { ui.profTab = k; renderProfile(); } }))),
       ui.profTab === "log" ? certLog(id, mine) : posts.length ? grid : h("p", { class: "empty", text: mine ? "첫 게시물을 올려보세요." : "아직 게시물이 없어요." }));
   }
+  // =====================================================================
+  // ----- 사우나 크루 모드: 홈 = 이번 주 출석 + 모집 + 오늘의 사우나 지식 -----
+  // (피드·DM·러닝·운동은 지우지 않고 숨김. SAUNA_ONLY를 false로 바꾸면 예전 화면으로 돌아감)
+  // =====================================================================
+  // 오늘의 사우나 지식: 연구 출처가 확인된 내용만. 하루에 하나씩 돌아가며 보여 줌(한국 시간 기준)
+  const TIPS = [
+    { c: "효능", t: "자주 갈수록 심장이 웃는다", b: "핀란드 중년 남성 2,315명을 약 20년 지켜본 연구에서, 주 1회 가는 사람보다 주 2~3회 가는 사람은 심장 돌연사 위험이 22%, 주 4~7회 가는 사람은 63% 낮았어요.", s: "JAMA Internal Medicine, 2015", u: "https://www.sciencedaily.com/releases/2015/02/150223122602.htm" },
+    { c: "효능", t: "오래 살 확률과도 연결", b: "같은 연구에서 모든 원인 사망 위험도 주 2~3회는 약 24%, 주 4~7회는 약 40% 낮았어요. 다만 이건 '함께 나타났다'는 연관성이라, 사우나 하나만의 효과라고 단정할 수는 없어요.", s: "JAMA Internal Medicine, 2015", u: "https://www.eurekalert.org/news-releases/862302" },
+    { c: "효능", t: "한 번에 19분 넘게 머문 사람들", b: "한 번에 19분 넘게 머문 사람들은 짧게 머문 사람들보다 심장 관련 사망 위험이 더 낮았어요. 그렇다고 억지로 버티라는 뜻은 아니에요. 힘들면 나와서 쉬었다 다시 들어가도 돼요.", s: "Nature Reviews Cardiology, 2015", u: "https://www.nature.com/articles/nrcardio.2015.35.pdf" },
+    { c: "효능", t: "기억력을 지키는 따뜻함", b: "약 20년 추적한 핀란드 연구에서 주 4~7회 사우나를 한 남성은 주 1회인 남성보다 치매 위험이 66%, 알츠하이머 위험이 65% 낮았어요. 혈관 건강과 이완 효과가 이유로 거론돼요.", s: "Age and Ageing, 2017", u: "https://research-information.bris.ac.uk/en/publications/sauna-bathing-is-inversely-associated-with-dementia-and-alzheimer/" },
+    { c: "효능", t: "혈압에도 좋은 신호", b: "남성 1,621명을 약 25년 지켜본 연구에서 주 4~7회 사우나를 한 사람은 고혈압이 생길 위험이 47% 낮았어요.", s: "Mayo Clinic Proceedings 리뷰, 2018", u: "https://www.usms.org/fitness-and-training/articles-and-videos/articles/the-health-benefits-of-sauna-bathing" },
+    { c: "효능", t: "폐도 덕을 본다", b: "남성 1,935명을 25년 넘게 추적한 연구에서, 사우나를 자주 한 사람일수록 폐렴·천식·만성폐쇄성폐질환 같은 호흡기 질환 위험이 낮았어요(주 4회 이상은 약 37% 낮음).", s: "European Journal of Epidemiology, 2017", u: "https://link.springer.com/doi/10.1007/s10654-017-0311-6" },
+    { c: "효능", t: "폐렴 위험이 절반 가까이", b: "핀란드 KIHD 연구에서 주 2~3회 사우나를 한 사람은 폐렴 위험이 약 33%, 주 4회 이상은 약 47% 낮았어요(나이만 고려한 분석).", s: "KIHD 코호트 연구, Kunutsor 외", u: "https://research-information.bris.ac.uk/en/publications/frequent-sauna-bathing-may-reduce-the-risk-of-pneumonia-in-middle/" },
+    { c: "몸 이야기", t: "가만히 앉아서 하는 유산소?", b: "사우나 안에서 심박수는 분당 120~150회까지 올라가요. 가벼운 운동을 할 때와 비슷한 수준이라 '수동적인 운동'에 비유되기도 해요. 그래도 진짜 운동을 대신하진 못해요.", s: "Mayo Clinic Proceedings 리뷰, 2018", u: "https://pubmed.ncbi.nlm.nih.gov/30077204/" },
+    { c: "몸 이야기", t: "운동 + 사우나 = 더 강한 조합", b: "체력이 좋으면서 사우나도 자주 하는 사람들은 둘 중 하나만 하는 사람보다 심혈관 위험이 더 낮았다는 연구들이 있어요. 운동 끝나고 사우나, 크루에 딱 맞는 루틴이에요.", s: "Mayo Clinic Proceedings 리뷰, 2018", u: "https://www.usms.org/fitness-and-training/articles-and-videos/articles/the-health-benefits-of-sauna-bathing" },
+    { c: "즐기는 법", t: "핀란드식 정석 온도", b: "핀란드 사우나는 머리 높이 기준 80~100°C, 습도 10~20%의 건식이 기본이에요. 돌에 물을 부으면 잠깐 온도와 습도가 확 올라가요(로울리).", s: "Mayo Clinic Proceedings 리뷰, 2018", u: "https://www.espalibrary.eu/search/1110/" },
+    { c: "즐기는 법", t: "들어갔다, 식히고, 반복", b: "정석 루틴은 사우나에 짧게 머무르고 → 샤워·수영·바깥 공기로 식히고 → 다시 들어가는 걸 반복하는 거예요. 머무는 시간은 그날 컨디션과 온도에 맞춰요.", s: "Mayo Clinic Proceedings 리뷰, 2018", u: "https://www.espalibrary.eu/search/1110/" },
+    { c: "안전", t: "사우나 전후 술은 금물", b: "사우나 중 음주는 저혈압, 부정맥, 돌연사 위험을 높여요. 핀란드에서도 사우나 사고 사망과 음주의 연관이 보고됐어요. 맥주는 사우나 끝나고 몸이 식은 뒤에!", s: "American Journal of Medicine, 2001", u: "https://www.sciencealert.com/drinking-alcohol-before-hitting-the-sauna-could-be-a-deadly-combo" },
+    { c: "안전", t: "물은 중간에도, 끝나고도", b: "땀으로 수분과 나트륨·마그네슘 같은 전해질이 빠져나가요. 사우나 중간과 끝난 뒤에 물(술 말고)을 꼭 챙겨 마셔요.", s: "Poison Control (미국 독극물센터)", u: "https://poison.org/articles/are-saunas-good-for-you" },
+    { c: "안전", t: "이런 느낌이면 바로 나오기", b: "어지럽거나, 머리가 핑 돌거나, 속이 메스껍거나, 심장이 두근거리면 참지 말고 바로 나와요. 사우나는 버티기 대회가 아니에요.", s: "Poison Control (미국 독극물센터)", u: "https://poison.org/articles/are-saunas-good-for-you" },
+    { c: "안전", t: "지병이 있다면 먼저 상담", b: "불안정 협심증이나 최근 심근경색 같은 심장 질환이 있으면 사우나를 피해야 해요. 혈압이 낮은 사람도 사우나 뒤 혈압이 더 떨어질 수 있으니 조심해요. 다른 지병이 있으면 의사와 먼저 상의해요.", s: "American Journal of Medicine, 2001", u: "https://poison.org/articles/are-saunas-good-for-you" },
+    { c: "안전", t: "빠진 몸무게는 물이에요", b: "사우나 뒤 체중계 숫자가 줄어도 대부분 땀으로 빠진 수분이에요. 물을 마시면 금방 돌아와요. 살 빼려고 오래 버티면 탈수만 와요.", s: "Poison Control (미국 독극물센터)", u: "https://poison.org/articles/are-saunas-good-for-you" },
+    { c: "냉탕", t: "냉탕 첫 30초가 제일 위험", b: "차가운 물에 갑자기 몸을 담그면 '콜드 쇼크'로 숨을 헉 들이켜고 심박과 혈압이 확 올라가요. 이 반응은 처음 30초에 가장 세요. 발부터 천천히, 머리는 마지막에.", s: "Tipton, 냉수 침수 연구", u: "https://the-european.eu/?p=46279" },
+    { c: "냉탕", t: "더 차갑고 오래가 정답은 아님", b: "냉수 연구로 유명한 팁턴 교수는 '물이 차가울수록, 오래 있을수록 좋다는 생각은 완전히 틀렸다'고 말해요. 짧게 담그는 걸로 충분해요.", s: "Mike Tipton 인터뷰", u: "https://cardiffjournalism.co.uk/plunge/?p=891" },
+    { c: "냉탕", t: "냉탕, 과학은 어디까지 왔나", b: "2025년 메타분석에 따르면 냉수 침수는 스트레스, 수면의 질, 삶의 질 등에 시간에 따라 달라지는 효과를 보였어요. 다만 장기 효과는 아직 연구가 더 필요해요.", s: "PLOS ONE 메타분석, 2025", u: "https://pubmed.ncbi.nlm.nih.gov/39879231/" },
+    { c: "근거 읽기", t: "연구 숫자, 이렇게 읽어요", b: "여기 나온 큰 연구들은 대부분 핀란드 중년 남성을 오래 지켜본 '관찰 연구'예요. 사우나를 자주 하는 사람이 원래 더 건강한 생활을 했을 수도 있어서, 원인과 결과로 단정하긴 어려워요. 그래도 꾸준히 좋은 신호가 나오고 있어요.", s: "USMS · Mayo Clinic Proceedings 리뷰", u: "https://www.usms.org/fitness-and-training/articles-and-videos/articles/the-health-benefits-of-sauna-bathing" }
+  ];
+  const tipIndex = () => Math.floor((Date.now() + 9 * 3600000) / 86400000) % TIPS.length;
+  // 방장이 추가한 지식(tips 컬렉션)은 기본 지식보다 먼저, 최신순으로
+  function allTips() {
+    const extra = (S.tips || []).map((d) => ({ ...d.data(), _id: d.id, mine: true })).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    return { extra, base: TIPS };
+  }
+  function todayTip() {
+    const { extra } = allTips();
+    const fresh = extra.find((x) => Date.now() - (x.ts || 0) < 3 * 86400000); // 새 지식은 3일간 맨 앞에
+    return fresh || TIPS[tipIndex()];
+  }
+  const tipCard = (tp, big) => h("article", { class: "tip-card" + (big ? " big" : "") },
+    h("span", { class: "tip-cat", text: tp.c || "새 소식" }),
+    h("h3", { class: "tip-t", text: tp.t }),
+    h("p", { class: "tip-b", text: tp.b }),
+    tp.s || tp.u ? h("a", { class: "tip-src", href: tp.u || "#", target: "_blank", rel: "noopener", text: "출처 · " + (tp.s || "링크") }) : null);
+
+  function saunaWeek() {
+    const ws = weekStart(), went = {};
+    (S.sauna || []).forEach((x) => { const d = x.data(); if (d.ts >= ws) went[d.author] = (went[d.author] || 0) + 1; });
+    S.posts.forEach((p) => { const d = p.data(); if (d.sauna && d.ts >= ws && !went[d.author]) went[d.author] = 1; });
+    return went;
+  }
+  function shareRecruit() {
+    const text = "🧖 이번 주 사우나 갈 사람? 시간·장소 정하자! (초월)";
+    const url = "https://joonchilly.github.io/CHOWOL/";
+    if (navigator.share) navigator.share({ title: "초월 사우나 모집", text, url }).catch(() => {});
+    else { try { navigator.clipboard.writeText(text + " " + url); notice("모집 문구를 복사했어요. 카톡 단톡방에 붙여 넣어 주세요."); } catch { notice(text); } }
+  }
+  function renderSaunaHome() {
+    const box = $("#saunaHome");
+    if (!db) { box.replaceChildren(S.signedOut ? h("p", { class: "empty", text: "로그인하면 볼 수 있어요." }) : skeleton("list")); return; }
+    const ids = memberIds(), went = saunaWeek(), n = ids.filter((id) => went[id]).length;
+    // 1) 이번 주 크루 출석
+    const week = h("section", { class: "sh-card" },
+      h("div", { class: "sh-h" }, h("b", { text: "이번 주 사우나 크루" }), h("span", { class: "sh-n", text: ids.length + "명 중 " + n + "명" })),
+      h("div", { class: "crew-row", style: "--n:" + Math.max(ids.length, 1) }, ...ids.map((id) => h("button", { type: "button", class: "crew-p" + (went[id] ? " on" : ""), "aria-label": nameOf(id) + (went[id] ? " 이번 주 사우나 다녀옴" : " 아직"), onclick: () => openProfile(id) },
+        h("span", { class: "crew-av" }, avatar(id), went[id] ? h("span", { class: "crew-ck", "aria-hidden": "true", text: "✓" }) : null),
+        h("span", { class: "crew-nm", text: id === myId ? "나" : nameOf(id) })))),
+      h("p", { class: "sh-sub", text: n === ids.length && n ? "이번 주 전원 초월! 🧖" : went[myId] ? "이번 주 사우나 완료! 다음 주에 또 만나요." : "이번 주 아직이에요. 같이 갈 사람 모아 볼까요?" }),
+      h("div", { class: "sh-btns" },
+        h("button", { type: "button", class: "btn", onclick: shareRecruit }, "카톡으로 모집하기"),
+        h("button", { type: "button", class: "btn btn-primary", disabled: readOnly, onclick: openSauna }, "사우나 인증")));
+    // 2) 오늘의 사우나 지식
+    const tip = h("section", { class: "sh-tip" },
+      h("div", { class: "sh-h" }, h("b", { text: "오늘의 사우나 지식" }), h("button", { type: "button", class: "sh-more", onclick: openTips }, "전체 보기 ›")),
+      tipCard(todayTip(), true));
+    // 3) 최근 크루 인증
+    const recent = S.posts.filter((p) => p.data().sauna).slice(0, 10);
+    const strip = h("section", { class: "sh-recent" },
+      h("div", { class: "sh-h" }, h("b", { text: "최근 크루 인증" }), h("button", { type: "button", class: "sh-more", onclick: () => go("log") }, "랭킹 ›")),
+      recent.length ? h("div", { class: "rc-row" }, ...recent.map((p) => { const d = p.data();
+        return h("button", { type: "button", class: "rc", onclick: () => openPost(p.id), "aria-label": nameOf(d.author) + " " + ago(d.ts) + " 사우나 인증" },
+          d.imageData ? keptImg("rc:" + p.id, d.imageData, "") : h("span", { class: "rc-ph", text: "🧖" }),
+          h("span", { class: "rc-nm", text: nameOf(d.author) + " · " + ago(d.ts) })); }))
+        : h("p", { class: "empty", text: "아직 인증이 없어요. 이번 주 첫 테이프를 끊어 보세요!" }));
+    box.replaceChildren(week, tip, strip);
+  }
+  // 지식 전체 보기(+ 방장은 새 지식 추가)
+  function openTips() {
+    const { extra } = allTips();
+    const list = $("#tipsList");
+    const form = isOwner ? h("form", { class: "tip-form", onsubmit: async (e) => {
+      e.preventDefault(); const f = e.currentTarget;
+      const t = f.tt.value.trim(), b = f.tb.value.trim(), u = f.tu.value.trim();
+      if (!t || !b) { notice("제목과 내용을 적어 주세요."); return; }
+      const ok = await write(() => db.collection("tips").add({ t, b, u, s: u ? "링크" : "", c: "새 소식", author: myId, ts: Date.now() }));
+      if (ok) { f.reset(); notice("새 지식을 올렸어요. 3일 동안 홈에 먼저 보여요."); setTimeout(openTips, 300); }
+    } },
+      h("b", { text: "새 지식 올리기 (방장)" }),
+      h("input", { name: "tt", maxlength: 40, placeholder: "제목", "aria-label": "제목" }),
+      h("textarea", { name: "tb", rows: 3, maxlength: 400, placeholder: "내용 (근거가 있는 내용으로!)", "aria-label": "내용" }),
+      h("input", { name: "tu", type: "url", placeholder: "출처 링크 (선택)", "aria-label": "출처 링크" }),
+      h("button", { type: "submit", class: "btn btn-primary" }, "올리기")) : null;
+    list.replaceChildren(...(form ? [form] : []),
+      ...(extra.length ? [h("div", { class: "set-h", text: "크루가 올린 지식" }), ...extra.map((x) => h("div", { class: "tip-wrap" }, tipCard(x),
+        isOwner ? h("button", { type: "button", class: "mem-del", text: "지우기", onclick: () => write(() => db.doc("tips/" + x._id).delete()).then(() => setTimeout(openTips, 300)) }) : null))] : []),
+      h("div", { class: "set-h", text: "기본 지식 " + TIPS.length + "개 · 매일 하나씩 홈에 올라와요" }),
+      ...TIPS.map((x) => tipCard(x)),
+      h("p", { class: "set-note", text: "건강 정보는 참고용이에요. 지병이 있거나 몸이 안 좋으면 의사와 먼저 상의하세요." }));
+    openPanel("tipsPanel");
+  }
   // ----- 프로필 '기록' 탭: 이번 달 달력 + 최근 인증 목록 -----
   const CERT_IC = {
     g: '<svg class="i" viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
@@ -2153,7 +2311,8 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     s: '<svg class="i" viewBox="0 0 24 24"><path d="M8 3.5c-1.2 1.5 1.2 2.5 0 4M12 3.5c-1.2 1.5 1.2 2.5 0 4M16 3.5c-1.2 1.5 1.2 2.5 0 4"/><path d="M4 11h16v6.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/></svg>'
   };
   const CERT_NAME = { g: "운동", r: "러닝", s: "사우나" };
-  function certRecords(uid) {
+  function certRecords(uid) { return certRecordsAll(uid).filter((r) => !SAUNA_ONLY || r.k === "s"); }
+  function certRecordsAll(uid) {
     const out = new Map();
     const put = (id, k, d) => { const cur = out.get(id); out.set(id, cur ? { ...cur, ...d, k } : { id, k, ...d }); };
     (S.workouts || []).forEach((x) => { const d = x.data(); if (d.author === uid) put(x.id, "g", { ts: d.ts, rpm: d.rpm, parts: d.parts }); });
@@ -2275,7 +2434,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
 
   // create
   function openCreate() { if (readOnly || !myId) return; $("#createModal").hidden = false; $("#createText").focus(); }
-  $("#navCreate").addEventListener("click", openCreate);
+  $("#navCreate").addEventListener("click", () => (SAUNA_ONLY ? openSauna() : openCreate()));
   $("#createPhoto").addEventListener("change", (e) => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     ui.createFile = f; $("#pickImg").src = URL.createObjectURL(f); $("#pickImg").hidden = false; $("#pickHint").hidden = true;
@@ -2311,7 +2470,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
   const FS_OPT = [["14", "작게"], ["16", "보통"], ["18", "크게"], ["20", "아주 크게"]];
   const INTRO_OPT = [["daily", "매일 첫 실행"], ["always", "항상"], ["off", "끄기"]];
-  const NOTIF = [["posts", "새 게시물"], ["react", "댓글·💪"], ["msg", "메시지"], ["members", "새 멤버"]];
+  const NOTIF = [["posts", "새 사우나 인증"], ["react", "댓글·💪"], ["msg", "메시지"], ["members", "새 멤버"]].filter(([k]) => !(SAUNA_ONLY && k === "msg"));
   const notifOn = (k) => lsGet("chowol-notif-" + k, "1") === "1";
   function openPanel(id) { $("#" + id).hidden = false; }
   document.querySelectorAll("[data-panel-back]").forEach((b) => b.addEventListener("click", () => { b.closest(".panel").hidden = true; if (b.closest("#setPanel")) renderAll(); }));
@@ -2369,6 +2528,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   const sv = { place: "", minutes: 90, temp: null, sets: 0, note: "", style: "band", photo: null };
 
   function renderLog() {
+    if (SAUNA_ONLY) logUi.kind = "sauna";
     document.querySelectorAll(".log-tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.kind === logUi.kind)));
     $("#logSauna").hidden = logUi.kind !== "sauna"; $("#logRun").hidden = logUi.kind !== "run"; $("#logGym").hidden = logUi.kind !== "gym";
     if (logUi.kind === "run") { renderRunCrew(); renderRunFeed(); return; }
@@ -3185,7 +3345,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTray(); });
 
   // ---------- navigation ----------
-  const SCREENS = ["home", "log", "dm", "profile"];
+  const SCREENS = SAUNA_ONLY ? ["home", "log", "profile"] : ["home", "log", "dm", "profile"];
   // 오프라인 띠: 보이는 화면의 상단바 바로 아래에 끼워 넣어 내용을 밀어 내림
   const netBand = h("div", { class: "net-band", role: "status", "aria-live": "polite", hidden: true });
   let netTimer = null;
@@ -3205,6 +3365,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
   if (navigator.onLine === false) setTimeout(() => setNet(false), 0);
   function show(s) {
     if (!SCREENS.includes(s)) s = "home";
+    if (SAUNA_ONLY) $("#s-dm").hidden = true;
     ui.screen = s; ui.menu = null; closeTray();
     if (s === "profile") morePosts(100);
     SCREENS.forEach((x) => { $("#s-" + x).hidden = x !== s; });
@@ -3493,6 +3654,7 @@ window.__ready.then(() => { if ("Notification" in window && Notification.permiss
     listen("sauna", db.collection("sauna").where("ts", ">=", monthStart()).limit(500), (s) => { S.sauna = s.docs; });
     listen("runs", db.collection("runs").limit(3000), (s) => { S.runs = s.docs; });
     listen("workouts", db.collection("workouts").where("ts", ">=", Math.min(monthStart(), weekStart()) - 86400000).limit(600), (s) => { S.workouts = s.docs; });
+    S.tips = []; db.collection("tips").orderBy("ts", "desc").limit(50).onSnapshot((s) => { S.tips = s.docs; if (ui.screen === "home") renderHome(); }, () => {});
     listen("eats", db.collection("eats").orderBy("ts", "desc").limit(300), (s) => { S.eats = s.docs; });
     listen("notices", db.collection("notices").orderBy("ts", "desc").limit(20), (s) => { S.notices = s.docs; if (!$("#noticeModal").hidden) renderNoticeList(); });
     if (myId) listen("dm", db.collection("dm").where("members", "array-contains", myId).limit(500), (s) => { S.dm = s.docs; });

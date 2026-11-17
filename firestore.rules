@@ -41,6 +41,11 @@ service cloud.firestore {
       allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
+    // 사우나 지식(홈 '오늘의 사우나 지식'): 모두 읽기, 방장만 쓰기
+    match /tips/{id} {
+      allow read: if allowed();
+      allow write: if allowed() && isOwner();
+    }
     // 운동 인증(크루 바디용)
     match /workouts/{id} {
       allow read, write: if allowed();
