@@ -279,6 +279,12 @@ html:not(.sauna-only) #saunaHome { display: none; }
 .tip-src { font-size: var(--t-xs); opacity: .75; color: inherit; text-decoration: underline; text-underline-offset: 3px; min-height: 24px; align-self: flex-start; }
 .tips-list { display: flex; flex-direction: column; gap: var(--s-3); padding: 0 var(--s-4) var(--s-8); }
 .tips-list .set-h { padding: var(--s-4) 0 0; }
+/* 사우나 지식 바탕: 냉탕 사진이 위쪽에 깔리고 아래로 배경색에 녹아듦 */
+#tipsList { padding-top: 200px; background:
+    linear-gradient(to bottom, transparent 0, transparent 150px, color-mix(in srgb, var(--bg) 40%, transparent) 300px, color-mix(in srgb, var(--bg) 90%, transparent) 460px, var(--bg) 600px),
+    url("img/tips-bg.jpg") center -30px / 100% auto no-repeat, var(--bg); min-height: 100%; }
+#tipsList .tip-card:not(.big), #tipsList .tip-form { background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); box-shadow: var(--e1); }
+#tipsList > :first-child { margin-top: 0; }
 .tip-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .tip-wrap .tip-card { align-self: stretch; }
 .tip-form { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-4); padding: var(--s-4); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
