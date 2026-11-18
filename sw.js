@@ -1,5 +1,5 @@
 // 초월 service worker: network first (2.5s timeout), falls back to the saved copy when slow/offline.
-const CACHE = "chowol-v4";
+const CACHE = "chowol-v5";
 self.addEventListener("install", (e) => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "index.html", "manifest.webmanifest", "icon-192.png", "apple-touch-icon.png", "fonts/DoHyeon-Regular.woff2"])));
